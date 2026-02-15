@@ -1,0 +1,130 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 220 20% 6%;
+    --foreground: 210 20% 92%;
+
+    --card: 220 18% 10%;
+    --card-foreground: 210 20% 92%;
+
+    --popover: 220 18% 10%;
+    --popover-foreground: 210 20% 92%;
+
+    --primary: 187 85% 53%;
+    --primary-foreground: 220 20% 6%;
+
+    --secondary: 220 16% 16%;
+    --secondary-foreground: 210 20% 85%;
+
+    --muted: 220 14% 14%;
+    --muted-foreground: 215 15% 55%;
+
+    --accent: 160 70% 45%;
+    --accent-foreground: 220 20% 6%;
+
+    --destructive: 0 72% 55%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 220 15% 18%;
+    --input: 220 15% 18%;
+    --ring: 187 85% 53%;
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 220 20% 8%;
+    --sidebar-foreground: 210 15% 70%;
+    --sidebar-primary: 187 85% 53%;
+    --sidebar-primary-foreground: 220 20% 6%;
+    --sidebar-accent: 220 16% 14%;
+    --sidebar-accent-foreground: 210 20% 92%;
+    --sidebar-border: 220 15% 15%;
+    --sidebar-ring: 187 85% 53%;
+
+    /* Custom tokens */
+    --glass: 220 18% 12%;
+    --glass-border: 220 15% 22%;
+    --glass-hover: 220 18% 15%;
+    --profit: 160 70% 45%;
+    --loss: 0 72% 55%;
+    --warning: 40 90% 55%;
+    --cyan-glow: 187 85% 53%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+
+  code,
+  .font-mono {
+    font-family: 'JetBrains Mono', monospace;
+  }
+}
+
+@layer components {
+  .glass {
+    @apply bg-[hsl(var(--glass)/0.6)] backdrop-blur-xl border border-[hsl(var(--glass-border)/0.4)] rounded-xl;
+  }
+
+  .glass-hover {
+    @apply glass transition-all duration-300;
+  }
+
+  .glass-hover:hover {
+    @apply bg-[hsl(var(--glass-hover)/0.8)] border-[hsl(var(--cyan-glow)/0.3)];
+    box-shadow: 0 0 30px -5px hsl(var(--cyan-glow) / 0.15),
+      0 8px 30px -10px hsl(0 0% 0% / 0.4);
+    transform: translateY(-2px);
+  }
+
+  .glass-input {
+    @apply bg-[hsl(var(--glass)/0.4)] backdrop-blur-md border border-[hsl(var(--glass-border)/0.5)] rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-[hsl(var(--cyan-glow)/0.5)] focus:ring-2 focus:ring-[hsl(var(--cyan-glow)/0.15)] transition-all duration-300;
+  }
+
+  .glass-input:focus {
+    box-shadow: 0 0 20px -5px hsl(var(--cyan-glow) / 0.2);
+  }
+
+  .glow-text {
+    color: hsl(var(--primary));
+    text-shadow: 0 0 20px hsl(var(--cyan-glow) / 0.5);
+  }
+
+  .profit-text {
+    color: hsl(var(--profit));
+  }
+
+  .loss-text {
+    color: hsl(var(--loss));
+  }
+
+  .shimmer {
+    background: linear-gradient(90deg,
+        hsl(var(--glass) / 0.3) 0%,
+        hsl(var(--glass-border) / 0.5) 50%,
+        hsl(var(--glass) / 0.3) 100%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s ease-in-out infinite;
+  }
+
+  @keyframes shimmer {
+    0% {
+      background-position: 200% 0;
+    }
+
+    100% {
+      background-position: -200% 0;
+    }
+  }
+}
