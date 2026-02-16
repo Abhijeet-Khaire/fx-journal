@@ -117,6 +117,7 @@ export default function AddTrade() {
     };
 
     try {
+      setUploading(true);
       if (id) {
         await updateTrade(id, tradeData);
       } else {
@@ -126,6 +127,12 @@ export default function AddTrade() {
     } catch (error) {
       console.error("Submission error:", error);
       toast.error("Failed to save trade.");
+      setUploading(false);
+    } finally {
+      // Note: Navigation might happen before finally, but that's okay.
+      // If we are still mounted, we reset it.
+      // But if we navigated away, setting state on unmounted component is bad.
+      // However navigate in React Router is usually fine.
     }
   };
 

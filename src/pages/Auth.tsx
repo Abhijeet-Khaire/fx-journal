@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
-import { TrendingUp, Shield, Zap, Users, Globe, ChevronRight, Check } from "lucide-react";
+import { TrendingUp, Shield, Zap, Users, Globe, ChevronRight, Check, Loader2 } from "lucide-react";
 
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -67,11 +67,11 @@ export default function Auth() {
                 await signInWithEmailAndPassword(auth, email, password);
                 toast.success("Logged in successfully!");
             }
-            navigate("/");
+            // Navigation is handled by useEffect when user state updates
         } catch (error: any) {
+            console.error("Auth error:", error);
             toast.error(error.message);
             setError(error.message);
-        } finally {
             setLoading(false);
         }
     };
@@ -248,11 +248,18 @@ export default function Auth() {
                                             />
                                         </div>
                                         <Button
-                                            className="w-full h-11 text-base font-semibold mt-6 bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20"
+                                            className="w-full h-11 text-base font-semibold mt-6 bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20 transition-all duration-200"
                                             onClick={() => handleAuth("login")}
                                             disabled={loading}
                                         >
-                                            {loading ? "Verifying..." : "Login to Dashboard"}
+                                            {loading ? (
+                                                <div className="flex items-center gap-2">
+                                                    <Loader2 className="w-5 h-5 animate-spin" />
+                                                    <span>Verifying Access...</span>
+                                                </div>
+                                            ) : (
+                                                "Login to Dashboard"
+                                            )}
                                         </Button>
                                     </motion.div>
                                 </TabsContent>
@@ -302,11 +309,18 @@ export default function Auth() {
                                             </div>
                                         </div>
                                         <Button
-                                            className="w-full h-11 text-base font-semibold mt-4 bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20"
+                                            className="w-full h-11 text-base font-semibold mt-4 bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20 transition-all duration-200"
                                             onClick={() => handleAuth("signup")}
                                             disabled={loading}
                                         >
-                                            {loading ? "Creating Account..." : "Create Free Account"}
+                                            {loading ? (
+                                                <div className="flex items-center gap-2">
+                                                    <Loader2 className="w-5 h-5 animate-spin" />
+                                                    <span>Creating Your Account...</span>
+                                                </div>
+                                            ) : (
+                                                "Create Free Account"
+                                            )}
                                         </Button>
                                     </motion.div>
                                 </TabsContent>
