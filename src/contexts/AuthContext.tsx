@@ -24,9 +24,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 try {
                     const { doc, setDoc } = await import("firebase/firestore");
                     const { db } = await import("@/lib/firebase");
-                    const { FIRESTORE_PATHS } = await import("@/lib/firestorePaths");
+                    // const { FIRESTORE_PATHS } = await import("@/lib/firestorePaths");
 
-                    const userDocRef = doc(db, "users", currentUser.uid);
+                    const userDocRef = doc(db, "traders", currentUser.uid);
 
                     await setDoc(userDocRef, {
                         uid: currentUser.uid,

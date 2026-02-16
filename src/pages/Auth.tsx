@@ -230,6 +230,7 @@ export default function Auth() {
                                                 onChange={(e) => setEmail(e.target.value)}
                                                 disabled={loading}
                                                 className="glass-input h-11"
+                                                spellCheck={false}
                                             />
                                         </div>
                                         <div className="space-y-2">
@@ -274,6 +275,7 @@ export default function Auth() {
                                                 onChange={(e) => setEmail(e.target.value)}
                                                 disabled={loading}
                                                 className="glass-input h-11"
+                                                spellCheck={false}
                                             />
                                         </div>
                                         <div className="space-y-2">
@@ -286,6 +288,7 @@ export default function Auth() {
                                                 disabled={loading}
                                                 className="glass-input h-11"
                                                 placeholder="Create a strong password"
+                                                spellCheck={false}
                                             />
                                         </div>
                                         <div className="space-y-3 pt-2">

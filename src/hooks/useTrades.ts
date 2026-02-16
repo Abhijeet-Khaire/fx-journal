@@ -2,19 +2,29 @@ import { useState, useEffect } from "react";
 import { Trade } from "@/lib/tradeTypes";
 import { toast } from "sonner";
 import { db } from "@/lib/firebase";
-import { doc, onSnapshot, setDoc, updateDoc, arrayUnion, getDoc } from "firebase/firestore";
-import { FIRESTORE_PATHS } from "@/lib/firestorePaths";
+import { doc, onSnapshot, updateDoc, arrayUnion, getDoc, setDoc } from "firebase/firestore";
+import { useAuth } from "@/contexts/AuthContext";
 
 export function useTrades() {
+    const { user } = useAuth();
     const [trades, setTrades] = useState<Trade[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // Subscribe to real-time updates
-        const docRef = doc(db, FIRESTORE_PATHS.TRADE_HISTORY.split('/')[0], FIRESTORE_PATHS.TRADE_HISTORY.split('/')[1]);
+        if (!user) {
+            setTrades([]);
+            setLoading(false);
+            return;
+        }
+
+        // Subscribe to real-time updates for the specific user
+        // Path: traders/{uid}/trade-history/main
+        console.log("Subscribing to trades for user:", user.uid);
+        const docRef = doc(db, "traders", user.uid, "trade-history", "main");
 
         const unsubscribe = onSnapshot(docRef, (docSnapshot) => {
             if (docSnapshot.exists()) {
+                console.log("Trade history doc exists, data:", docSnapshot.data());
                 const rawTrades = docSnapshot.data().trades || [];
                 // Normalize trades to ensure date is a string and numeric fields are valid
                 const normalizedTrades = rawTrades.map((t: any) => ({
@@ -46,23 +56,37 @@ export function useTrades() {
                 );
                 setTrades(normalizedTrades as Trade[]);
             } else {
-                // Initialize document if it doesn't exist
-                setDoc(docRef, { trades: [] }).catch(err => {
-                    console.error("Error creating trade history doc:", err);
-                });
+                console.log("Trade history doc does not exist. Initializing...");
+                // Initialize document if it doesn't exist for this user
+                setDoc(docRef, { trades: [] }, { merge: true })
+                    .then(() => console.log("Trade history initialized"))
+                    .catch(err => {
+                        console.error("Error creating trade history doc:", err);
+                        toast.error(`Init failed: ${err.message}`);
+                    });
                 setTrades([]);
             }
             setLoading(false);
         }, (error) => {
             console.error("Error subscribing to trades:", error);
-            toast.error(`Load failed: ${error.message}`);
+            // Don't show toast on permission denied if likely just not logged in/rules issue
+            if (error.code !== 'permission-denied') {
+                toast.error(`Load failed: ${error.message}`);
+            } else {
+                console.warn("Permission denied for trade history. Check Firestore rules.");
+            }
             setLoading(false);
         });
 
         return () => unsubscribe();
-    }, []);
+    }, [user]);
 
     const addTrade = async (tradeData: Omit<Trade, "id" | "userId">) => {
+        if (!user) {
+            toast.error("You must be logged in to add trades.");
+            return;
+        }
+
         try {
             // Simple ID generator fallback for non-secure contexts
             const generateId = () => {
@@ -75,16 +99,20 @@ export function useTrades() {
             const newTrade: Trade = {
                 ...tradeData,
                 id: generateId(),
-                userId: "dummy-user-123", // Matches dummy user in AuthContext
+                userId: user.uid,
                 createdAt: new Date().toISOString()
             };
 
-            const docRef = doc(db, FIRESTORE_PATHS.TRADE_HISTORY.split('/')[0], FIRESTORE_PATHS.TRADE_HISTORY.split('/')[1]);
+            const docRef = doc(db, "traders", user.uid, "trade-history", "main");
 
             // Use arrayUnion to add the new trade
-            await updateDoc(docRef, {
+            // Accessing docRef triggers creation if we use setDoc with merge, but updateDoc fails if doc doesn't exist.
+            // Check existence or use setDoc with merge for safety on first trade?
+            // The listener usually creates it, but race conditions exist.
+            // Using setDoc with merge: true and arrayUnion is safe.
+            await setDoc(docRef, {
                 trades: arrayUnion(newTrade)
-            });
+            }, { merge: true });
 
             toast.success("Trade added (Server)");
         } catch (error: any) {
@@ -94,8 +122,9 @@ export function useTrades() {
     };
 
     const deleteTrade = async (id: string) => {
+        if (!user) return;
         try {
-            const docRef = doc(db, FIRESTORE_PATHS.TRADE_HISTORY.split('/')[0], FIRESTORE_PATHS.TRADE_HISTORY.split('/')[1]);
+            const docRef = doc(db, "traders", user.uid, "trade-history", "main");
             const docSnap = await getDoc(docRef);
 
             if (docSnap.exists()) {
@@ -114,8 +143,9 @@ export function useTrades() {
     };
 
     const updateTrade = async (id: string, tradeUpdate: Partial<Trade>) => {
+        if (!user) return;
         try {
-            const docRef = doc(db, FIRESTORE_PATHS.TRADE_HISTORY.split('/')[0], FIRESTORE_PATHS.TRADE_HISTORY.split('/')[1]);
+            const docRef = doc(db, "traders", user.uid, "trade-history", "main");
             const docSnap = await getDoc(docRef);
 
             if (docSnap.exists()) {

@@ -7,10 +7,11 @@ import { Trade } from "@/lib/tradeTypes";
 import { format, startOfMonth, endOfMonth, isSameMonth, parseISO } from "date-fns";
 import { db } from "@/lib/firebase";
 import { doc, onSnapshot, setDoc } from "firebase/firestore";
-import { FIRESTORE_PATHS } from "@/lib/firestorePaths";
 import { TrendingUp, TrendingDown, Activity, CalendarDays, Award } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function CalendarPage() {
+    const { user } = useAuth();
     const { trades } = useTrades();
     const [date, setDate] = useState<Date | undefined>(new Date());
     const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
@@ -36,12 +37,21 @@ export default function CalendarPage() {
 
     // Calculate Monthly Stats
     const monthlyStats = useMemo(() => {
-        const start = startOfMonth(currentMonth);
-        const end = endOfMonth(currentMonth);
+        // Debug current month
+        const targetMonth = currentMonth.getMonth(); // 0-11
+        const targetYear = currentMonth.getFullYear();
+        console.log("Analyzing month:", targetMonth + 1, targetYear);
 
         const monthTrades = trades.filter(t => {
-            const tDate = parseISO(t.date);
-            return isSameMonth(tDate, currentMonth);
+            // t.date is YYYY-MM-DD string
+            if (!t.date) return false;
+            const [y, m, d] = t.date.split('-').map(Number);
+            // Check if matches target year and month (m is 1-12)
+            const match = y === targetYear && (m - 1) === targetMonth;
+            if (match) {
+                // console.log("Matched trade:", t.date, t.profitLoss);
+            }
+            return match;
         });
 
         const totalPnL = monthTrades.reduce((sum, t) => sum + t.profitLoss, 0);
@@ -54,13 +64,18 @@ export default function CalendarPage() {
         let bestDay = { date: "", pnl: -Infinity };
         let worstDay = { date: "", pnl: Infinity };
 
-        // Scan daily stats for this month
-        Object.entries(dailyStats).forEach(([dateStr, stats]) => {
-            const d = parseISO(dateStr);
-            if (isSameMonth(d, currentMonth)) {
-                if (stats.pnl > bestDay.pnl) bestDay = { date: dateStr, pnl: stats.pnl };
-                if (stats.pnl < worstDay.pnl) worstDay = { date: dateStr, pnl: stats.pnl };
-            }
+        // Scan trades specifically for this month to find best/worst days
+        // Group *current month* trades by day first
+        const monthDailyPnL: Record<string, number> = {};
+        monthTrades.forEach(t => {
+            if (!t.date) return;
+            monthDailyPnL[t.date] = (monthDailyPnL[t.date] || 0) + t.profitLoss;
+        });
+
+        // Find best/worst from these
+        Object.entries(monthDailyPnL).forEach(([dateStr, pnl]) => {
+            if (pnl > bestDay.pnl) bestDay = { date: dateStr, pnl };
+            if (pnl < worstDay.pnl) worstDay = { date: dateStr, pnl };
         });
 
         return {
@@ -78,33 +93,49 @@ export default function CalendarPage() {
     const selectedDayStats = dailyStats[selectedDateStr];
 
     // Calendar notes state
-    const [notes, setNotes] = useState<Record<string, string>>({});
+    const [notes, setNotes] = useState<Record<string, string> | null>(null);
     const [savingNote, setSavingNote] = useState(false);
+    const [notesLoading, setNotesLoading] = useState(true);
 
     useEffect(() => {
-        const docRef = doc(db, FIRESTORE_PATHS.CALENDAR.split('/')[0], FIRESTORE_PATHS.CALENDAR.split('/')[1]);
+        if (!user) {
+            setNotes({});
+            setNotesLoading(false);
+            return;
+        }
+
+        setNotesLoading(true);
+        // Path: traders/{uid}/calendar/notes
+        const docRef = doc(db, "traders", user.uid, "calendar", "notes");
+        console.log("Subscribing to calendar notes at:", docRef.path);
+
         const unsubscribe = onSnapshot(docRef, (snap) => {
             if (snap.exists()) {
+                console.log("Calendar notes loaded:", Object.keys(snap.data()).length);
                 setNotes(snap.data() as Record<string, string>);
             } else {
+                console.log("Calendar notes doc missing, creating...");
                 setDoc(docRef, {}).catch(err => console.error("Error creating calendar doc:", err));
+                setNotes({});
             }
+            setNotesLoading(false);
         }, (error) => {
             console.error("Error subscribing to calendar notes:", error);
+            setNotesLoading(false);
         });
 
         return () => unsubscribe();
-    }, []);
+    }, [user]);
 
     const handleNoteChange = async (newNote: string) => {
-        if (!selectedDateStr) return;
+        if (!selectedDateStr || !user || !notes) return;
 
         const updatedNotes = { ...notes, [selectedDateStr]: newNote };
         setNotes(updatedNotes); // Optimistic update
         setSavingNote(true);
 
         try {
-            const docRef = doc(db, FIRESTORE_PATHS.CALENDAR.split('/')[0], FIRESTORE_PATHS.CALENDAR.split('/')[1]);
+            const docRef = doc(db, "traders", user.uid, "calendar", "notes");
             await setDoc(docRef, updatedNotes);
         } catch (error) {
             console.error("Error saving note:", error);
@@ -130,6 +161,7 @@ export default function CalendarPage() {
 
     return (
         <div className="max-w-7xl mx-auto space-y-6">
+
             {/* Monthly Summary Cards */}
             <motion.div
                 variants={containerVariants}
@@ -208,10 +240,10 @@ export default function CalendarPage() {
                                 onMonthChange={setCurrentMonth}
                                 className="rounded-md w-full flex justify-center"
                                 modifiers={{
-                                    profit: (date) => dailyStats[format(date, "yyyy-MM-dd")]?.status === "profit",
-                                    loss: (date) => dailyStats[format(date, "yyyy-MM-dd")]?.status === "loss",
-                                    breakeven: (date) => dailyStats[format(date, "yyyy-MM-dd")]?.status === "breakeven",
-                                    hasNote: (date) => !!notes[format(date, "yyyy-MM-dd")]
+                                    profit: (d) => { const k = format(d, "yyyy-MM-dd"); return dailyStats[k]?.status === "profit"; },
+                                    loss: (d) => { const k = format(d, "yyyy-MM-dd"); return dailyStats[k]?.status === "loss"; },
+                                    breakeven: (d) => { const k = format(d, "yyyy-MM-dd"); return dailyStats[k]?.status === "breakeven"; },
+                                    hasNote: (d) => { const k = format(d, "yyyy-MM-dd"); return !!(notes || {})[k]; }
                                 }}
                                 modifiersClassNames={{
                                     profit: "bg-profit/20 text-profit font-bold hover:bg-profit/30 hover:scale-105 transition-transform duration-200 cursor-pointer",
@@ -236,14 +268,17 @@ export default function CalendarPage() {
                                 <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
                                     <span>Daily Notes</span>
                                     {date && <span className="text-sm font-normal text-muted-foreground">for {format(date, "MMMM do")}</span>}
+                                    {notesLoading && <span className="text-xs text-muted-foreground animate-pulse ml-2">(Loading...)</span>}
                                 </h3>
                                 {date ? (
                                     <div className="space-y-2 relative">
                                         <textarea
-                                            className="w-full h-32 p-4 rounded-xl bg-secondary/30 border border-white/5 focus:border-primary/50 focus:ring-1 focus:ring-primary/50 resize-none placeholder:text-muted-foreground/50 transition-all duration-300"
+                                            className="w-full h-32 p-4 rounded-xl bg-secondary/30 border border-white/5 focus:border-primary/50 focus:ring-1 focus:ring-primary/50 resize-none placeholder:text-muted-foreground/50 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                                             placeholder="Journal your thoughts, emotions, and market observations..."
-                                            value={notes[selectedDateStr] || ""}
+                                            value={(notes || {})[selectedDateStr] || ""}
                                             onChange={(e) => handleNoteChange(e.target.value)}
+                                            spellCheck={false}
+                                            disabled={notesLoading || !user}
                                         />
                                         <div className="absolute bottom-4 right-4 text-xs mx-auto">
                                             <span className={`transition-opacity duration-300 ${savingNote ? "opacity-100 text-primary" : "opacity-50 text-muted-foreground"}`}>
@@ -291,7 +326,7 @@ export default function CalendarPage() {
                                     <div className="flex flex-col p-3 rounded-lg bg-secondary/30 text-center">
                                         <span className="text-xs text-muted-foreground uppercase tracking-wider">Status</span>
                                         <span className={`font-bold text-sm uppercase mt-1 ${selectedDayStats.status === "profit" ? "text-profit" :
-                                                selectedDayStats.status === "loss" ? "text-loss" : "text-muted-foreground"
+                                            selectedDayStats.status === "loss" ? "text-loss" : "text-muted-foreground"
                                             }`}>
                                             {selectedDayStats.status}
                                         </span>

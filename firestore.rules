@@ -2,10 +2,20 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Allow authenticated users to read and write to all documents
-    // In a production app, you might want to restrict this further
+    // Top-level matching for traders collection
+    match /traders/{userId} {
+      // Allow user to read/write their own document
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+
+      // Allow recursive access to all subcollections under the user's document
+      match /{document=**} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+
+    // Default deny all other access
     match /{document=**} {
-      allow read, write: if request.auth != null;
+      allow read, write: if false;
     }
   }
 }

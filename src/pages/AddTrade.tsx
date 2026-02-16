@@ -203,6 +203,7 @@ export default function AddTrade() {
                   onChange={(e) => update(key, e.target.value)}
                   className={inputClass}
                   placeholder="0.0000"
+                  spellCheck={false}
                 />
               </div>
             ))}
@@ -218,6 +219,7 @@ export default function AddTrade() {
                 value={form.lotSize}
                 onChange={(e) => update("lotSize", e.target.value)}
                 className={inputClass}
+                spellCheck={false}
               />
             </div>
             <div>
@@ -227,6 +229,7 @@ export default function AddTrade() {
                 value={form.date}
                 onChange={(e) => update("date", e.target.value)}
                 className={inputClass}
+                spellCheck={false}
               />
             </div>
             <div>
@@ -236,6 +239,7 @@ export default function AddTrade() {
                 value={form.time}
                 onChange={(e) => update("time", e.target.value)}
                 className={inputClass}
+                spellCheck={false}
               />
             </div>
           </div>
@@ -291,6 +295,7 @@ export default function AddTrade() {
                 onChange={(e) => update("mistakes", e.target.value)}
                 className={inputClass}
                 placeholder="FOMO, Early Exit..."
+                spellCheck={false}
               />
             </div>
           </div>
@@ -305,6 +310,7 @@ export default function AddTrade() {
               rows={4}
               className={`${inputClass} resize-none`}
               placeholder="Analysis, feelings, or key takeaways..."
+              spellCheck={false}
             />
           </div>
 

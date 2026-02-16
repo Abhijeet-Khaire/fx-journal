@@ -16,16 +16,15 @@ export function usePlan() {
             return;
         }
 
-        const userRef = doc(db, "users", user.uid);
+        const userRef = doc(db, "traders", user.uid);
         const unsubscribe = onSnapshot(userRef, (docSnap) => {
             if (docSnap.exists()) {
                 const userData = docSnap.data();
-                if (userData.plan) {
-                    setPlanState(userData.plan as Plan);
-                } else {
-                    // Initialize if missing
-                    setDoc(userRef, { plan: "free" }, { merge: true });
-                }
+                console.log("Plan loaded from DB:", userData.plan);
+                setPlanState((userData.plan as Plan) || "free");
+            } else {
+                console.log("No user doc found for plan, defaulting to free");
+                setPlanState("free");
             }
             setLoading(false);
         });
@@ -36,7 +35,7 @@ export function usePlan() {
     const upgradePlan = async (newPlan: Plan) => {
         if (!user) return;
         try {
-            const userRef = doc(db, "users", user.uid);
+            const userRef = doc(db, "traders", user.uid);
             await setDoc(userRef, { plan: newPlan }, { merge: true });
             setPlanState(newPlan);
         } catch (error) {
