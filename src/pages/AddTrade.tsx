@@ -137,7 +137,7 @@ export default function AddTrade() {
       <motion.h1
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="text-2xl font-bold text-foreground mb-6"
+        className="text-2xl font-bold text-foreground mb-6 hidden lg:block"
       >
         {id ? "Edit Trade" : "Add Trade"}
       </motion.h1>
@@ -186,7 +186,7 @@ export default function AddTrade() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
             {[
               { key: "entryPrice", label: "Entry Price" },
               { key: "exitPrice", label: "Exit Price" },

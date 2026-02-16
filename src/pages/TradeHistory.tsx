@@ -188,7 +188,7 @@ export default function TradeHistory() {
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex flex-col gap-2"
+        className="flex flex-col gap-2 hidden lg:flex"
       >
         <h1 className="text-3xl font-bold text-foreground">Trade History</h1>
         <p className="text-muted-foreground">View and manage your trading performance.</p>
@@ -252,75 +252,152 @@ export default function TradeHistory() {
         </GlassCard>
       ) : (
         <div className="space-y-4">
-          <div className="overflow-x-auto rounded-lg border border-border/50">
-            <table className="w-full text-sm">
-              <thead className="bg-secondary/20">
-                <tr className="text-muted-foreground text-xs uppercase tracking-wider">
-                  {["Date", "Pair", "Dir", "Entry", "Exit", "Pips", "P/L", "Session", "Strategy", "Actions"].map((h) => (
-                    <th key={h} className="px-4 py-3 text-left font-medium">{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border/50">
-                <AnimatePresence mode="popLayout">
-                  {paginatedTrades.map((trade, i) => (
-                    <motion.tr
-                      key={trade.id}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, scale: 0.95 }}
-                      transition={{ delay: i * 0.03 }}
-                      className="hover:bg-secondary/30 transition-colors group"
-                    >
-                      <td className="px-4 py-3 text-muted-foreground font-mono text-xs whitespace-nowrap">
-                        <div>{trade.date}</div>
-                        <div className="text-[10px] opacity-70">{trade.time}</div>
-                      </td>
-                      <td className="px-4 py-3 font-semibold text-foreground">{trade.pair}</td>
-                      <td className="px-4 py-3">
-                        <span className={`inline-flex items-center gap-1 text-[11px] font-bold px-2 py-1 rounded-full border
-                            ${trade.direction === "BUY" ? "bg-profit/10 text-profit border-profit/20" : "bg-loss/10 text-loss border-loss/20"}`}>
-                          {trade.direction === "BUY" ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
-                          {trade.direction}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 font-mono text-xs text-muted-foreground">{trade.entryPrice}</td>
-                      <td className="px-4 py-3 font-mono text-xs text-muted-foreground">{trade.exitPrice}</td>
-                      <td className={`px-4 py-3 font-mono font-semibold ${trade.pips >= 0 ? "text-profit" : "text-loss"}`}>
-                        {trade.pips > 0 ? "+" : ""}{trade.pips}
-                      </td>
-                      <td className={`px-4 py-3 font-mono font-bold ${trade.profitLoss >= 0 ? "text-profit" : "text-loss"}`}>
-                        {trade.profitLoss > 0 ? "+" : ""}${trade.profitLoss.toFixed(2)}
-                      </td>
-                      <td className="px-4 py-3 text-xs text-muted-foreground">{trade.session}</td>
-                      <td className="px-4 py-3 text-xs text-muted-foreground">{trade.strategy}</td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-1">
-                          <Link
-                            to={`/edit-trade/${trade.id}`}
-                            className="p-1.5 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
-                            title="Edit"
-                          >
-                            <Pencil className="w-4 h-4" />
-                          </Link>
-                          <button
-                            onClick={() => {
-                              if (window.confirm("Are you sure you want to delete this trade?")) {
-                                deleteTrade(trade.id);
-                              }
-                            }}
-                            className="p-1.5 rounded-md text-muted-foreground hover:text-loss hover:bg-loss/10 transition-colors"
-                            title="Delete"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </td>
-                    </motion.tr>
-                  ))}
-                </AnimatePresence>
-              </tbody>
-            </table>
+          {/* Mobile Card View */}
+          <div className="grid grid-cols-1 gap-4 lg:hidden">
+            <AnimatePresence mode="popLayout">
+              {paginatedTrades.map((trade, i) => (
+                <motion.div
+                  key={trade.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ delay: i * 0.03 }}
+                >
+                  <GlassCard hover={false} className="p-4 relative overflow-hidden group">
+                    <div className="flex justify-between items-start mb-3">
+                      <div className="flex flex-col">
+                        <span className="text-lg font-bold text-foreground">{trade.pair}</span>
+                        <span className="text-[10px] text-muted-foreground font-mono">{trade.date} • {trade.time}</span>
+                      </div>
+                      <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border
+                        ${trade.direction === "BUY" ? "bg-profit/10 text-profit border-profit/20" : "bg-loss/10 text-loss border-loss/20"}`}>
+                        {trade.direction === "BUY" ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
+                        {trade.direction}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4 mb-4">
+                      <div>
+                        <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Pips</p>
+                        <p className={`font-mono font-bold ${trade.pips >= 0 ? "text-profit" : "text-loss"}`}>
+                          {trade.pips > 0 ? "+" : ""}{trade.pips}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] text-muted-foreground uppercase tracking-wider">P/L</p>
+                        <p className={`font-mono font-bold ${trade.profitLoss >= 0 ? "text-profit" : "text-loss"}`}>
+                          {trade.profitLoss > 0 ? "+" : ""}${trade.profitLoss.toFixed(2)}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Entry</p>
+                        <p className="text-xs font-mono text-muted-foreground">{trade.entryPrice}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Exit</p>
+                        <p className="text-xs font-mono text-muted-foreground">{trade.exitPrice}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between pt-3 border-t border-border/30">
+                      <span className="text-[10px] text-muted-foreground bg-secondary/30 px-2 py-0.5 rounded uppercase">{trade.strategy}</span>
+                      <div className="flex items-center gap-2">
+                        <Link
+                          to={`/edit-trade/${trade.id}`}
+                          className="p-1.5 rounded-md text-muted-foreground bg-secondary/50 hover:text-primary hover:bg-primary/10 transition-colors"
+                        >
+                          <Pencil className="w-3.5 h-3.5" />
+                        </Link>
+                        <button
+                          onClick={() => {
+                            if (window.confirm("Are you sure you want to delete this trade?")) {
+                              deleteTrade(trade.id);
+                            }
+                          }}
+                          className="p-1.5 rounded-md text-muted-foreground bg-secondary/50 hover:text-loss hover:bg-loss/10 transition-colors"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  </GlassCard>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </div>
+
+          {/* Desktop Table View */}
+          <div className="hidden lg:block overflow-hidden rounded-lg border border-border/50">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-secondary/20">
+                  <tr className="text-muted-foreground text-xs uppercase tracking-wider">
+                    {["Date", "Pair", "Dir", "Entry", "Exit", "Pips", "P/L", "Session", "Strategy", "Actions"].map((h) => (
+                      <th key={h} className="px-4 py-3 text-left font-medium">{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border/50">
+                  <AnimatePresence mode="popLayout">
+                    {paginatedTrades.map((trade, i) => (
+                      <motion.tr
+                        key={trade.id}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        transition={{ delay: i * 0.03 }}
+                        className="hover:bg-secondary/30 transition-colors group"
+                      >
+                        <td className="px-4 py-3 text-muted-foreground font-mono text-xs whitespace-nowrap">
+                          <div>{trade.date}</div>
+                          <div className="text-[10px] opacity-70">{trade.time}</div>
+                        </td>
+                        <td className="px-4 py-3 font-semibold text-foreground">{trade.pair}</td>
+                        <td className="px-4 py-3">
+                          <span className={`inline-flex items-center gap-1 text-[11px] font-bold px-2 py-1 rounded-full border
+                              ${trade.direction === "BUY" ? "bg-profit/10 text-profit border-profit/20" : "bg-loss/10 text-loss border-loss/20"}`}>
+                            {trade.direction === "BUY" ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
+                            {trade.direction}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 font-mono text-xs text-muted-foreground">{trade.entryPrice}</td>
+                        <td className="px-4 py-3 font-mono text-xs text-muted-foreground">{trade.exitPrice}</td>
+                        <td className={`px-4 py-3 font-mono font-semibold ${trade.pips >= 0 ? "text-profit" : "text-loss"}`}>
+                          {trade.pips > 0 ? "+" : ""}{trade.pips}
+                        </td>
+                        <td className={`px-4 py-3 font-mono font-bold ${trade.profitLoss >= 0 ? "text-profit" : "text-loss"}`}>
+                          {trade.profitLoss > 0 ? "+" : ""}${trade.profitLoss.toFixed(2)}
+                        </td>
+                        <td className="px-4 py-3 text-xs text-muted-foreground">{trade.session}</td>
+                        <td className="px-4 py-3 text-xs text-muted-foreground">{trade.strategy}</td>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-1">
+                            <Link
+                              to={`/edit-trade/${trade.id}`}
+                              className="p-1.5 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+                              title="Edit"
+                            >
+                              <Pencil className="w-4 h-4" />
+                            </Link>
+                            <button
+                              onClick={() => {
+                                if (window.confirm("Are you sure you want to delete this trade?")) {
+                                  deleteTrade(trade.id);
+                                }
+                              }}
+                              className="p-1.5 rounded-md text-muted-foreground hover:text-loss hover:bg-loss/10 transition-colors"
+                              title="Delete"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </td>
+                      </motion.tr>
+                    ))}
+                  </AnimatePresence>
+                </tbody>
+              </table>
+            </div>
           </div>
 
           {/* Pagination Controls */}

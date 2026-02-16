@@ -94,7 +94,7 @@ export default function Dashboard() {
     <div className="space-y-6">
       {/* Header */}
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
+        <div className="hidden lg:block">
           <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
           <p className="text-sm text-muted-foreground mt-1">
             {trades.length} trade{trades.length !== 1 ? "s" : ""} logged
@@ -102,13 +102,13 @@ export default function Dashboard() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2 bg-secondary/50 p-1 rounded-lg border border-border/50">
+        <div className="flex items-center gap-2 bg-secondary/50 p-1 rounded-lg border border-border/50 w-full md:w-auto">
           <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
             <PopoverTrigger asChild>
               <Button
                 variant={"outline"}
                 className={cn(
-                  "w-[240px] justify-start text-left font-normal border-none bg-transparent hover:bg-transparent",
+                  "flex-1 md:w-[240px] justify-start text-left font-normal border-none bg-transparent hover:bg-transparent",
                   !date && "text-muted-foreground"
                 )}
               >

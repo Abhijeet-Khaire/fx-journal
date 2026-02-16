@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -5,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation, Navigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { Sidebar } from "@/components/Sidebar";
+import { Header } from "@/components/Header";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import AddTrade from "./pages/AddTrade";
@@ -56,14 +58,48 @@ function AnimatedRoutes() {
 
 const AppContent = () => {
   const location = useLocation();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const publicPages = ["/auth", "/terms", "/privacy"];
   const isPublicPage = publicPages.includes(location.pathname);
 
+  // Map paths to titles for the mobile header
+  const getPageTitle = (path: string) => {
+    if (path === "/") return "Dashboard";
+    if (path === "/add-trade") return "Add Trade";
+    if (path.startsWith("/edit-trade")) return "Edit Trade";
+    if (path === "/trade-history") return "History";
+    if (path === "/calendar") return "Calendar";
+    if (path === "/analytics") return "Analytics";
+    if (path === "/risk") return "Risk";
+    if (path === "/playbook") return "Playbook";
+    if (path === "/plans") return "Plans";
+    if (path === "/profile") return "Profile";
+    return "";
+  };
+
   return (
-    <div className="flex min-h-screen w-full dark">
-      {!isPublicPage && <Sidebar />}
-      <main className={`flex-1 ${!isPublicPage ? "ml-16 md:ml-60 p-6 md:p-8" : "p-0"} transition-all duration-300`}>
-        <AnimatedRoutes />
+    <div className="flex min-h-screen w-full dark bg-background">
+      {!isPublicPage && (
+        <>
+          <Header
+            onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            isOpen={isSidebarOpen}
+            pageTitle={getPageTitle(location.pathname)}
+          />
+          <Sidebar
+            isOpen={isSidebarOpen}
+            onClose={() => setIsSidebarOpen(false)}
+          />
+        </>
+      )}
+      <main className={`flex-1 transition-all duration-300 w-full
+        ${!isPublicPage
+          ? "lg:ml-20 xl:ml-60 pt-20 pb-10 px-4 md:px-8 lg:pt-8"
+          : "p-0"}`}
+      >
+        <div className="max-w-7xl mx-auto">
+          <AnimatedRoutes />
+        </div>
       </main>
     </div>
   );
