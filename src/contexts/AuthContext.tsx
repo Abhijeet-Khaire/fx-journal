@@ -4,30 +4,33 @@ import { auth } from "@/lib/firebase";
 
 interface AuthContextType {
     user: User | null;
+    isAdmin: boolean;
     loading: boolean;
     error: string | null;
 }
 
-const AuthContext = createContext<AuthContextType>({ user: null, loading: true, error: null });
+const AuthContext = createContext<AuthContextType>({ user: null, isAdmin: false, loading: true, error: null });
 
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [user, setUser] = useState<User | null>(null);
+    const [isAdmin, setIsAdmin] = useState(false);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+        let unsubscribeSnapshot: (() => void) | undefined;
+
+        const unsubscribeAuth = onAuthStateChanged(auth, async (currentUser) => {
             if (currentUser) {
-                // Sync user to Firestore
                 try {
-                    const { doc, setDoc } = await import("firebase/firestore");
+                    const { doc, setDoc, onSnapshot } = await import("firebase/firestore");
                     const { db } = await import("@/lib/firebase");
-                    // const { FIRESTORE_PATHS } = await import("@/lib/firestorePaths");
 
                     const userDocRef = doc(db, "traders", currentUser.uid);
 
+                    // Sync user to Firestore but don't overwrite role if it exists
                     await setDoc(userDocRef, {
                         uid: currentUser.uid,
                         email: currentUser.email,
@@ -36,17 +39,37 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                         lastSeen: new Date().toISOString(),
                         isAnonymous: currentUser.isAnonymous
                     }, { merge: true });
+
+                    // Listen to the user document to track the `role`
+                    unsubscribeSnapshot = onSnapshot(userDocRef, (docSnap) => {
+                        if (docSnap.exists()) {
+                            const data = docSnap.data();
+                            setIsAdmin(data.role === "superadmin");
+                        } else {
+                            setIsAdmin(false);
+                        }
+                    });
+
                 } catch (err) {
-                    console.error("Failed to sync user:", err);
+                    console.error("Failed to sync user or listen to role:", err);
                 }
                 setUser(currentUser);
             } else {
                 setUser(null);
+                setIsAdmin(false);
+                if (unsubscribeSnapshot) {
+                    unsubscribeSnapshot();
+                }
             }
             setLoading(false);
         });
 
-        return () => unsubscribe();
+        return () => {
+            unsubscribeAuth();
+            if (unsubscribeSnapshot) {
+                unsubscribeSnapshot();
+            }
+        };
     }, []);
 
     if (loading) {
@@ -83,7 +106,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
 
     return (
-        <AuthContext.Provider value={{ user, loading, error }}>
+        <AuthContext.Provider value={{ user, isAdmin, loading, error }}>
             {children}
         </AuthContext.Provider>
     );

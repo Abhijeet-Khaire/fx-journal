@@ -10,10 +10,11 @@ import {
 import * as importTrades from "@/components/ImportTrades";
 import { getNetProfit, getWinRate } from "@/lib/tradeStore";
 import { usePlan } from "@/hooks/usePlan";
-import { auth } from "@/lib/firebase";
+import { auth, db } from "@/lib/firebase";
+import { doc, updateDoc } from "firebase/firestore";
 
 export default function Profile() {
-    const { user } = useAuth();
+    const { user, isAdmin } = useAuth();
     const { plan } = usePlan();
     const isUltimate = plan === "ultimate";
     const { trades } = useTrades();
@@ -165,6 +166,18 @@ export default function Profile() {
         }
     };
 
+    const handleMakeAdmin = async () => {
+        if (!user) return;
+        try {
+            const userRef = doc(db, "traders", user.uid);
+            await updateDoc(userRef, { role: "superadmin" });
+            window.location.reload();
+        } catch (error) {
+            console.error("Failed to make admin", error);
+            alert("Failed to become admin. Check console.");
+        }
+    };
+
     return (
         <div className="space-y-8 pb-10">
             {/* Header Section */}
@@ -176,13 +189,24 @@ export default function Profile() {
                 <div className={`absolute inset-0 opacity-10 ${currentRank.bg}`} />
 
                 {/* Logout Button */}
-                <button
-                    onClick={handleLogout}
-                    className="absolute top-4 right-4 p-2 rounded-full bg-background/20 hover:bg-destructive/20 text-muted-foreground hover:text-destructive transition-colors z-20"
-                    title="Log Out"
-                >
-                    <LogOut className="w-5 h-5" />
-                </button>
+                <div className="absolute top-4 right-4 flex gap-2 z-20">
+                    {!isAdmin && (
+                        <button
+                            onClick={handleMakeAdmin}
+                            className="px-3 py-1.5 rounded-lg bg-primary/20 hover:bg-primary/40 text-primary transition-colors text-sm font-bold"
+                            title="Temporary Debug Button"
+                        >
+                            Make Me Admin
+                        </button>
+                    )}
+                    <button
+                        onClick={handleLogout}
+                        className="p-2 rounded-full bg-background/20 hover:bg-destructive/20 text-muted-foreground hover:text-destructive transition-colors"
+                        title="Log Out"
+                    >
+                        <LogOut className="w-5 h-5" />
+                    </button>
+                </div>
 
                 <div className="relative z-10 flex flex-col md:flex-row items-center gap-8">
                     {/* Avatar with Rank Border */}

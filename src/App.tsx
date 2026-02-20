@@ -21,6 +21,9 @@ import Privacy from "./pages/Privacy";
 import Analytics from "./pages/Analytics";
 import Risk from "./pages/Risk";
 import Playbook from "./pages/Playbook";
+import AdminDashboard from "./pages/AdminDashboard";
+import AdminTraderView from "./pages/AdminTraderView";
+import { AdminRoute } from "@/components/AdminRoute";
 
 const queryClient = new QueryClient();
 
@@ -49,6 +52,8 @@ function AnimatedRoutes() {
           <Route path="/playbook" element={<ProtectedRoute><Playbook /></ProtectedRoute>} />
           <Route path="/plans" element={<ProtectedRoute><Plans /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+          <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+          <Route path="/admin/trader/:uid" element={<AdminRoute><AdminTraderView /></AdminRoute>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </motion.div>
@@ -74,6 +79,8 @@ const AppContent = () => {
     if (path === "/playbook") return "Playbook";
     if (path === "/plans") return "Plans";
     if (path === "/profile") return "Profile";
+    if (path === "/admin") return "Admin Dashboard";
+    if (path.startsWith("/admin/trader")) return "Trader Details";
     return "";
   };
 

@@ -14,11 +14,13 @@ import {
   User,
   Sparkles,
   BookOpen,
+  Key
 } from "lucide-react";
 import { Logo } from "./Logo";
 import { useState } from "react";
 import type { Plan } from "@/lib/tradeTypes";
 import { usePlan } from "@/hooks/usePlan";
+import { useAuth } from "@/contexts/AuthContext";
 
 const links = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/" },
@@ -41,6 +43,12 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
   const { plan } = usePlan();
+  const { isAdmin } = useAuth();
+
+  const activeLinks = [
+    ...links,
+    ...(isAdmin ? [{ icon: Key, label: "Admin", path: "/admin" }] : [])
+  ];
 
   return (
     <>
@@ -84,7 +92,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 
         {/* Nav */}
         <nav className="flex-1 py-4 space-y-1 px-2 overflow-y-auto">
-          {links.map((link) => (
+          {activeLinks.map((link) => (
             <RouterNavLink
               key={link.path}
               to={link.path}
