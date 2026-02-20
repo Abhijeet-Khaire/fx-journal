@@ -10,11 +10,10 @@ import {
 import * as importTrades from "@/components/ImportTrades";
 import { getNetProfit, getWinRate } from "@/lib/tradeStore";
 import { usePlan } from "@/hooks/usePlan";
-import { auth, db } from "@/lib/firebase";
-import { doc, updateDoc } from "firebase/firestore";
+import { auth } from "@/lib/firebase";
 
 export default function Profile() {
-    const { user, isAdmin } = useAuth();
+    const { user } = useAuth();
     const { plan } = usePlan();
     const isUltimate = plan === "ultimate";
     const { trades } = useTrades();
@@ -166,17 +165,7 @@ export default function Profile() {
         }
     };
 
-    const handleMakeAdmin = async () => {
-        if (!user) return;
-        try {
-            const userRef = doc(db, "traders", user.uid);
-            await updateDoc(userRef, { role: "superadmin" });
-            window.location.reload();
-        } catch (error) {
-            console.error("Failed to make admin", error);
-            alert("Failed to become admin. Check console.");
-        }
-    };
+
 
     return (
         <div className="space-y-8 pb-10">
@@ -190,15 +179,7 @@ export default function Profile() {
 
                 {/* Logout Button */}
                 <div className="absolute top-4 right-4 flex gap-2 z-20">
-                    {!isAdmin && (
-                        <button
-                            onClick={handleMakeAdmin}
-                            className="px-3 py-1.5 rounded-lg bg-primary/20 hover:bg-primary/40 text-primary transition-colors text-sm font-bold"
-                            title="Temporary Debug Button"
-                        >
-                            Make Me Admin
-                        </button>
-                    )}
+
                     <button
                         onClick={handleLogout}
                         className="p-2 rounded-full bg-background/20 hover:bg-destructive/20 text-muted-foreground hover:text-destructive transition-colors"
