@@ -30,13 +30,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
                     const userDocRef = doc(db, "traders", currentUser.uid);
 
-                    // Sync user to Firestore but don't overwrite role if it exists
+                    const userSnap = await import("firebase/firestore").then(m => m.getDoc(userDocRef));
+                    const userData = userSnap.exists() ? userSnap.data() : {};
+                    const joinedDate = userData.joinedDate || new Date().toISOString();
+
+                    // Sync user to Firestore but don't overwrite role or joinedDate if it exists
                     await setDoc(userDocRef, {
                         uid: currentUser.uid,
                         email: currentUser.email,
                         displayName: currentUser.displayName || "Trader",
                         photoURL: currentUser.photoURL,
                         lastSeen: new Date().toISOString(),
+                        joinedDate,
                         isAnonymous: currentUser.isAnonymous
                     }, { merge: true });
 

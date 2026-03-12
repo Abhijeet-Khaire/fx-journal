@@ -70,7 +70,7 @@ export function ImportTrades() {
     const handleImport = async () => {
         if (!file) return;
         if (!isUltimate) {
-            toast.error("Importing is an Ultimate feature");
+            toast.error("Importing is an Institutional Plan feature");
             return;
         }
 
@@ -101,7 +101,7 @@ export function ImportTrades() {
             {!isUltimate ? (
                 <div className="text-center p-6 border border-dashed border-white/10 rounded-xl bg-secondary/10">
                     <p className="text-sm text-muted-foreground mb-2">Unlock MT4/MT5 & CSV Import</p>
-                    <div className="text-xs font-bold text-primary bg-primary/10 px-2 py-1 rounded inline-block">Ultimate Feature</div>
+                    <div className="text-xs font-bold text-primary bg-primary/10 px-2 py-1 rounded inline-block">Institutional Plan Feature</div>
                 </div>
             ) : (
                 <div className="space-y-4">

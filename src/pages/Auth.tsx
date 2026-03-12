@@ -1,17 +1,22 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { auth } from "@/lib/firebase";
-import { GlassCard } from "@/components/GlassCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
-import { TrendingUp, Shield, Zap, Users, Globe, ChevronRight, Check, Loader2 } from "lucide-react";
+import {
+    TrendingUp, Shield, Zap, Globe, Loader2,
+    Terminal, Activity, Radio, Cpu, Lock, Eye, EyeOff,
+    Check, ChevronRight
+} from "lucide-react";
 
 import { useAuth } from "@/contexts/AuthContext";
+import { cn } from "@/lib/utils";
+import { AnimatedCounter } from "@/components/AnimatedCounter";
 
 export default function Auth() {
     const { user } = useAuth();
@@ -23,9 +28,13 @@ export default function Auth() {
             navigate("/");
         }
     }, [user, navigate]);
+
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [displayName, setDisplayName] = useState("");
     const [error, setError] = useState<string | null>(null);
+    const [showPassword, setShowPassword] = useState(false);
+    const [rememberMe, setRememberMe] = useState(false);
 
     // Simulated Live Data
     const [activeTraders, setActiveTraders] = useState(12453);
@@ -41,19 +50,29 @@ export default function Auth() {
 
     const validateForm = (type: "login" | "signup") => {
         if (!email || !password) {
-            setError("All fields are required");
+            setError("All credentials required");
+            return false;
+        }
+        if (type === "signup" && !displayName) {
+            setError("Trader Name required for registration");
             return false;
         }
         if (!/^\S+@\S+\.\S+$/.test(email)) {
-            setError("Invalid email format");
+            setError("Invalid format: Email address error");
             return false;
         }
         if (type === "signup" && password.length < 6) {
-            setError("Password must be at least 6 characters");
+            setError("Security: Password too short");
             return false;
         }
         setError(null);
         return true;
+    };
+
+    const handleKeyDown = (e: React.KeyboardEvent, type: "login" | "signup") => {
+        if (e.key === "Enter") {
+            handleAuth(type);
+        }
     };
 
     const handleAuth = async (type: "login" | "signup") => {
@@ -61,278 +80,361 @@ export default function Auth() {
         setLoading(true);
         try {
             if (type === "signup") {
-                await createUserWithEmailAndPassword(auth, email, password);
-                toast.success("Account created successfully!");
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                await updateProfile(userCredential.user, {
+                    displayName: displayName
+                });
+                toast.success("Identity established successfully!");
             } else {
                 await signInWithEmailAndPassword(auth, email, password);
-                toast.success("Logged in successfully!");
+                toast.success("Access granted. Welcome back, Trader.");
             }
-            // Navigation is handled by useEffect when user state updates
         } catch (error: any) {
-            console.error("Auth error:", error);
-            toast.error(error.message);
-            setError(error.message);
+            console.error("Authentication error:", error);
+            const message = error.code === 'auth/user-not-found' ? "Account not found" :
+                error.code === 'auth/wrong-password' ? "Invalid password" :
+                    error.message;
+            toast.error(message);
+            setError(message);
             setLoading(false);
         }
     };
 
-    const benefits = [
-        { icon: TrendingUp, text: "Advanced Equity Curves" },
-        { icon: Shield, text: "AI-Powered Risk Analysis" },
-        { icon: Zap, text: "Real-time Trade Journaling" },
-        { icon: Globe, text: "Advanced Analytics" },
-    ];
-
     return (
-        <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2 bg-background overflow-hidden relative">
-            {/* Left Side - Hero & Data */}
-            <div className="relative hidden lg:flex flex-col justify-center p-12 bg-secondary/10 border-r border-border/50">
-                {/* Floating Elements Background */}
-                <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                    {[...Array(5)].map((_, i) => (
-                        <motion.div
-                            key={i}
-                            className="absolute rounded-full bg-primary/5 blur-3xl"
-                            style={{
-                                width: Math.random() * 300 + 100,
-                                height: Math.random() * 300 + 100,
-                                top: `${Math.random() * 100}%`,
-                                left: `${Math.random() * 100}%`,
-                            }}
-                            animate={{
-                                y: [0, -50, 0],
-                                scale: [1, 1.2, 1],
-                                opacity: [0.3, 0.6, 0.3],
-                            }}
-                            transition={{
-                                duration: Math.random() * 5 + 5,
-                                repeat: Infinity,
-                                ease: "easeInOut",
-                            }}
-                        />
-                    ))}
-                </div>
+        <div className="min-h-screen flex items-center justify-center bg-[#020406] overflow-hidden relative font-sans">
+            {/* Global Immersive Background System */}
+            <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
+                <div 
+                    className="absolute inset-0 bg-cover bg-center bg-no-repeat scale-105"
+                    style={{ backgroundImage: "url('/images/auth-bg.png')" }}
+                />
+                <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px]" />
+                
+                {/* Cyberpunk Grid */}
+                <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(0,255,255,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(0,255,255,0.05)_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_80%_80%_at_50%_50%,#000_60%,transparent_100%)] opacity-30" />
+            </div>
 
-                <div className="relative z-10 max-w-lg mx-auto space-y-12">
+            {/* Submission Animation Overlay (Global Center) */}
+            <AnimatePresence>
+                {loading && (
                     <motion.div
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        className="space-y-4"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-black/60 backdrop-blur-xl"
                     >
-                        <div className="flex items-center gap-3">
-                            <div className="p-3 rounded-xl bg-primary/20 backdrop-blur-md border border-primary/30">
-                                <TrendingUp className="w-8 h-8 text-primary" />
+                        <div className="absolute inset-0 bg-[linear-gradient(rgba(0,255,255,0.05)_1px,transparent_1px)] bg-[size:100%_4px] animate-scan" />
+                        <div className="relative space-y-6 text-center">
+                            <div className="relative">
+                                <motion.div
+                                    animate={{
+                                        rotate: 360,
+                                    }}
+                                    transition={{
+                                        duration: 2,
+                                        repeat: Infinity,
+                                        ease: "linear",
+                                    }}
+                                    className="w-24 h-24 rounded-full border-t-2 border-r-2 border-cyan-500 shadow-[0_0_30px_rgba(34,211,238,0.3)]"
+                                />
+                                <Terminal className="absolute inset-0 m-auto w-8 h-8 text-cyan-500 animate-pulse" />
                             </div>
-                            <h1 className="text-4xl font-bold tracking-tight">Zenith Journal</h1>
+                            <div className="space-y-1">
+                                <p className="text-[10px] font-black text-cyan-400 uppercase tracking-[0.4em] animate-pulse">Establishing Link</p>
+                                <div className="flex gap-1 justify-center">
+                                    {[...Array(3)].map((_, i) => (
+                                        <motion.div
+                                            key={i}
+                                            animate={{ opacity: [0.2, 1, 0.2] }}
+                                            transition={{ duration: 1, repeat: Infinity, delay: i * 0.2 }}
+                                            className="w-1 h-1 bg-cyan-400 rounded-full"
+                                        />
+                                    ))}
+                                </div>
+                            </div>
                         </div>
-                        <p className="text-xl text-muted-foreground leading-relaxed">
-                            Master your trading psychology and track your edge with the #1 automated trading journal for serious forex traders.
-                        </p>
                     </motion.div>
+                )}
+            </AnimatePresence>
 
-                    {/* Live Stats */}
-                    <div className="grid grid-cols-2 gap-4">
-                        <GlassCard className="p-6 border-primary/20">
-                            <div className="flex items-center gap-3 mb-2">
-                                <Users className="w-5 h-5 text-blue-500" />
-                                <span className="text-xs font-semibold uppercase text-muted-foreground">Active Traders</span>
-                            </div>
-                            <div className="text-3xl font-bold tabular-nums">
-                                {activeTraders.toLocaleString()}
-                            </div>
-                        </GlassCard>
-                        <GlassCard className="p-6 border-profit/20">
-                            <div className="flex items-center gap-3 mb-2">
-                                <Globe className="w-5 h-5 text-profit" />
-                                <span className="text-xs font-semibold uppercase text-muted-foreground">Total PnL Tracked</span>
-                            </div>
-                            <div className="text-3xl font-bold tabular-nums text-profit">
-                                ${(totalProfit / 1000000).toFixed(1)}M+
-                            </div>
-                        </GlassCard>
-                    </div>
+            {/* Main Content Layout */}
+            <div className="relative z-10 w-full h-screen flex flex-col lg:flex-row divide-x divide-white/5">
+                
+                {/* Left Side: Brand & Visuals */}
+                <div className="flex-1 flex flex-col justify-center px-12 lg:px-24 relative overflow-hidden">
+                    {/* Animated Wireframe Background */}
+                    <svg className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[150%] h-[150%] opacity-10 pointer-events-none" viewBox="0 0 100 100">
+                        <path d="M10,10 L90,10 L90,90 L10,90 Z" fill="none" stroke="cyan" strokeWidth="0.1" />
+                        <path d="M10,10 L50,50 L90,10" fill="none" stroke="cyan" strokeWidth="0.1" />
+                        <circle cx="50" cy="50" r="40" fill="none" stroke="cyan" strokeWidth="0.05" />
+                        {/* More grid-like lines could be added here */}
+                        {[...Array(10)].map((_, i) => (
+                            <line key={i} x1="0" y1={i * 10} x2="100" y2={i * 10} stroke="cyan" strokeWidth="0.02" />
+                        ))}
+                    </svg>
 
-                    {/* Benefits List */}
-                    <div className="space-y-4">
-                        <h3 className="font-semibold text-foreground/80">Why Top Traders Choose Us</h3>
-                        <div className="grid grid-cols-1 gap-3">
-                            {benefits.map((b, i) => (
-                                <motion.div
-                                    key={i}
-                                    initial={{ opacity: 0, x: -10 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    transition={{ delay: 0.2 + (i * 0.1) }}
-                                    className="flex items-center gap-3 p-3 rounded-lg bg-background/40 border border-white/5 backdrop-blur-sm hover:bg-background/60 transition-colors"
-                                >
-                                    <div className="p-2 rounded-full bg-primary/10 text-primary">
-                                        <b.icon className="w-4 h-4" />
+                    <motion.div
+                        initial={{ opacity: 0, x: -30 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 1 }}
+                        className="space-y-12 relative z-10"
+                    >
+                        <motion.div 
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 0.5 }}
+                            className="inline-flex items-center gap-3 px-4 py-1.5 rounded-full border border-cyan-500/30 bg-cyan-500/10 backdrop-blur-md"
+                        >
+                            <span className="relative flex h-2 w-2">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-500"></span>
+                            </span>
+                            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-cyan-400">PROTOCOL 7.42 // ACTIVE</span>
+                        </motion.div>
+
+                        <div className="space-y-4">
+                            <h1 className="text-[7rem] lg:text-[9rem] font-black leading-[0.8] tracking-tighter uppercase text-white drop-shadow-[0_0_30px_rgba(255,255,255,0.1)]">
+                                <span className="block italic">ZENITH</span>
+                                <span className="block text-cyan-400">JOURNAL</span>
+                            </h1>
+                            <p className="text-xl lg:text-2xl text-white/40 font-light max-w-xl italic leading-relaxed">
+                                The pinnacle of <span className="text-white font-medium">quantitative trading</span> psychology. Master the markets from within.
+                            </p>
+                        </div>
+
+                        {/* Interactive Stats */}
+                        <div className="flex flex-wrap gap-8">
+                            <div className="flex flex-col gap-4 p-8 rounded-[2rem] bg-white/[0.03] border border-white/10 backdrop-blur-2xl min-w-[200px] hover:border-cyan-500/40 transition-all group">
+                                <div className="flex items-center gap-3 text-white/40">
+                                    <Activity className="w-5 h-5 text-cyan-500" />
+                                    <span className="text-[10px] font-black uppercase tracking-widest">NETWORK ACTIVITY</span>
+                                </div>
+                                <div className="text-5xl font-black italic tracking-tighter text-cyan-400 drop-shadow-[0_0_15px_rgba(34,211,238,0.3)]">
+                                    <AnimatedCounter value={activeTraders} />
+                                </div>
+                            </div>
+
+                            <div className="flex items-center gap-6 p-8 rounded-[2rem] bg-white/[0.03] border border-white/10 backdrop-blur-2xl min-w-[280px] hover:border-emerald-500/40 transition-all group overflow-hidden relative">
+                                <div className="flex flex-col gap-4 relative z-10">
+                                    <div className="flex items-center gap-3 text-white/40">
+                                        <TrendingUp className="w-5 h-5 text-emerald-400" />
+                                        <span className="text-[10px] font-black uppercase tracking-widest">LIQUIDITY LOGGED</span>
                                     </div>
-                                    <span className="font-medium">{b.text}</span>
-                                </motion.div>
-                            ))}
+                                    <div className="text-5xl font-black italic tracking-tighter text-emerald-400 drop-shadow-[0_0_15px_rgba(52,211,153,0.3)]">
+                                        ${(totalProfit / 1000000).toFixed(1)}M+
+                                    </div>
+                                </div>
+                                {/* Globe Visualizer */}
+                                <div className="absolute right-[-10%] top-1/2 -translate-y-1/2 w-32 h-32 opacity-40 group-hover:scale-110 transition-transform duration-700">
+                                    <div className="w-full h-full rounded-full border-2 border-emerald-500/20 border-t-emerald-500 animate-spin-slow" />
+                                    <Globe className="absolute inset-0 m-auto w-16 h-16 text-emerald-500/60" />
+                                    <motion.div 
+                                        animate={{ y: [-5, 5, -5] }}
+                                        transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                                        className="absolute top-0 right-0"
+                                    >
+                                        <ChevronRight className="w-8 h-8 text-emerald-400 rotate-[-90deg]" />
+                                    </motion.div>
+                                </div>
+                            </div>
                         </div>
-                    </div>
+                    </motion.div>
+                </div>
+
+                {/* Right Side: Access Terminal */}
+                <div className="w-full lg:w-[450px] bg-black/40 backdrop-blur-[60px] flex flex-col items-center justify-center p-8 relative overflow-hidden">
+                    {/* Terminal Frame Decor */}
+                    <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent" />
+                    <div className="absolute bottom-0 left-0 w-full h-2 bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent" />
+                    
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="w-full max-w-[340px] space-y-10"
+                    >
+                        <div className="text-center space-y-2">
+                            <h2 className="text-3xl font-black italic uppercase tracking-tighter text-white">ACCESS TERMINAL</h2>
+                            <p className="text-[10px] font-bold text-white/20 uppercase tracking-[0.4em]">IDENTITY VERIFICATION REQUIRED</p>
+                        </div>
+
+                        <div className="relative p-1 rounded-[2.5rem] bg-gradient-to-b from-white/10 to-transparent border border-white/5">
+                            <Tabs defaultValue="login" className="w-full">
+                                <TabsList className="grid w-full grid-cols-2 mb-8 bg-black/40 p-1.5 rounded-[1.8rem] h-14 border border-white/5">
+                                    <TabsTrigger
+                                        value="login"
+                                        className="rounded-[1.4rem] h-full text-[11px] font-black uppercase tracking-widest italic transition-all data-[state=active]:bg-white/10 data-[state=active]:text-white data-[state=active]:shadow-[0_0_20px_rgba(255,255,255,0.1)]"
+                                    >
+                                        LOGIN
+                                    </TabsTrigger>
+                                    <TabsTrigger
+                                        value="signup"
+                                        className="rounded-[1.4rem] h-full text-[11px] font-black uppercase tracking-widest italic transition-all data-[state=active]:bg-white/10 data-[state=active]:text-white data-[state=active]:shadow-[0_0_20px_rgba(255,255,255,0.1)]"
+                                    >
+                                        JOIN
+                                    </TabsTrigger>
+                                </TabsList>
+
+                                <AnimatePresence mode="wait">
+                                    <TabsContent value="login" key="login" className="mt-0 space-y-8 p-1">
+                                        <div className="space-y-6">
+                                            <div className="space-y-2.5">
+                                                <Label className="text-[9px] font-black text-white/30 uppercase tracking-[0.3em] ml-2">TRADER_ID</Label>
+                                                <div className="relative group">
+                                                    <Input
+                                                        type="email"
+                                                        placeholder="EMAIL@PROTOCOL.AI"
+                                                        value={email}
+                                                        onChange={(e) => setEmail(e.target.value)}
+                                                        onKeyDown={(e) => handleKeyDown(e, "login")}
+                                                        className="h-14 bg-white/[0.03] border-white/5 rounded-2xl px-6 focus:ring-cyan-500/20 focus:border-cyan-500/40 transition-all font-bold tracking-tight text-white placeholder:text-white/10"
+                                                        disabled={loading}
+                                                    />
+                                                    <Globe className="absolute right-5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/10 group-focus-within:text-cyan-500/30" />
+                                                </div>
+                                            </div>
+
+                                            <div className="space-y-2.5">
+                                                <div className="flex justify-between items-center ml-2">
+                                                    <Label className="text-[9px] font-black text-white/30 uppercase tracking-[0.3em]">SEC_KEY</Label>
+                                                    <button type="button" className="text-[8px] font-bold text-cyan-500/40 hover:text-cyan-400 uppercase tracking-widest italic">RECOVER</button>
+                                                </div>
+                                                <div className="relative group">
+                                                    <Input
+                                                        type={showPassword ? "text" : "password"}
+                                                        placeholder="••••••••"
+                                                        value={password}
+                                                        onChange={(e) => setPassword(e.target.value)}
+                                                        onKeyDown={(e) => handleKeyDown(e, "login")}
+                                                        className="h-14 bg-white/[0.03] border-white/5 rounded-2xl px-6 focus:ring-cyan-500/20 focus:border-cyan-500/40 transition-all font-bold text-white placeholder:text-white/10 pr-14"
+                                                        disabled={loading}
+                                                    />
+                                                    <div className="absolute right-5 top-1/2 -translate-y-1/2 flex items-center gap-3">
+                                                        <button 
+                                                            type="button" 
+                                                            onClick={() => setShowPassword(!showPassword)}
+                                                            className="text-white/20 hover:text-white/60 transition-colors"
+                                                        >
+                                                            {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                                        </button>
+                                                        <Lock className="w-4 h-4 text-white/10 group-focus-within:text-cyan-500/30" />
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex items-center gap-3 ml-2">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setRememberMe(!rememberMe)}
+                                                    className={cn(
+                                                        "w-4 h-4 rounded border flex items-center justify-center transition-all",
+                                                        rememberMe ? "base-cyan border-cyan-500 text-black shadow-[0_0_15px_rgba(34,211,238,0.4)]" : "bg-white/5 border-white/10 text-transparent"
+                                                    )}
+                                                >
+                                                    <Check className="w-3 h-3" />
+                                                </button>
+                                                <span className="text-[9px] font-bold text-white/30 uppercase tracking-widest cursor-pointer" onClick={() => setRememberMe(!rememberMe)}>
+                                                    PERSIST_LOCAL_STATE
+                                                </span>
+                                            </div>
+
+                                            <Button
+                                                onClick={() => handleAuth("login")}
+                                                disabled={loading}
+                                                className="w-full h-16 rounded-[2rem] bg-cyan-400 text-black font-black italic uppercase tracking-[0.4em] hover:bg-cyan-300 hover:scale-[1.02] active:scale-[0.98] transition-all duration-500 shadow-[0_10px_40px_-5px_rgba(34,211,238,0.5)] text-sm group"
+                                            >
+                                                {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : (
+                                                    <span className="flex items-center gap-2">
+                                                        INITIATE_SESSION
+                                                    </span>
+                                                )}
+                                            </Button>
+                                        </div>
+                                    </TabsContent>
+
+                                    <TabsContent value="signup" key="signup" className="mt-0 space-y-6 p-1">
+                                        <div className="space-y-4">
+                                            <div className="space-y-2">
+                                                <Label className="text-[9px] font-black text-white/30 uppercase tracking-[0.3em] ml-2">ALIAS</Label>
+                                                <Input
+                                                    type="text"
+                                                    placeholder="ALPHA_TRADER"
+                                                    value={displayName}
+                                                    onChange={(e) => setDisplayName(e.target.value)}
+                                                    onKeyDown={(e) => handleKeyDown(e, "signup")}
+                                                    className="h-14 bg-white/[0.03] border-white/5 rounded-2xl px-6 focus:ring-cyan-500/20 focus:border-cyan-500/40 text-white font-bold"
+                                                    disabled={loading}
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label className="text-[9px] font-black text-white/30 uppercase tracking-[0.3em] ml-2">EMAIL</Label>
+                                                <Input
+                                                    type="email"
+                                                    placeholder="TRADER@ZENITH.AI"
+                                                    value={email}
+                                                    onChange={(e) => setEmail(e.target.value)}
+                                                    onKeyDown={(e) => handleKeyDown(e, "signup")}
+                                                    className="h-14 bg-white/[0.03] border-white/5 rounded-2xl px-6 focus:ring-cyan-500/20 focus:border-cyan-500/40 text-white font-bold"
+                                                    disabled={loading}
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label className="text-[9px] font-black text-white/30 uppercase tracking-[0.3em] ml-2">SEC_CODE</Label>
+                                                <Input
+                                                    type="password"
+                                                    placeholder="••••••••"
+                                                    value={password}
+                                                    onChange={(e) => setPassword(e.target.value)}
+                                                    onKeyDown={(e) => handleKeyDown(e, "signup")}
+                                                    className="h-14 bg-white/[0.03] border-white/5 rounded-2xl px-6 focus:ring-cyan-500/20 focus:border-cyan-500/40 text-white font-bold"
+                                                    disabled={loading}
+                                                />
+                                            </div>
+                                            <Button
+                                                onClick={() => handleAuth("signup")}
+                                                disabled={loading}
+                                                className="w-full h-16 rounded-[2rem] bg-cyan-400 text-black font-black italic uppercase tracking-[0.4em] hover:bg-cyan-300 transition-all shadow-[0_10px_40px_-5px_rgba(34,211,238,0.5)] mt-4"
+                                            >
+                                                {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : "ESTABLISH_IDENTITY"}
+                                            </Button>
+                                        </div>
+                                    </TabsContent>
+                                </AnimatePresence>
+                            </Tabs>
+                        </div>
+
+                        {/* Social Auth */}
+                        <div className="space-y-6">
+                            <div className="flex items-center gap-4">
+                                <div className="h-px flex-1 bg-white/5" />
+                                <span className="text-[8px] font-black text-white/10 uppercase tracking-[0.5em]">OR CONNECT VIA</span>
+                                <div className="h-px flex-1 bg-white/5" />
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <button className="h-12 flex items-center justify-center gap-3 rounded-xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.05] transition-all group">
+                                    <Globe className="w-4 h-4 text-white/20 group-hover:text-white transition-colors" />
+                                    <span className="text-[9px] font-black text-white/30 group-hover:text-white uppercase tracking-widest">GOOGLE NODE</span>
+                                </button>
+                                <button className="h-12 flex items-center justify-center gap-3 rounded-xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.05] transition-all group">
+                                    <Lock className="w-4 h-4 text-white/20 group-hover:text-white transition-colors" />
+                                    <span className="text-[9px] font-black text-white/30 group-hover:text-white uppercase tracking-widest">APPLE AUTH</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="text-center">
+                            <p className="text-[8px] font-bold text-white/10 uppercase tracking-[0.6em] italic leading-tight">
+                                LINK SECURED. <span className="text-cyan-500/30">PROTOCOL_EXT</span>
+                            </p>
+                            <Link to="/" className="mt-8 inline-block opacity-20 hover:opacity-100 transition-opacity">
+                                <img src="/favicon.svg" alt="Zenith" className="w-6 h-6 grayscale brightness-200" />
+                            </Link>
+                        </div>
+                    </motion.div>
                 </div>
             </div>
 
-            {/* Right Side - Auth Form */}
-            <div className="relative flex items-center justify-center p-4 lg:p-12">
-                {/* Mobile Background Effect */}
-                <div className="lg:hidden absolute inset-0 overflow-hidden -z-10">
-                    <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-primary/20 rounded-full blur-[100px]" />
-                </div>
-
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 }}
-                    className="w-full max-w-md space-y-8"
-                >
-                    <div className="lg:hidden text-center mb-8">
-                        <h1 className="text-3xl font-bold mb-2">Zenith Journal</h1>
-                        <p className="text-muted-foreground">Your premium forex trading companion</p>
-                    </div>
-
-                    <GlassCard className="p-8 shadow-2xl border-primary/10">
-                        <Tabs defaultValue="login" className="w-full">
-                            <TabsList className="grid w-full grid-cols-2 mb-8 bg-secondary/50 p-1">
-                                <TabsTrigger value="login" className="data-[state=active]:bg-background data-[state=active]:shadow-sm">Login</TabsTrigger>
-                                <TabsTrigger value="signup" className="data-[state=active]:bg-background data-[state=active]:shadow-sm">Sign Up</TabsTrigger>
-                            </TabsList>
-
-                            {error && (
-                                <motion.div
-                                    initial={{ opacity: 0, y: -10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    className="mb-4 p-3 bg-destructive/10 border border-destructive/20 rounded-md text-sm text-destructive flex items-center gap-2"
-                                >
-                                    <Shield className="w-4 h-4" />
-                                    {error}
-                                </motion.div>
-                            )}
-
-                            <AnimatePresence mode="wait">
-                                <TabsContent value="login" key="login" className="mt-0">
-                                    <motion.div
-                                        initial={{ opacity: 0, x: 20 }}
-                                        animate={{ opacity: 1, x: 0 }}
-                                        exit={{ opacity: 0, x: -20 }}
-                                        transition={{ duration: 0.2 }}
-                                        className="space-y-4"
-                                    >
-                                        <div className="space-y-2">
-                                            <Label htmlFor="email">Email</Label>
-                                            <Input
-                                                id="email"
-                                                type="email"
-                                                placeholder="trader@example.com"
-                                                value={email}
-                                                onChange={(e) => setEmail(e.target.value)}
-                                                disabled={loading}
-                                                className="glass-input h-11"
-                                                spellCheck={false}
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <div className="flex items-center justify-between">
-                                                <Label htmlFor="password">Password</Label>
-                                                <button type="button" className="text-xs text-primary hover:underline">Forgot?</button>
-                                            </div>
-                                            <Input
-                                                id="password"
-                                                type="password"
-                                                value={password}
-                                                onChange={(e) => setPassword(e.target.value)}
-                                                disabled={loading}
-                                                className="glass-input h-11"
-                                            />
-                                        </div>
-                                        <Button
-                                            className="w-full h-11 text-base font-semibold mt-6 bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20 transition-all duration-200"
-                                            onClick={() => handleAuth("login")}
-                                            disabled={loading}
-                                        >
-                                            {loading ? (
-                                                <div className="flex items-center gap-2">
-                                                    <Loader2 className="w-5 h-5 animate-spin" />
-                                                    <span>Verifying Access...</span>
-                                                </div>
-                                            ) : (
-                                                "Login to Dashboard"
-                                            )}
-                                        </Button>
-                                    </motion.div>
-                                </TabsContent>
-
-                                <TabsContent value="signup" key="signup" className="mt-0">
-                                    <motion.div
-                                        initial={{ opacity: 0, x: -20 }}
-                                        animate={{ opacity: 1, x: 0 }}
-                                        exit={{ opacity: 0, x: 20 }}
-                                        transition={{ duration: 0.2 }}
-                                        className="space-y-4"
-                                    >
-                                        <div className="space-y-2">
-                                            <Label htmlFor="signup-email">Email</Label>
-                                            <Input
-                                                id="signup-email"
-                                                type="email"
-                                                placeholder="trader@example.com"
-                                                value={email}
-                                                onChange={(e) => setEmail(e.target.value)}
-                                                disabled={loading}
-                                                className="glass-input h-11"
-                                                spellCheck={false}
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label htmlFor="signup-password">Password</Label>
-                                            <Input
-                                                id="signup-password"
-                                                type="password"
-                                                value={password}
-                                                onChange={(e) => setPassword(e.target.value)}
-                                                disabled={loading}
-                                                className="glass-input h-11"
-                                                placeholder="Create a strong password"
-                                                spellCheck={false}
-                                            />
-                                        </div>
-                                        <div className="space-y-3 pt-2">
-                                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                                                <Check className="w-3 h-3 text-primary" />
-                                                <span>Free 14-day Pro trial included</span>
-                                            </div>
-                                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                                                <Check className="w-3 h-3 text-primary" />
-                                                <span>No credit card required</span>
-                                            </div>
-                                        </div>
-                                        <Button
-                                            className="w-full h-11 text-base font-semibold mt-4 bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20 transition-all duration-200"
-                                            onClick={() => handleAuth("signup")}
-                                            disabled={loading}
-                                        >
-                                            {loading ? (
-                                                <div className="flex items-center gap-2">
-                                                    <Loader2 className="w-5 h-5 animate-spin" />
-                                                    <span>Creating Your Account...</span>
-                                                </div>
-                                            ) : (
-                                                "Create Free Account"
-                                            )}
-                                        </Button>
-                                    </motion.div>
-                                </TabsContent>
-                            </AnimatePresence>
-                        </Tabs>
-
-                        <div className="mt-8 text-center text-xs text-muted-foreground">
-                            By continuing, you agree to our <Link to="/terms" className="underline hover:text-foreground cursor-pointer">Terms of Service</Link> and <Link to="/privacy" className="underline hover:text-foreground cursor-pointer">Privacy Policy</Link>.
-                        </div>
-                    </GlassCard>
-                </motion.div>
-            </div>
+            {/* Scanline Effect */}
+            <div className="absolute inset-0 pointer-events-none z-50 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.1)_50%),linear-gradient(90deg,rgba(255,0,0,0.02),rgba(0,255,0,0.01),rgba(0,0,255,0.02))] bg-[size:100%_4px,3px_100%]" />
         </div>
     );
 }

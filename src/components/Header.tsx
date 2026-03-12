@@ -28,6 +28,7 @@ export function Header({ onMenuClick, isOpen, pageTitle }: HeaderProps) {
                     size="icon"
                     onClick={onMenuClick}
                     className="relative z-50 transition-colors"
+                    aria-label={isOpen ? "Close menu" : "Open menu"}
                 >
                     {isOpen ? (
                         <X className="w-6 h-6 text-foreground" />

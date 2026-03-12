@@ -1,6 +1,6 @@
-export function SkeletonCard() {
+export function SkeletonCard({ className = "" }: { className?: string }) {
   return (
-    <div className="glass p-6 space-y-4">
+    <div className={`glass p-6 space-y-4 ${className}`}>
       <div className="shimmer h-4 w-24 rounded" />
       <div className="shimmer h-8 w-32 rounded" />
       <div className="shimmer h-3 w-20 rounded" />

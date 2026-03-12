@@ -2,26 +2,31 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { GlassCard } from "@/components/GlassCard";
 import { PAIRS, STRATEGIES, FREE_TRADE_LIMIT, PRO_TRADE_LIMIT } from "@/lib/tradeTypes";
-import {
-  calculatePips,
-  calculatePL,
-  detectSession,
-} from "@/lib/tradeStore";
+import { AddTradeForm } from "@/components/AddTrade/AddTradeForm";
+import { TradeValue } from "@/lib/tradeTypes";
+import { calculatePips, calculatePL, detectSession } from "@/lib/tradeStore";
 import { useTrades } from "@/hooks/useTrades";
-import { useNavigate, useParams } from "react-router-dom";
-import { ArrowUpRight, ArrowDownRight, Save, AlertTriangle, X, Loader2 } from "lucide-react";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { ArrowUpRight, ArrowDownRight, Save, AlertTriangle, X, Loader2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { usePlan } from "@/hooks/usePlan";
+import { useAuth } from "@/contexts/AuthContext";
+import { db } from "@/lib/firebase";
+import { doc, getDoc } from "firebase/firestore";
 
 export default function AddTrade() {
   const navigate = useNavigate();
   const { id } = useParams();
+  const [searchParams] = useSearchParams();
+  const challengeIdParam = searchParams.get('challengeId');
   const { addTrade, updateTrade, trades } = useTrades();
   const { plan } = usePlan();
+  const { user } = useAuth();
 
   const atLimit = !id && plan === "free" && trades.length >= FREE_TRADE_LIMIT;
 
   const [uploading, setUploading] = useState(false);
+  const [challenges, setChallenges] = useState<any[]>([]);
   const [form, setForm] = useState({
     pair: PAIRS[0],
     direction: "BUY" as "BUY" | "SELL",
@@ -38,116 +43,212 @@ export default function AddTrade() {
     emotionBefore: "Neutral",
     mistakes: "",
     notes: "",
+    challengeId: "",
   });
 
   useEffect(() => {
-    if (id && trades.length > 0) {
-      const trade = trades.find((t) => t.id === id);
-      if (trade) {
-        setForm({
-          pair: trade.pair as any,
-          direction: trade.direction,
-          entryPrice: trade.entryPrice.toString(),
-          exitPrice: trade.exitPrice.toString(),
-          stopLoss: trade.stopLoss.toString(),
-          takeProfit: trade.takeProfit.toString(),
-          lotSize: trade.lotSize.toString(),
-          date: trade.date,
-          time: trade.time,
-          strategy: trade.strategy as any,
-          rulesFollowed: trade.rulesFollowed,
-          confidence: (trade.confidence || 3).toString(),
-          emotionBefore: trade.emotionBefore || "Neutral",
-          mistakes: trade.mistakes ? trade.mistakes.join(", ") : "",
-          notes: trade.notes,
-        });
+    const fetchChallenges = async () => {
+      if (!user) return;
+      try {
+        const docRef = doc(db, "traders", user.uid, "challenges", "config");
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists() && docSnap.data().data) {
+          setChallenges(docSnap.data().data);
+        }
+      } catch (error) {
+        console.error("Error fetching challenges:", error);
       }
+    };
+    fetchChallenges();
+  }, [user]);
+
+  useEffect(() => {
+    const fetchChallengeTrade = async () => {
+      if (!user || !challengeIdParam || !id) return;
+      try {
+        const docRef = doc(db, "traders", user.uid, "trade-history", "challenge_" + challengeIdParam);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          const challengeTrades = docSnap.data().trades || [];
+          const trade = challengeTrades.find((t: any) => t.id === id);
+          if (trade) {
+            setForm({
+              pair: trade.pair as any,
+              direction: trade.direction,
+              entryPrice: trade.entryPrice.toString(),
+              exitPrice: trade.exitPrice.toString(),
+              stopLoss: trade.stopLoss.toString(),
+              takeProfit: trade.takeProfit.toString(),
+              lotSize: trade.lotSize.toString(),
+              date: typeof trade.date === 'string' ? trade.date : new Date(trade.date?.seconds * 1000 || Date.now()).toISOString().split('T')[0],
+              time: trade.time,
+              strategy: trade.strategy as any,
+              rulesFollowed: trade.rulesFollowed,
+              confidence: (trade.confidence || 3).toString(),
+              emotionBefore: trade.emotionBefore || "Neutral",
+              mistakes: trade.mistakes ? trade.mistakes.join(", ") : "",
+              notes: trade.notes,
+              challengeId: trade.challengeId || "",
+            });
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching challenge trade", error);
+      }
+    };
+
+    if (id) {
+      if (challengeIdParam) {
+        fetchChallengeTrade();
+      } else if (trades.length > 0) {
+        const trade = trades.find((t) => t.id === id);
+        if (trade) {
+          setForm({
+            pair: trade.pair as any,
+            direction: trade.direction,
+            entryPrice: trade.entryPrice.toString(),
+            exitPrice: trade.exitPrice.toString(),
+            stopLoss: trade.stopLoss.toString(),
+            takeProfit: trade.takeProfit.toString(),
+            lotSize: trade.lotSize.toString(),
+            date: trade.date,
+            time: trade.time,
+            strategy: trade.strategy as any,
+            rulesFollowed: trade.rulesFollowed,
+            confidence: (trade.confidence || 3).toString(),
+            emotionBefore: trade.emotionBefore || "Neutral",
+            mistakes: trade.mistakes ? trade.mistakes.join(", ") : "",
+            notes: trade.notes,
+            challengeId: trade.challengeId || "",
+          });
+        }
+      }
+    } else if (challengeIdParam) {
+      // For a NEW trade with a challenge context
+      setForm(f => ({ ...f, challengeId: challengeIdParam }));
     }
-  }, [id, trades]);
+  }, [id, trades, challengeIdParam, user, challenges.length]);
 
   const update = (key: string, value: any) => setForm((f) => ({ ...f, [key]: value }));
 
 
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
+  const onAddTradeSubmit = async (data: TradeValue) => {
     if (atLimit) {
       const limit = plan === "free" ? FREE_TRADE_LIMIT : PRO_TRADE_LIMIT;
       toast.error(`Trade limit reached (${limit}). Upgrade your plan.`);
       return;
     }
 
-    if (uploading) {
-      toast.error("Please wait for upload to finish");
-      return;
-    }
-
-    const entry = parseFloat(form.entryPrice);
-    const exit = parseFloat(form.exitPrice);
-
-    if (isNaN(entry) || isNaN(exit)) {
-      toast.error("Please enter valid numeric prices");
-      return;
-    }
-
-    const pips = calculatePips(form.pair, entry, exit, form.direction);
-    const profitLoss = calculatePL(pips, parseFloat(form.lotSize), form.pair, entry, exit);
-    const session = detectSession(form.time);
+    const pips = calculatePips(data.pair, data.entryPrice, data.exitPrice, data.direction);
+    const profitLoss = calculatePL(pips, data.lotSize, data.pair, data.entryPrice, data.exitPrice);
+    const session = detectSession(data.time);
 
     const tradeData = {
-      pair: form.pair,
-      direction: form.direction,
-      entryPrice: entry,
-      exitPrice: exit,
-      stopLoss: parseFloat(form.stopLoss) || 0,
-      takeProfit: parseFloat(form.takeProfit) || 0,
-      lotSize: parseFloat(form.lotSize) || 0.01,
-      profitLoss: isNaN(profitLoss) ? 0 : profitLoss,
-      pips: isNaN(pips) ? 0 : pips,
-      date: form.date,
-      time: form.time,
+      ...data,
+      profitLoss,
+      pips,
       session,
-      strategy: form.strategy,
-      rulesFollowed: form.rulesFollowed,
-      confidence: parseInt(form.confidence) || 3,
-      emotionBefore: form.emotionBefore,
-      mistakes: form.mistakes ? form.mistakes.split(",").map(s => s.trim()).filter(Boolean) : [],
-      notes: form.notes,
     };
 
     try {
       setUploading(true);
       if (id) {
-        await updateTrade(id, tradeData);
+        await updateTrade(id, tradeData as any, challengeIdParam || undefined);
+        navigate(tradeData.challengeId ? "/challenges" : "/trade-history");
       } else {
-        await addTrade(tradeData);
+        await addTrade(tradeData as any);
+        toast.success("Trade added successfully!");
       }
-      navigate("/history");
     } catch (error) {
       console.error("Submission error:", error);
       toast.error("Failed to save trade.");
-      setUploading(false);
     } finally {
-      // Note: Navigation might happen before finally, but that's okay.
-      // If we are still mounted, we reset it.
-      // But if we navigated away, setting state on unmounted component is bad.
-      // However navigate in React Router is usually fine.
+      setUploading(false);
     }
   };
 
-  const inputClass = "glass-input w-full px-4 py-3 text-sm rounded-lg";
-  const labelClass = "text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1.5 block";
+  const handleSeed = async () => {
+    if (atLimit) {
+      toast.error("Limit reached. Seed aborted.");
+      return;
+    }
+
+    setUploading(true);
+    const seedTrades = [
+      { pair: "XAU/USD", direction: "BUY", entryPrice: 2050.5, exitPrice: 2065.0, stopLoss: 2040, takeProfit: 2080, lotSize: 0.1, strategy: "Breakout", session: "London", emotionBefore: "Confidence", rulesFollowed: true, date: "2024-03-01", time: "10:00" },
+      { pair: "EUR/USD", direction: "SELL", entryPrice: 1.0850, exitPrice: 1.0820, stopLoss: 1.0880, takeProfit: 1.0750, lotSize: 0.5, strategy: "Trend Following", session: "New York", emotionBefore: "Neutral", rulesFollowed: true, date: "2024-03-02", time: "14:30" },
+      { pair: "BTC/USD", direction: "BUY", entryPrice: 65000, exitPrice: 67000, stopLoss: 63000, takeProfit: 70000, lotSize: 0.01, strategy: "Scalping", session: "Asian", emotionBefore: "Excitement", rulesFollowed: true, date: "2024-03-03", time: "05:00" },
+      { pair: "XAU/USD", direction: "SELL", entryPrice: 2100, exitPrice: 2110, stopLoss: 2090, takeProfit: 2050, lotSize: 0.1, strategy: "Breakout", session: "London", emotionBefore: "Fear", rulesFollowed: false, date: "2024-03-04", time: "11:00" }, // Loss
+      { pair: "XAU/USD", direction: "BUY", entryPrice: 2110, exitPrice: 2090, stopLoss: 2115, takeProfit: 2150, lotSize: 0.25, strategy: "Breakout", session: "London", emotionBefore: "Greed", rulesFollowed: false, date: "2024-03-04", time: "11:30" }, // Revenge Loss
+      { pair: "EUR/USD", direction: "BUY", entryPrice: 1.0900, exitPrice: 1.0950, stopLoss: 1.0850, takeProfit: 1.1000, lotSize: 0.1, strategy: "Trend Following", session: "London", emotionBefore: "Confidence", rulesFollowed: true, date: "2024-03-05", time: "09:00" },
+      { pair: "BTC/USD", direction: "SELL", entryPrice: 68000, exitPrice: 67500, stopLoss: 69000, takeProfit: 65000, lotSize: 0.05, strategy: "Scalping", session: "New York", emotionBefore: "Neutral", rulesFollowed: true, date: "2024-03-06", time: "16:00" },
+      { pair: "XAU/USD", direction: "BUY", entryPrice: 2080, exitPrice: 2100, stopLoss: 2070, takeProfit: 2120, lotSize: 0.1, strategy: "Breakout", session: "London", emotionBefore: "Confidence", rulesFollowed: true, date: "2024-03-07", time: "10:15" },
+      { pair: "EUR/USD", direction: "SELL", entryPrice: 1.0920, exitPrice: 1.0940, stopLoss: 1.0900, takeProfit: 1.0850, lotSize: 0.1, strategy: "Trend Following", session: "London", emotionBefore: "Fear", rulesFollowed: true, date: "2024-03-08", time: "10:30" },
+      { pair: "BTC/USD", direction: "BUY", entryPrice: 66000, exitPrice: 65000, stopLoss: 65500, takeProfit: 68000, lotSize: 0.1, strategy: "Scalping", session: "New York", emotionBefore: "Anxiety", rulesFollowed: false, date: "2024-03-09", time: "15:00" },
+      { pair: "BTC/USD", direction: "BUY", entryPrice: 65000, exitPrice: 63000, stopLoss: 64500, takeProfit: 68000, lotSize: 0.3, strategy: "Scalping", session: "New York", emotionBefore: "Fear", rulesFollowed: false, date: "2024-03-09", time: "15:30" }, // Revenge
+      { pair: "XAU/USD", direction: "BUY", entryPrice: 2120, exitPrice: 2140, stopLoss: 2100, takeProfit: 2160, lotSize: 0.1, strategy: "Breakout", session: "London", emotionBefore: "Confidence", rulesFollowed: true, date: "2024-03-10", time: "09:45" },
+      { pair: "EUR/USD", direction: "BUY", entryPrice: 1.0950, exitPrice: 1.0980, stopLoss: 1.0920, takeProfit: 1.1050, lotSize: 0.2, strategy: "Trend Following", session: "London", emotionBefore: "Confidence", rulesFollowed: true, date: "2024-03-11", time: "10:00" },
+      { pair: "BTC/USD", direction: "SELL", entryPrice: 72000, exitPrice: 71000, stopLoss: 73000, takeProfit: 68000, lotSize: 0.05, strategy: "Scalping", session: "Asian", emotionBefore: "Neutral", rulesFollowed: true, date: "2024-03-12", time: "04:00" },
+      { pair: "XAU/USD", direction: "SELL", entryPrice: 2150, exitPrice: 2140, stopLoss: 2160, takeProfit: 2120, lotSize: 0.1, strategy: "Breakout", session: "New York", emotionBefore: "Confidence", rulesFollowed: true, date: "2024-03-13", time: "14:00" },
+      { pair: "EUR/USD", direction: "SELL", entryPrice: 1.1000, exitPrice: 1.0970, stopLoss: 1.1030, takeProfit: 1.0900, lotSize: 0.1, strategy: "Trend Following", session: "London", emotionBefore: "Neutral", rulesFollowed: true, date: "2024-03-14", time: "09:30" },
+      { pair: "BTC/USD", direction: "BUY", entryPrice: 70000, exitPrice: 72500, stopLoss: 69000, takeProfit: 75000, lotSize: 0.02, strategy: "Scalping", session: "London", emotionBefore: "Confidence", rulesFollowed: true, date: "2024-03-15", time: "11:00" },
+      { pair: "XAU/USD", direction: "BUY", entryPrice: 2130, exitPrice: 2150, stopLoss: 2110, takeProfit: 2170, lotSize: 0.1, strategy: "Trend Following", session: "Asian", emotionBefore: "Confidence", rulesFollowed: true, date: "2024-03-16", time: "06:00" },
+      { pair: "EUR/USD", direction: "BUY", entryPrice: 1.0980, exitPrice: 1.1020, stopLoss: 1.0940, takeProfit: 1.1100, lotSize: 0.1, strategy: "Breakout", session: "New York", emotionBefore: "Excitement", rulesFollowed: true, date: "2024-03-17", time: "15:00" },
+      { pair: "BTC/USD", direction: "SELL", entryPrice: 73000, exitPrice: 72000, stopLoss: 74000, takeProfit: 70000, lotSize: 0.05, strategy: "Trend Following", session: "London", emotionBefore: "Neutral", rulesFollowed: true, date: "2024-03-18", time: "10:00" },
+    ];
+
+    try {
+      for (const t of seedTrades) {
+        const pips = calculatePips(t.pair, t.entryPrice, t.exitPrice, t.direction as any);
+        const profitLoss = calculatePL(pips, t.lotSize, t.pair, t.entryPrice, t.exitPrice);
+
+        await addTrade({
+          ...t,
+          direction: t.direction as any,
+          profitLoss,
+          pips,
+          session: t.session as any,
+          notes: "Auto-seeded trade for AI Coach evaluation.",
+          confidence: 4,
+          mistakes: t.rulesFollowed ? [] : ["Revenge Trade", "Poor Risk Management"]
+        });
+      }
+      toast.success("Successfully seeded 20 trades!");
+      navigate("/ai-coach");
+    } catch (e) {
+      toast.error("Seeding failed");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const inputClass = "glass-input w-full px-4 py-3 text-sm rounded-xl font-medium";
+  const labelClass = "text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2 block";
 
   return (
     <div className="max-w-3xl mx-auto py-6">
-      <motion.h1
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="text-2xl font-bold text-foreground mb-6 hidden lg:block"
-      >
-        {id ? "Edit Trade" : "Add Trade"}
-      </motion.h1>
+      <div className="flex justify-between items-center mb-6">
+        <motion.h1
+          initial={{ opacity: 0, x: -10 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="text-2xl font-bold text-foreground"
+        >
+          {id ? "Edit Trade" : "Add Trade"}
+        </motion.h1>
+
+        {!id && (
+          <button
+            type="button"
+            onClick={handleSeed}
+            disabled={uploading}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-primary"
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            Seed 20 Trades
+          </button>
+        )}
+      </div>
 
       {atLimit && (
         <GlassCard className="mb-6 border-warning/30 bg-warning/5">
@@ -160,180 +261,12 @@ export default function AddTrade() {
         </GlassCard>
       )}
 
-      <form onSubmit={handleSubmit}>
-        <GlassCard hover={false} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className={labelClass}>Currency Pair</label>
-              <select value={form.pair} onChange={(e) => update("pair", e.target.value)} className={inputClass}>
-                {PAIRS.map((p) => <option key={p} value={p}>{p}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className={labelClass}>Direction</label>
-              <div className="flex gap-2">
-                {(["BUY", "SELL"] as const).map((d) => (
-                  <button
-                    key={d}
-                    type="button"
-                    onClick={() => update("direction", d)}
-                    className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-semibold transition-all duration-200
-                      ${form.direction === d
-                        ? d === "BUY"
-                          ? "bg-profit/15 text-profit border border-profit/30"
-                          : "bg-loss/15 text-loss border border-loss/30"
-                        : "glass-input border border-transparent"
-                      }`}
-                  >
-                    {d === "BUY" ? <ArrowUpRight className="w-4 h-4" /> : <ArrowDownRight className="w-4 h-4" />}
-                    {d}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-            {[
-              { key: "entryPrice", label: "Entry Price" },
-              { key: "exitPrice", label: "Exit Price" },
-              { key: "stopLoss", label: "Stop Loss" },
-              { key: "takeProfit", label: "Take Profit" },
-            ].map(({ key, label }) => (
-              <div key={key}>
-                <label className={labelClass}>{label}</label>
-                <input
-                  type="number"
-                  step="any"
-                  required
-                  value={(form as any)[key]}
-                  onChange={(e) => update(key, e.target.value)}
-                  className={inputClass}
-                  placeholder="0.0000"
-                  spellCheck={false}
-                />
-              </div>
-            ))}
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label className={labelClass}>Lot Size</label>
-              <input
-                type="number"
-                step="0.01"
-                required
-                value={form.lotSize}
-                onChange={(e) => update("lotSize", e.target.value)}
-                className={inputClass}
-                spellCheck={false}
-              />
-            </div>
-            <div>
-              <label className={labelClass}>Date</label>
-              <input
-                type="date"
-                value={form.date}
-                onChange={(e) => update("date", e.target.value)}
-                className={inputClass}
-                spellCheck={false}
-              />
-            </div>
-            <div>
-              <label className={labelClass}>Time</label>
-              <input
-                type="time"
-                value={form.time}
-                onChange={(e) => update("time", e.target.value)}
-                className={inputClass}
-                spellCheck={false}
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className={labelClass}>Strategy</label>
-              <select value={form.strategy} onChange={(e) => update("strategy", e.target.value)} className={inputClass}>
-                {STRATEGIES.map((s) => <option key={s} value={s}>{s}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className={labelClass}>Rules Followed</label>
-              <div className="flex gap-2">
-                {[true, false].map((val) => (
-                  <button
-                    key={String(val)}
-                    type="button"
-                    onClick={() => update("rulesFollowed", val)}
-                    className={`flex-1 px-4 py-3 rounded-lg text-sm font-semibold transition-all
-                      ${form.rulesFollowed === val
-                        ? val
-                          ? "bg-profit/15 text-profit border border-profit/30"
-                          : "bg-loss/15 text-loss border border-loss/30"
-                        : "glass-input border border-transparent"
-                      }`}
-                  >
-                    {val ? "Yes" : "No"}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label className={labelClass}>Confidence (1-5)</label>
-              <select value={form.confidence} onChange={(e) => update("confidence", e.target.value)} className={inputClass}>
-                {[1, 2, 3, 4, 5].map((n) => <option key={n} value={n}>{n}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className={labelClass}>Emotion Before</label>
-              <select value={form.emotionBefore} onChange={(e) => update("emotionBefore", e.target.value)} className={inputClass}>
-                {["Neutral", "Greed", "Fear", "Confidence", "Excitement", "Anxiety"].map((e) => <option key={e} value={e}>{e}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className={labelClass}>Mistakes</label>
-              <input
-                type="text"
-                value={form.mistakes}
-                onChange={(e) => update("mistakes", e.target.value)}
-                className={inputClass}
-                placeholder="FOMO, Early Exit..."
-                spellCheck={false}
-              />
-            </div>
-          </div>
-
-
-
-          <div>
-            <label className={labelClass}>Notes</label>
-            <textarea
-              value={form.notes}
-              onChange={(e) => update("notes", e.target.value)}
-              rows={4}
-              className={`${inputClass} resize-none`}
-              placeholder="Analysis, feelings, or key takeaways..."
-              spellCheck={false}
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={atLimit || uploading}
-            className="w-full flex items-center justify-center gap-2 px-6 py-4 rounded-xl font-bold text-sm
-              bg-primary text-primary-foreground hover:brightness-110 shadow-lg shadow-primary/20 
-              hover:scale-[1.01] active:scale-[0.99] transition-all duration-200
-              disabled:opacity-40 disabled:cursor-not-allowed disabled:scale-100"
-          >
-            {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-            {id ? "Update Trade Record" : "Save Trade Record"}
-          </button>
-        </GlassCard>
-      </form>
+      <AddTradeForm 
+        onSubmit={onAddTradeSubmit} 
+        loading={uploading} 
+        atLimit={atLimit} 
+        initialData={form as any}
+      />
     </div>
   );
 }

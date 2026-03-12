@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useTrades } from "@/hooks/useTrades";
 import { motion } from "framer-motion";
 import { GlassCard } from "@/components/GlassCard";
@@ -17,12 +18,11 @@ import {
   getEquityCurve,
   getStrategyPerformance,
 } from "@/lib/tradeStore";
-import { Trade } from "@/lib/tradeTypes";
 import {
   LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell,
 } from "recharts";
-import { TrendingUp, BarChart3, DollarSign, Target, Shield, Calendar as CalendarIcon, X } from "lucide-react";
+import { TrendingUp, BarChart3, DollarSign, Target, Shield, Calendar as CalendarIcon, X, Zap, Fingerprint, Activity, ArrowUpRight, ArrowDownRight, Brain, Book, Lock } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -35,19 +35,19 @@ import {
 import { DateRange } from "react-day-picker";
 
 import { usePlan } from "@/hooks/usePlan";
-import { Lock, Brain, MessageSquare, Book } from "lucide-react"; // Additional icons
+import { DRPAlert } from "@/components/DRPAlert";
+import { BrokerSync } from "@/components/BrokerSync";
 
 export default function Dashboard() {
+  const navigate = useNavigate();
   const { trades: allTrades, loading } = useTrades();
   const [date, setDate] = useState<DateRange | undefined>(undefined);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
-  const { plan } = usePlan(); // Use hook
+  const { plan } = usePlan();
 
-  // derived checks
   const isPro = plan === "pro" || plan === "ultimate";
   const isUltimate = plan === "ultimate";
 
-  // Filter trades based on date range
   const trades = date?.from ? allTrades.filter(t => {
     const tradeDate = new Date(t.date);
     const from = date.from!;
@@ -80,10 +80,11 @@ export default function Dashboard() {
   if (loading) {
     return (
       <div className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="h-40 w-full rounded-2xl bg-white/5 animate-pulse" />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <SkeletonCard /><SkeletonCard /><SkeletonCard />
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <SkeletonChart /><SkeletonChart />
         </div>
       </div>
@@ -91,322 +92,465 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div className="hidden lg:block">
-          <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            {trades.length} trade{trades.length !== 1 ? "s" : ""} logged
-            <span className="text-primary ml-2 uppercase font-bold text-xs bg-primary/10 px-2 py-0.5 rounded-full">• {plan} Plan</span>
-          </p>
+    <div className="space-y-10 pb-20 relative">
+      {/* Page Header - Executive Command */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="relative overflow-hidden rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-10 border border-white/10 bg-black/40 backdrop-blur-3xl group shadow-2xl"
+      >
+        <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity text-primary">
+          <Fingerprint className="w-32 h-32 md:w-48 md:h-48" />
         </div>
 
-        <div className="flex items-center gap-2 bg-secondary/50 p-1 rounded-lg border border-border/50 w-full md:w-auto">
-          <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
-            <PopoverTrigger asChild>
-              <Button
-                variant={"outline"}
-                className={cn(
-                  "flex-1 md:w-[240px] justify-start text-left font-normal border-none bg-transparent hover:bg-transparent",
-                  !date && "text-muted-foreground"
-                )}
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {date?.from ? (
-                  date.to ? (
-                    <>
-                      {format(date.from, "LLL dd, y")} -{" "}
-                      {format(date.to, "LLL dd, y")}
-                    </>
-                  ) : (
-                    format(date.from, "LLL dd, y")
-                  )
-                ) : (
-                  <span>Pick a date range</span>
-                )}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="end">
-              <Calendar
-                initialFocus
-                mode="range"
-                defaultMonth={date?.from}
-                selected={date}
-                onSelect={(range) => {
-                  setDate(range);
-                  if (range?.from && range?.to) {
-                    setIsCalendarOpen(false);
-                  }
-                }}
-                numberOfMonths={2}
-              />
-            </PopoverContent>
-          </Popover>
-          {date?.from && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-muted-foreground hover:text-foreground"
-              onClick={() => setDate(undefined)}
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          )}
+        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6 md:gap-10">
+          <div className="space-y-4 md:space-y-6">
+            <div className="flex items-center gap-3">
+              <div className="px-3 py-1 rounded-full bg-primary/10 border border-primary/20 flex items-center gap-2">
+                <Activity className="w-4 h-4 text-primary animate-pulse" />
+                <span className="text-[10px] font-black tracking-[0.3em] uppercase text-primary">Data Connectivity: Active</span>
+              </div>
+                <span className="text-[10px] font-black tracking-[0.3em] uppercase text-muted-foreground">
+                  • {plan === 'ultimate' ? 'Institutional' : plan === 'pro' ? 'Professional' : 'Standard'} ACCESS
+                </span>
+            </div>
+            <div>
+              <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-white uppercase italic">Executive <span className="text-primary not-italic">Dashboard</span></h1>
+              <p className="text-muted-foreground text-sm md:text-lg font-medium mt-2">
+                Statistical analysis of <span className="text-white font-bold">{trades.length}</span> closed trades.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex items-center gap-2 bg-white/5 p-1 rounded-2xl border border-white/10">
+              <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant={"outline"}
+                    className={cn(
+                      "flex-1 md:w-[260px] h-12 justify-start text-left font-bold border-none bg-transparent hover:bg-white/5 rounded-xl",
+                      !date && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-3 h-4 w-4 text-primary" />
+                    {date?.from ? (
+                      date.to ? (
+                        <>
+                          {format(date.from, "LLL dd")} — {format(date.to, "LLL dd, yyyy")}
+                        </>
+                      ) : (
+                        format(date.from, "LLL dd, yyyy")
+                      )
+                    ) : (
+                      <span className="uppercase tracking-widest text-[10px]">Filter Time Window</span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0 rounded-3xl overflow-hidden glass border-white/10" align="end">
+                  <Calendar
+                    initialFocus
+                    mode="range"
+                    defaultMonth={date?.from}
+                    selected={date}
+                    onSelect={(range) => {
+                      setDate(range);
+                      if (range?.from && range?.to) {
+                        setIsCalendarOpen(false);
+                      }
+                    }}
+                    numberOfMonths={2}
+                    className="p-4"
+                  />
+                </PopoverContent>
+              </Popover>
+              {date?.from && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-10 w-10 text-muted-foreground hover:text-white rounded-xl"
+                  onClick={() => setDate(undefined)}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+          </div>
         </div>
       </motion.div>
 
-      {/* Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <GlassCard>
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 rounded-lg bg-primary/10">
-              <BarChart3 className="w-4 h-4 text-primary" />
-            </div>
-            <span className="text-xs text-muted-foreground uppercase tracking-wider">Total Trades</span>
+      {/* DRP Alert */}
+      <DRPAlert trades={allTrades} />
+
+      {/* Core Metrics */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <GlassCard className="p-8 border-t-2 border-t-primary/50 relative overflow-hidden group">
+          <div className="absolute -right-4 -bottom-4 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+            <BarChart3 className="w-32 h-32 text-primary" />
           </div>
-          <AnimatedCounter value={trades.length} className="text-3xl font-bold text-foreground" />
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-2 rounded-xl bg-primary/10">
+              <Activity className="w-5 h-5 text-primary" />
+            </div>
+            <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Activity</span>
+          </div>
+          <div className="flex items-baseline gap-2">
+            <AnimatedCounter value={trades.length} className="text-5xl font-black text-white italic" />
+            <span className="text-xs font-black text-muted-foreground uppercase tracking-widest">Total</span>
+          </div>
         </GlassCard>
 
-        <GlassCard>
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 rounded-lg bg-profit/10">
-              <Target className="w-4 h-4 text-profit" />
-            </div>
-            <span className="text-xs text-muted-foreground uppercase tracking-wider">Win Rate</span>
+        <GlassCard className="p-8 border-t-2 border-t-profit/50 relative overflow-hidden group">
+          <div className="absolute -right-4 -bottom-4 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+            <Target className="w-32 h-32 text-profit" />
           </div>
-          <AnimatedCounter value={winRate} suffix="%" className="text-3xl font-bold text-foreground" />
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-2 rounded-xl bg-profit/10">
+              <Target className="w-5 h-5 text-profit" />
+            </div>
+            <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Performance</span>
+          </div>
+          <div className="flex items-baseline gap-2">
+            <AnimatedCounter value={winRate} suffix="%" className="text-5xl font-black text-white italic" />
+            <span className="text-xs font-black text-profit uppercase tracking-widest">Win Rate</span>
+          </div>
         </GlassCard>
 
-        <GlassCard>
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 rounded-lg" style={{ background: netProfit >= 0 ? "hsl(var(--profit) / 0.1)" : "hsl(var(--loss) / 0.1)" }}>
-              <DollarSign className={`w-4 h-4 ${netProfit >= 0 ? "text-profit" : "text-loss"}`} />
-            </div>
-            <span className="text-xs text-muted-foreground uppercase tracking-wider">Net Profit</span>
+        <GlassCard className="p-8 border-t-2 border-t-white/10 relative overflow-hidden group">
+          <div className="absolute -right-4 -bottom-4 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+            <DollarSign className="w-32 h-32 text-white" />
           </div>
-          <AnimatedCounter
-            value={netProfit}
-            prefix="$"
-            decimals={2}
-            className={`text-3xl font-bold ${netProfit >= 0 ? "profit-text" : "loss-text"}`}
-          />
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-2 rounded-xl bg-white/5">
+              <DollarSign className={`w-5 h-5 ${netProfit >= 0 ? "text-profit" : "text-loss"}`} />
+            </div>
+            <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Net Profit</span>
+          </div>
+          <div className="flex items-baseline gap-2">
+            <AnimatedCounter
+              value={netProfit}
+              prefix="$"
+              decimals={2}
+              className={`text-5xl font-black italic ${netProfit >= 0 ? "text-profit" : "text-loss"}`}
+            />
+          </div>
         </GlassCard>
       </div>
 
-      {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Equity Curve - Gated for Free */}
-        <div className="relative">
-          <GlassCard hover={false} className={!isPro ? "blur-sm pointer-events-none" : ""}>
-            <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-primary" />
-              Equity Curve
-            </h3>
+
+      {/* Charts Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        {/* Equity Curve - Pro Gated */}
+        <div className="lg:col-span-8 relative">
+          <GlassCard hover={false} className={`p-8 rounded-[2rem] ${!isPro ? "blur-xl pointer-events-none opacity-50" : ""}`}>
+            <div className="flex items-center justify-between mb-8">
+              <h3 className="text-sm font-black uppercase tracking-widest flex items-center gap-3">
+                <TrendingUp className="w-5 h-5 text-primary" />
+                Equity Curve
+              </h3>
+              <div className="flex gap-2">
+                <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+                <span className="text-[10px] font-black uppercase tracking-widest">Live Updates</span>
+              </div>
+            </div>
+
             {equityData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={220}>
-                <LineChart data={equityData}>
-                  <XAxis dataKey="date" tick={{ fontSize: 10, fill: "hsl(215, 15%, 55%)" }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fontSize: 10, fill: "hsl(215, 15%, 55%)" }} axisLine={false} tickLine={false} />
-                  <Tooltip
-                    contentStyle={{
-                      background: "hsl(220, 18%, 12%)",
-                      border: "1px solid hsl(220, 15%, 22%)",
-                      borderRadius: "8px",
-                      color: "hsl(210, 20%, 92%)",
-                      fontSize: "12px",
-                    }}
-                  />
-                  <Line type="monotone" dataKey="equity" stroke="hsl(187, 85%, 53%)" strokeWidth={2} dot={false} />
-                </LineChart>
-              </ResponsiveContainer>
+              <div className="h-[300px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={equityData}>
+                    <XAxis dataKey="date" hide />
+                    <YAxis hide domain={['auto', 'auto']} />
+                    <Tooltip
+                      contentStyle={{
+                        background: "rgba(0,0,0,0.8)",
+                        backdropFilter: "blur(12px)",
+                        border: "1px solid rgba(255,255,255,0.1)",
+                        borderRadius: "16px",
+                        padding: "12px",
+                        fontSize: "12px",
+                        fontWeight: "bold",
+                        color: "#fff"
+                      }}
+                      itemStyle={{ color: "#fff" }}
+                      labelStyle={{ color: "#fff" }}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="equity"
+                      stroke="hsl(var(--primary))"
+                      strokeWidth={4}
+                      dot={false}
+                      animationDuration={2000}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
             ) : (
-              <div className="h-[220px] flex items-center justify-center text-muted-foreground text-sm">
-                Add trades to see your equity curve
+              <div className="h-[300px] flex flex-col items-center justify-center text-muted-foreground space-y-4">
+                <div className="p-4 rounded-full bg-white/5 border border-white/10">
+                  <Activity className="w-8 h-8 opacity-20" />
+                </div>
+                <p className="text-xs font-black uppercase tracking-widest opacity-50">Insufficient Trade History</p>
               </div>
             )}
           </GlassCard>
           {!isPro && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center rounded-xl bg-background/50 backdrop-blur-[2px] border border-white/5">
-              <Lock className="w-8 h-8 text-primary mb-2" />
-              <span className="text-foreground font-bold text-sm">Pro Feature</span>
-              <p className="text-xs text-muted-foreground mt-1">Upgrade to view Equity Curve</p>
-            </div>
-          )}
-        </div>
-
-        {/* Win/Loss Pie - Available for all */}
-        <GlassCard hover={false}>
-          <h3 className="text-sm font-semibold text-foreground mb-4">Win / Loss Ratio</h3>
-          {trades.length > 0 ? (
-            <ResponsiveContainer width="100%" height={220}>
-              <PieChart>
-                <Pie
-                  data={pieData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={55}
-                  outerRadius={85}
-                  paddingAngle={4}
-                  dataKey="value"
-                  animationBegin={200}
-                  animationDuration={800}
+            <div className="absolute inset-0 flex flex-col items-center justify-center z-20">
+              <div className="bg-black/40 backdrop-blur-2xl p-10 rounded-[2.5rem] border border-white/10 text-center shadow-2xl max-w-sm">
+                <Lock className="w-10 h-10 text-primary mx-auto mb-4" />
+                <h3 className="text-2xl font-black uppercase tracking-tighter italic italic">Professional Restricted</h3>
+                <p className="text-xs text-muted-foreground mb-8 font-medium leading-relaxed">Advanced equity curve and performance forecasting are reserved for Professional traders.</p>
+                <Button 
+                  onClick={() => navigate("/plans")}
+                  className="w-full bg-primary py-6 rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-[0_0_30px_rgba(var(--primary),0.3)] hover:scale-[1.02] active:scale-[0.98] transition-all"
                 >
-                  {pieData.map((_, i) => (
-                    <Cell key={i} fill={PIE_COLORS[i]} />
-                  ))}
-                </Pie>
-                <Tooltip
-                  contentStyle={{
-                    background: "hsl(220, 18%, 12%)",
-                    border: "1px solid hsl(220, 15%, 22%)",
-                    borderRadius: "8px",
-                    color: "hsl(210, 20%, 92%)",
-                    fontSize: "12px",
-                  }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="h-[220px] flex items-center justify-center text-muted-foreground text-sm">
-              No data yet
+                  Upgrade Access
+                </Button>
+              </div>
             </div>
           )}
-          <div className="flex justify-center gap-6 mt-2">
-            <span className="flex items-center gap-1.5 text-xs"><span className="w-2.5 h-2.5 rounded-full bg-profit" /> Wins ({wins})</span>
-            <span className="flex items-center gap-1.5 text-xs"><span className="w-2.5 h-2.5 rounded-full bg-loss" /> Losses ({losses})</span>
-          </div>
-        </GlassCard>
+        </div>
+
+        {/* Win Rate Pie */}
+        <div className="lg:col-span-4">
+          <GlassCard hover={false} className="p-8 rounded-[2rem] h-full">
+            <h3 className="text-sm font-black uppercase tracking-widest mb-8">P/L Distribution</h3>
+            {trades.length > 0 ? (
+              <div className="relative h-[240px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={pieData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={70}
+                      outerRadius={100}
+                      paddingAngle={8}
+                      dataKey="value"
+                      stroke="none"
+                    >
+                      {pieData.map((_, i) => (
+                        <Cell key={i} fill={PIE_COLORS[i]} />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      contentStyle={{
+                        background: "rgba(0,0,0,0.8)",
+                        backdropFilter: "blur(12px)",
+                        border: "1px solid rgba(255,255,255,0.1)",
+                        borderRadius: "16px",
+                        color: "#fff"
+                      }}
+                      itemStyle={{ color: "#fff" }}
+                      labelStyle={{ color: "#fff" }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                  <span className="text-xs font-black uppercase tracking-widest text-muted-foreground">Win Rate</span>
+                  <span className="text-3xl font-black text-white italic">{winRate.toFixed(0)}%</span>
+                </div>
+              </div>
+            ) : (
+              <div className="h-[240px] flex items-center justify-center text-muted-foreground">
+                <p className="text-[10px] font-black uppercase tracking-widest opacity-20 italic">No Data Available</p>
+              </div>
+            )}
+            <div className="flex justify-center gap-10 mt-8">
+              <div className="flex flex-col items-center">
+                <span className="h-1.5 w-8 rounded-full bg-profit mb-2" />
+                <span className="text-[10px] font-black uppercase text-muted-foreground tracking-tighter">Profit ({wins})</span>
+              </div>
+              <div className="flex flex-col items-center">
+                <span className="h-1.5 w-8 rounded-full bg-loss mb-2" />
+                <span className="text-[10px] font-black uppercase text-muted-foreground tracking-tighter">Loss ({losses})</span>
+              </div>
+            </div>
+          </GlassCard>
+        </div>
       </div>
 
-      {/* Edge & Discipline Scores - Gated for Free */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Edge Score */}
+      {/* Edge & Discipline Scores - Pro Gated */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div className="relative">
-          <GlassCard hover={false} className={!isPro ? "blur-sm pointer-events-none opacity-50" : ""}>
+          <GlassCard hover={false} className={`p-10 rounded-[2.5rem] ${!isPro ? "blur-xl pointer-events-none opacity-50" : ""}`}>
             <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                  <TrendingUp className="w-4 h-4 text-primary" />
-                  Edge Score
-                </h3>
-                <p className="text-xs text-muted-foreground mt-1">Based on win rate, avg win/loss & expectancy</p>
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-3 rounded-2xl bg-primary/10">
+                    <Zap className="w-6 h-6 text-primary" />
+                  </div>
+                  <h3 className="text-xl font-black uppercase tracking-widest italic">Edge <span className="text-primary not-italic">Score</span></h3>
+                </div>
+                <p className="text-sm text-muted-foreground font-medium max-w-[240px]">Expectancy and statistical advantage modeling.</p>
               </div>
-              <CircularProgress value={edgeScore} label="Score" />
+              <CircularProgress value={edgeScore} label="Edge" />
             </div>
           </GlassCard>
           {!isPro && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center rounded-xl bg-background/50 backdrop-blur-[2px]">
-              <Lock className="w-6 h-6 text-primary mb-1" />
-              <span className="text-primary font-semibold text-sm">Pro Feature</span>
+            <div className="absolute top-4 right-4 px-3 py-1 bg-primary/20 backdrop-blur-md rounded-full border border-primary/30 flex items-center gap-2">
+              <Lock className="w-3 h-3 text-primary" />
+              <span className="text-[8px] font-black uppercase tracking-widest text-primary">Professional Feature</span>
             </div>
           )}
         </div>
 
-        {/* Discipline Score */}
         <div className="relative">
-          <GlassCard hover={false} className={!isPro ? "blur-sm pointer-events-none opacity-50" : ""}>
+          <GlassCard hover={false} className={`p-10 rounded-[2.5rem] ${!isPro ? "blur-xl pointer-events-none opacity-50" : ""}`}>
             <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                  <Shield className="w-4 h-4 text-primary" />
-                  Discipline Score
-                </h3>
-                <p className="text-xs text-muted-foreground mt-1">Rules adherence & overtrading detection</p>
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-3 rounded-2xl bg-cyan-400/10">
+                    <Shield className="w-6 h-6 text-cyan-400" />
+                  </div>
+                  <h3 className="text-xl font-black uppercase tracking-widest italic">Rule <span className="text-cyan-400 not-italic">Adherence</span></h3>
+                </div>
+                <p className="text-sm text-muted-foreground font-medium max-w-[240px]">Behavioral discipline and rule adherence index.</p>
               </div>
-              <CircularProgress value={disciplineScore} label="Score" />
+              <CircularProgress value={disciplineScore} label="Rule" />
             </div>
           </GlassCard>
           {!isPro && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center rounded-xl bg-background/50 backdrop-blur-[2px]">
-              <Lock className="w-6 h-6 text-primary mb-1" />
-              <span className="text-primary font-semibold text-sm">Pro Feature</span>
+            <div className="absolute top-4 right-4 px-3 py-1 bg-cyan-400/20 backdrop-blur-md rounded-full border border-cyan-400/30 flex items-center gap-2">
+              <Lock className="w-3 h-3 text-cyan-400" />
+              <span className="text-[8px] font-black uppercase tracking-widest text-cyan-400">Professional Feature</span>
             </div>
           )}
         </div>
       </div>
 
-      {/* Ultimate Features: AI & Psychology - Gated for non-Ultimate */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="relative">
-          <GlassCard className={!isUltimate ? "blur-sm pointer-events-none opacity-60" : ""}>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 rounded-lg bg-pink-500/10">
-                <Brain className="w-5 h-5 text-pink-500" />
+      {/* Ultimate Features: Psychology & Playbook */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="relative group">
+          <div className="absolute inset-0 bg-gradient-to-br from-pink-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-[2.5rem]" />
+          <GlassCard className={`p-10 rounded-[2.5rem] relative z-10 ${!isUltimate ? "blur-xl pointer-events-none opacity-50" : ""}`}>
+            <div className="flex items-center gap-6 mb-8">
+              <div className="p-4 rounded-3xl bg-pink-500/10 border border-pink-500/20">
+                <Brain className="w-8 h-8 text-pink-500" />
               </div>
               <div>
-                <h3 className="font-semibold">Psychology Insights</h3>
-                <p className="text-xs text-muted-foreground">AI analysis of your emotional patterns</p>
+                <h3 className="text-2xl font-black uppercase tracking-tighter italic">Trading <span className="text-pink-500 not-italic">Psychology</span></h3>
+                <p className="text-sm text-muted-foreground font-medium">Emotional performance analysis.</p>
               </div>
             </div>
-            <div className="h-24 flex items-center justify-center text-sm text-muted-foreground bg-secondary/20 rounded-lg border border-white/5">
-              No sufficient data for psychology profile yet.
+            <div className="h-32 flex items-center justify-center p-6 bg-black/20 rounded-3xl border border-white/5 border-dashed">
+              <p className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground italic">Analyzing Mental State...</p>
             </div>
           </GlassCard>
           {!isUltimate && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center rounded-xl bg-background/50 backdrop-blur-[2px] border border-white/5">
-              <Brain className="w-8 h-8 text-pink-500 mb-2" />
-              <span className="text-foreground font-bold text-sm">Ultimate Feature</span>
-              <p className="text-xs text-muted-foreground mt-1">Upgrade to unlock AI Psychology</p>
+            <div className="absolute inset-0 flex flex-col items-center justify-center z-20">
+              <div className="bg-black/60 backdrop-blur-xl p-8 rounded-[2rem] border border-white/5 text-center shadow-2xl scale-90">
+                <Brain className="w-8 h-8 text-pink-500 mx-auto mb-4" />
+                <h4 className="text-lg font-black uppercase italic tracking-tighter">Institutional Access Only</h4>
+                <p className="text-[10px] text-muted-foreground mt-2 mb-6 font-bold uppercase tracking-widest">Upgrade to initialize psychology module</p>
+                <Button 
+                  onClick={() => navigate("/plans")}
+                  className="w-full bg-pink-500 py-4 h-10 rounded-xl font-black uppercase text-[8px] tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all shadow-[0_0_20px_rgba(236,72,153,0.3)]"
+                >
+                  Upgrade Plan
+                </Button>
+              </div>
             </div>
           )}
         </div>
 
-        <div className="relative">
-          <GlassCard className={!isUltimate ? "blur-sm pointer-events-none opacity-60" : ""}>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 rounded-lg bg-indigo-500/10">
-                <Book className="w-5 h-5 text-indigo-500" />
+        <div className="relative group">
+          <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-[2.5rem]" />
+          <GlassCard className={`p-10 rounded-[2.5rem] relative z-10 ${!isUltimate ? "blur-xl pointer-events-none opacity-50" : ""}`}>
+            <div className="flex items-center gap-6 mb-8">
+              <div className="p-4 rounded-3xl bg-indigo-500/10 border border-indigo-500/20">
+                <Book className="w-8 h-8 text-indigo-500" />
               </div>
               <div>
-                <h3 className="font-semibold">Playbook Builder</h3>
-                <p className="text-xs text-muted-foreground">Document your best strategies</p>
+                <h3 className="text-2xl font-black uppercase tracking-tighter italic">Strategy <span className="text-indigo-500 not-italic">Hub</span></h3>
+                <p className="text-sm text-muted-foreground font-medium">Strategic playbook management.</p>
               </div>
             </div>
-            <div className="h-24 flex items-center justify-center text-sm text-foreground/80 bg-secondary/20 rounded-lg border border-white/5">
-              <Button size="sm" variant="outline">Create Strategy</Button>
+            <div className="h-32 flex items-center justify-center p-6 bg-black/20 rounded-3xl border border-white/5 border-dashed">
+              <Button variant="outline" className="h-12 px-8 rounded-xl bg-white/5 border-white/10 font-black uppercase text-[10px] tracking-[0.2em] hover:bg-indigo-500/20 transition-all">Initialize Playbook</Button>
             </div>
           </GlassCard>
           {!isUltimate && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center rounded-xl bg-background/50 backdrop-blur-[2px] border border-white/5">
-              <Book className="w-8 h-8 text-indigo-500 mb-2" />
-              <span className="text-foreground font-bold text-sm">Ultimate Feature</span>
-              <p className="text-xs text-muted-foreground mt-1">Unlock Playbook Builder</p>
+            <div className="absolute inset-0 flex flex-col items-center justify-center z-20">
+              <div className="bg-black/60 backdrop-blur-xl p-8 rounded-[2rem] border border-white/5 text-center shadow-2xl scale-90">
+                <Book className="w-8 h-8 text-indigo-500 mx-auto mb-4" />
+                <h4 className="text-lg font-black uppercase italic tracking-tighter">Institutional Access Only</h4>
+                <p className="text-[10px] text-muted-foreground mt-2 mb-6 font-bold uppercase tracking-widest">Unlock Advanced Strategy Playbook</p>
+                <Button 
+                  onClick={() => navigate("/plans")}
+                  className="w-full bg-indigo-500 py-4 h-10 rounded-xl font-black uppercase text-[8px] tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all shadow-[0_0_20px_rgba(99,102,241,0.3)]"
+                >
+                  Upgrade Plan
+                </Button>
+              </div>
             </div>
           )}
         </div>
       </div>
 
-      {/* Insights */}
-      <InsightsPanel insights={insights} locked={!isPro} />
+      {/* Insights Section */}
+      <div className="space-y-6">
+        <div className="flex items-center justify-between px-2">
+          <h3 className="text-xl font-black uppercase tracking-widest flex items-center gap-3 text-white">
+            <Activity className="w-6 h-6 text-primary" />
+            Performance <span className="text-primary not-italic">Insights</span>
+          </h3>
+          <span className="h-px flex-1 bg-gradient-to-r from-primary/30 to-transparent ml-6" />
+        </div>
+        <InsightsPanel insights={insights} locked={!isPro} />
+      </div>
 
       {/* Strategy Performance */}
-      <div className="relative">
-        <GlassCard hover={false} className={!isPro ? "blur-sm pointer-events-none opacity-50" : ""}>
-          <h3 className="text-sm font-semibold text-foreground mb-4">Strategy Performance</h3>
-          {stratPerf.length > 0 ? (
-            <div className="space-y-3">
-              {stratPerf.map((s) => (
-                <div key={s.strategy} className="flex items-center justify-between py-2 border-b border-border/30 last:border-0">
-                  <div>
-                    <span className="text-sm font-medium text-foreground">{s.strategy}</span>
-                    <span className="text-xs text-muted-foreground ml-2">({s.trades} trades • {s.winRate}% WR)</span>
+      <div className="space-y-6">
+        <div className="flex items-center justify-between px-2">
+          <h3 className="text-xl font-black uppercase tracking-widest flex items-center gap-3 italic text-white">
+            <Zap className="w-6 h-6 text-primary" />
+            Strategy <span className="text-primary not-italic">Breakdown</span>
+          </h3>
+          <span className="h-px flex-1 bg-gradient-to-r from-primary/30 to-transparent ml-6" />
+        </div>
+
+        <div className="relative">
+          <GlassCard hover={false} className={`p-10 rounded-[2.5rem] ${!isPro ? "blur-xl pointer-events-none opacity-50" : ""}`}>
+            {stratPerf.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {stratPerf.map((s) => (
+                  <div key={s.strategy} className="p-6 rounded-3xl bg-white/5 border border-white/10 hover:border-primary/50 transition-all group">
+                    <div className="flex justify-between items-start mb-4">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{s.strategy}</span>
+                      <div className={s.profit >= 0 ? "text-profit" : "text-loss"}>
+                        {s.profit >= 0 ? <ArrowUpRight className="w-4 h-4" /> : <ArrowDownRight className="w-4 h-4" />}
+                      </div>
+                    </div>
+                    <div className="flex items-baseline justify-between">
+                      <span className={`text-2xl font-black italic ${s.profit >= 0 ? "text-profit" : "text-loss"}`}>
+                        ${s.profit > 0 ? "+" : ""}{s.profit.toLocaleString()}
+                      </span>
+                      <span className="text-[10px] font-black uppercase tracking-widest text-white/40">{s.winRate}% WR</span>
+                    </div>
+                    <div className="mt-4 h-1 w-full bg-white/5 rounded-full overflow-hidden">
+                      <div className={`h-full ${s.profit >= 0 ? "bg-profit" : "bg-loss"}`} style={{ width: `${s.winRate}%` }} />
+                    </div>
                   </div>
-                  <span className={`font-mono font-semibold text-sm ${s.profit >= 0 ? "profit-text" : "loss-text"}`}>
-                    ${s.profit > 0 ? "+" : ""}{s.profit}
-                  </span>
-                </div>
-              ))}
+                ))}
+              </div>
+            ) : <div className="text-sm font-black uppercase tracking-[0.2em] text-muted-foreground py-10 text-center opacity-20 italic">No Strategy Data Available</div>}
+          </GlassCard>
+          {!isPro && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center z-20">
+              <Lock className="w-8 h-8 text-primary mb-4" />
+              <p className="text-xs font-black uppercase tracking-widest text-primary">Professional Account Verification Required</p>
             </div>
-          ) : <div className="text-sm text-muted-foreground py-4">No strategy data</div>}
-        </GlassCard>
-        {!isPro && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center rounded-xl bg-background/50 backdrop-blur-[2px]">
-            <Lock className="w-6 h-6 text-primary mb-1" />
-            <span className="text-primary font-semibold text-sm">Pro Feature</span>
-          </div>
-        )}
+          )}
+        </div>
       </div>
+
+      {/* Broker Sync - Pro/Ultimate */}
+      {isPro && (
+        <div className="grid grid-cols-1 gap-8 mt-10">
+          <BrokerSync />
+        </div>
+      )}
     </div>
   );
 }

@@ -42,7 +42,7 @@ export function InsightsPanel({ insights, locked }: InsightsPanelProps) {
           <p className="text-muted-foreground text-sm">Upgrade to unlock automated insights...</p>
         </div>
         <div className="absolute inset-0 flex items-center justify-center bg-background/40 backdrop-blur-sm">
-          <span className="text-primary font-semibold text-sm">🔒 Pro Feature</span>
+          <span className="text-primary font-semibold text-sm">🔒 Professional Feature</span>
         </div>
       </div>
     );

@@ -11,9 +11,17 @@ export function detectSession(time: string): Trade["session"] {
 }
 
 export function getSymbolProperties(pair: string) {
+  // Common Forex pairs (Quote is USD)
+  const usdQuotePairs = ["EUR/USD", "GBP/USD", "AUD/USD", "NZD/USD", "XAU/USD", "XAG/USD"];
+  // Common Forex pairs (Base is USD)
+  const usdBasePairs = ["USD/JPY", "USD/CHF", "USD/CAD"];
+  
   if (pair.includes("JPY")) return { pipMultiplier: 100, contractSize: 100000, type: "forex" };
-  if (pair === "XAU/USD") return { pipMultiplier: 100, contractSize: 100, type: "metal" }; // 1 lot = 100oz. pip=0.01
-  if (pair === "XAG/USD") return { pipMultiplier: 100, contractSize: 5000, type: "metal" }; // 1 lot = 5000oz. pip=0.01
+  if (pair === "XAU/USD") return { pipMultiplier: 100, contractSize: 100, type: "metal" };
+  if (pair === "XAG/USD") return { pipMultiplier: 100, contractSize: 5000, type: "metal" };
+  if (["US30", "NAS100", "SPX500"].includes(pair)) return { pipMultiplier: 1, contractSize: 1, type: "index" };
+  if (pair.includes("BTC") || pair.includes("ETH")) return { pipMultiplier: 1, contractSize: 1, type: "crypto" };
+  
   return { pipMultiplier: 10000, contractSize: 100000, type: "forex" };
 }
 
@@ -28,7 +36,7 @@ export function calculatePL(pips: number, lotSize: number, pair: string, entryPr
   // Formula: (Exit - Entry) * Direction * ContractSize * Lots
   // Then convert Quote Currency to Account Currency (USD)
 
-  const { contractSize } = getSymbolProperties(pair);
+  // const { contractSize } = getSymbolProperties(pair);
   // Re-derive raw price diff from pips to avoid rounding errors or use entry/exit directly?
   // Using pips is safer if the user manually adjusted pips, but entry/exit is authoritative.
   // Let's use logic derived from pips to honor the "pips" input if it were editable, but here we calculated pips from prices.
@@ -43,68 +51,41 @@ export function calculatePL(pips: number, lotSize: number, pair: string, entryPr
   // Example EURUSD: 10 pips / 10000 * 100000 * 1 = 0.0010 * 100000 = 100. Correct.
   // Example USDJPY: 10 pips / 100 * 100000 * 1 = 0.10 * 100000 = 10000 JPY.
 
-  const { pipMultiplier } = getSymbolProperties(pair);
+  const { pipMultiplier, contractSize } = getSymbolProperties(pair);
   let rawProfit = (pips / pipMultiplier) * contractSize * lotSize;
 
-  // Conversion
-  const quote = pair.split("/")[1];
+  const [base, quote] = pair.split("/");
 
-  if (quote === "USD") {
-    // Already in USD
+  // 1. If Quote is USD (Account Currency), no conversion needed
+  if (quote === "USD" || !quote) {
     return Math.round(rawProfit * 100) / 100;
   }
 
-  // If Quote is JPY, e.g. USD/JPY, rawProfit is in JPY. Convert to USD.
-  // Account = USD.
-  // rate = USD/JPY = current price (approx exit price).
-  // USD = JPY / Rate.
-  if (quote === "JPY") {
-    if (exitPrice > 0) return Math.round((rawProfit / exitPrice) * 100) / 100;
-  }
-
-  // If Quote is CHF, e.g. USD/CHF. rawProfit in CHF.
-  // Account USD. Pair USD/CHF.
-  // USD = CHF / Rate.
-  if (quote === "CHF") {
-    if (exitPrice > 0) return Math.round((rawProfit / exitPrice) * 100) / 100;
-  }
-
-  // If Quote is CAD, e.g. USD/CAD. rawProfit in CAD.
-  // USD = CAD / Rate.
-  if (quote === "CAD") {
-    if (exitPrice > 0) return Math.round((rawProfit / exitPrice) * 100) / 100;
-  }
-
-  // If Quote is GBP (EUR/GBP). rawProfit in GBP.
-  // Need GBP/USD rate. We don't have it easily.
-  // For now, assume most users trade majors.
-  // If entry/exit pair starts with the Quote currency of the specific pair?
-  // e.g. EUR/GBP -> Profit GBP. Need GBP/USD.
-  // GBP/USD is another pair.
-  // For now, let's just handle the exact Inverse pairs (USD/XXX) and Direct pairs (XXX/USD).
-  // Cross pairs like EUR/JPY (Profit JPY -> JPY/USD?) will use the same logic as USD/JPY if assuming exitPrice is relevant rate?
-  // NO. For EUR/JPY, price is 160. Profit is in JPY. To get USD, we need USD/JPY rate. Not EUR/JPY rate.
-  // LIMITATION: We don't have live rates for other pairs.
-  // Approximation for Cross Pairs:
-  // If quote is JPY, divide by 150 (approx default) or use a fixed rate if we can't find it?
-  // Or leave it as is?
-  // Let's at least fix USD/JPY, USD/CHF, USD/CAD which are common.
-  // And XAU/USD.
-
-  // For EUR/JPY: Profit JPY. Convert to USD.
-  // We need USD/JPY rate. We don't have it.
-  // Maybe we can approximate USD/JPY ~ 150? Or just return raw and warn?
-  // Best effort:
-  if (quote === "JPY") return Math.round((rawProfit / 150) * 100) / 100; // Fallback constant if not USD/JPY
-
-  // Wait, better logic:
-  // If pair starts with USD (USD/JPY), then Exit Price IS the rate.
-  if (pair.startsWith("USD/") && exitPrice > 0) {
+  // 2. If Base is USD (e.g., USD/JPY), we need to divide by the exit price
+  if (base === "USD" && exitPrice > 0) {
     return Math.round((rawProfit / exitPrice) * 100) / 100;
   }
 
-  // If we are here, it's a cross pair or logic missing.
-  // Return rawProfit for now or handle specific cases.
+  // 3. For Cross Pairs (e.g., EUR/JPY, GBP/JPY)
+  // We ideally need USD/JPY rate. For now, we use a slightly more intelligent approximation 
+  // or the exitPrice if it's the relevant rate (it usually isn't for cross pairs directly to USD).
+  if (quote === "JPY") {
+    // Fallback rate for JPY cross pairs if we don't have the specific USD/JPY rate
+    const usdJpyRate = 150; 
+    return Math.round((rawProfit / usdJpyRate) * 100) / 100;
+  }
+
+  if (quote === "GBP") {
+    const gbpUsdRate = 1.25;
+    return Math.round((rawProfit * gbpUsdRate) * 100) / 100;
+  }
+
+  if (quote === "EUR") {
+    const eurUsdRate = 1.08;
+    return Math.round((rawProfit * eurUsdRate) * 100) / 100;
+  }
+
+  // Default catch-all
   return Math.round(rawProfit * 100) / 100;
 }
 

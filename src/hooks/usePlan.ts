@@ -8,10 +8,14 @@ export function usePlan() {
     const { user } = useAuth();
     const [plan, setPlanState] = useState<Plan>("free");
     const [loading, setLoading] = useState(true);
+    const [joinedDate, setJoinedDate] = useState<string | null>(null);
+    const [isTrial, setIsTrial] = useState(false);
 
     useEffect(() => {
         if (!user) {
             setPlanState("free");
+            setJoinedDate(null);
+            setIsTrial(false);
             setLoading(false);
             return;
         }
@@ -20,11 +24,31 @@ export function usePlan() {
         const unsubscribe = onSnapshot(userRef, (docSnap) => {
             if (docSnap.exists()) {
                 const userData = docSnap.data();
-                console.log("Plan loaded from DB:", userData.plan);
-                setPlanState((userData.plan as Plan) || "free");
+                const actualPlan = (userData.plan as Plan) || "free";
+                const jDate = userData.joinedDate;
+                setJoinedDate(jDate);
+
+                // Trial Logic: 72 hours of Professional Access for new users
+                if (jDate) {
+                    const joinedAt = new Date(jDate).getTime();
+                    const now = new Date().getTime();
+                    const seventyTwoHours = 72 * 60 * 60 * 1000;
+                    const isWithinTrial = (now - joinedAt) < seventyTwoHours;
+
+                    if (isWithinTrial && (actualPlan === "free")) {
+                        setPlanState("pro");
+                        setIsTrial(true);
+                    } else {
+                        setPlanState(actualPlan);
+                        setIsTrial(false);
+                    }
+                } else {
+                    setPlanState(actualPlan);
+                    setIsTrial(false);
+                }
             } else {
-                console.log("No user doc found for plan, defaulting to free");
                 setPlanState("free");
+                setIsTrial(false);
             }
             setLoading(false);
         });
@@ -43,5 +67,5 @@ export function usePlan() {
         }
     };
 
-    return { plan, upgradePlan, loading };
+    return { plan, upgradePlan, loading, joinedDate, isTrial };
 }

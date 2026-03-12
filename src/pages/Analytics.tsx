@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { useTrades } from "@/hooks/useTrades";
 import { usePlan } from "@/hooks/usePlan";
 import { motion } from "framer-motion";
@@ -13,6 +14,7 @@ import {
     getNetProfit,
     getEquityCurve,
 } from "@/lib/tradeStore";
+import { calculateConsistencyScore } from "@/lib/mlEngine";
 import {
     BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, AreaChart, Area, PieChart, Pie
 } from "recharts";
@@ -26,12 +28,16 @@ import { format, isWithinInterval, parseISO } from "date-fns";
 import { DateRange } from "react-day-picker";
 import { cn } from "@/lib/utils";
 import { SkeletonCard, SkeletonChart } from "@/components/SkeletonLoader";
+import { CommunityBenchmark } from "@/components/CommunityBenchmark";
+import { MetricCard } from "@/components/Analytics/MetricCard";
+import { useStore } from "@/hooks/useStore";
 
 export default function Analytics() {
+    const navigate = useNavigate();
     const { trades: allTrades, loading } = useTrades();
     const { plan } = usePlan();
     const isPro = plan === "pro" || plan === "ultimate";
-    const [date, setDate] = useState<DateRange | undefined>(undefined);
+    const { dateRange: date, setDateRange: setDate } = useStore();
     const [expectancyGroup, setExpectancyGroup] = useState<"session" | "pair" | "strategy">("session");
 
     // Filter Logic
@@ -81,6 +87,19 @@ export default function Analytics() {
     const bestWindow = getBestTradingWindow(trades);
     const losingPatterns = detectLosingPatterns(trades);
 
+    const discipline = trades.length > 0
+        ? (trades.filter(t => t.rulesFollowed).length / trades.length) * 100
+        : 0;
+
+    const consistency = trades.length >= 5 ? calculateConsistencyScore(trades) : 0;
+
+    const userStats = {
+        winRate,
+        consistency,
+        avgRR,
+        discipline
+    };
+
     return (
         <div className="space-y-6 pb-10">
             {/* Header & Date Filter */}
@@ -88,12 +107,13 @@ export default function Analytics() {
                 <motion.div
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
+                    className="flex flex-col gap-1"
                 >
-                    <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-cyan-400">
-                        Analytics
+                    <h1 className="text-2xl md:text-3xl font-black italic tracking-tighter uppercase bg-clip-text text-transparent bg-gradient-to-r from-primary to-cyan-400">
+                        Performance <span className="text-primary not-italic">Analytics</span>
                     </h1>
-                    <p className="text-muted-foreground mt-1">
-                        Deep dive into your trading performance.
+                    <p className="text-muted-foreground text-sm font-medium">
+                        Deep statistical analysis of trading patterns.
                     </p>
                 </motion.div>
 
@@ -148,53 +168,30 @@ export default function Analytics() {
 
             {/* KPI Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <GlassCard className="p-4 flex items-center justify-between" glow={netProfit > 0}>
-                    <div>
-                        <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Net Profit</p>
-                        <span className={`text-2xl font-bold font-mono ${netProfit >= 0 ? "text-profit" : "text-loss"}`}>
-                            {netProfit >= 0 ? "+" : ""}${netProfit.toLocaleString()}
-                        </span>
-                    </div>
-                    <div className={`p-3 rounded-full ${netProfit >= 0 ? "bg-profit/10 text-profit" : "bg-loss/10 text-loss"}`}>
-                        <DollarSign className="w-5 h-5" />
-                    </div>
-                </GlassCard>
-
-                <GlassCard className="p-4 flex items-center justify-between">
-                    <div>
-                        <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Win Rate</p>
-                        <span className={`text-2xl font-bold font-mono ${winRate >= 50 ? "text-profit" : "text-warning"}`}>
-                            {winRate}%
-                        </span>
-                    </div>
-                    <div className="p-3 rounded-full bg-primary/10 text-primary">
-                        <Target className="w-5 h-5" />
-                    </div>
-                </GlassCard>
-
-                <GlassCard className="p-4 flex items-center justify-between">
-                    <div>
-                        <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Profit Factor</p>
-                        <span className={`text-2xl font-bold font-mono ${profitFactor >= 1.5 ? "text-profit" : "text-muted-foreground"}`}>
-                            {profitFactor.toFixed(2)}
-                        </span>
-                    </div>
-                    <div className="p-3 rounded-full bg-indigo-500/10 text-indigo-500">
-                        <Scale className="w-5 h-5" />
-                    </div>
-                </GlassCard>
-
-                <GlassCard className="p-4 flex items-center justify-between">
-                    <div>
-                        <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Avg R:R</p>
-                        <span className="text-2xl font-bold font-mono text-foreground">
-                            1:{avgRR.toFixed(1)}
-                        </span>
-                    </div>
-                    <div className="p-3 rounded-full bg-rose-500/10 text-rose-500">
-                        <Activity className="w-5 h-5" />
-                    </div>
-                </GlassCard>
+                <MetricCard
+                    label="Net Profit"
+                    value={`${netProfit >= 0 ? "+" : ""}$${netProfit.toLocaleString()}`}
+                    icon={DollarSign}
+                    glow={netProfit > 0}
+                    trend={netProfit > 0 ? "up" : netProfit < 0 ? "down" : "neutral"}
+                />
+                <MetricCard
+                    label="Win Rate"
+                    value={`${winRate}%`}
+                    icon={Target}
+                    trend={winRate >= 50 ? "up" : "down"}
+                />
+                <MetricCard
+                    label="Profit Factor"
+                    value={profitFactor.toFixed(2)}
+                    icon={Scale}
+                    trend={profitFactor >= 1.5 ? "up" : "neutral"}
+                />
+                <MetricCard
+                    label="Avg R:R"
+                    value={`1:${avgRR.toFixed(1)}`}
+                    icon={Activity}
+                />
             </div>
 
             {/* Main Charts - Row 1 */}
@@ -225,6 +222,7 @@ export default function Analytics() {
                                             borderRadius: "8px",
                                             fontSize: "12px"
                                         }}
+                                        itemStyle={{ color: "hsl(var(--foreground))" }}
                                     />
                                     <Area
                                         type="monotone"
@@ -246,8 +244,15 @@ export default function Analytics() {
                         <div className="absolute inset-0 flex items-center justify-center z-10">
                             <div className="bg-background/80 backdrop-blur-md px-6 py-4 rounded-xl border border-white/10 flex flex-col items-center">
                                 <Lock className="w-8 h-8 text-primary mb-2" />
-                                <span className="font-bold text-sm">Pro Feature</span>
-                                <p className="text-xs text-muted-foreground">Upgrade to view Equity Curve</p>
+                                <span className="font-bold text-sm">Professional Feature</span>
+                                <p className="text-xs text-muted-foreground mb-4">Upgrade to Professional to view Equity Curve</p>
+                                <Button
+                                    size="sm"
+                                    className="h-8 px-4 bg-primary text-black font-black text-[10px] uppercase tracking-widest rounded-lg"
+                                    onClick={() => navigate("/plans")}
+                                >
+                                    Upgrade Now
+                                </Button>
                             </div>
                         </div>
                     )}
@@ -277,8 +282,12 @@ export default function Analytics() {
                                         contentStyle={{
                                             backgroundColor: "hsl(var(--card))",
                                             borderColor: "hsl(var(--border))",
-                                            borderRadius: "8px"
+                                            borderRadius: "8px",
+                                            fontSize: "12px",
+                                            color: "#fff"
                                         }}
+                                        itemStyle={{ color: "#fff" }}
+                                        labelStyle={{ color: "#fff" }}
                                     />
                                 </PieChart>
                             </ResponsiveContainer>
@@ -349,8 +358,11 @@ export default function Analytics() {
                                             contentStyle={{
                                                 backgroundColor: "hsl(var(--card))",
                                                 borderColor: "hsl(var(--border))",
-                                                borderRadius: "8px"
+                                                borderRadius: "8px",
+                                                color: "#fff"
                                             }}
+                                            itemStyle={{ color: "#fff" }}
+                                            labelStyle={{ color: "#fff" }}
                                         />
                                         <Bar dataKey="expectancy" radius={[0, 4, 4, 0]}>
                                             {expectancyData.map((entry, index) => (
@@ -370,8 +382,15 @@ export default function Analytics() {
                         <div className="absolute inset-0 flex items-center justify-center z-10">
                             <div className="bg-background/80 backdrop-blur-md px-6 py-4 rounded-xl border border-white/10 flex flex-col items-center">
                                 <Lock className="w-8 h-8 text-primary mb-2" />
-                                <span className="font-bold text-sm">Pro Feature</span>
-                                <p className="text-xs text-muted-foreground">Unlock Advanced Analytics</p>
+                                <span className="font-bold text-sm">Professional Feature</span>
+                                <p className="text-xs text-muted-foreground mb-4">Unlock Advanced Analytics</p>
+                                <Button
+                                    size="sm"
+                                    className="h-8 px-4 bg-primary text-black font-black text-[10px] uppercase tracking-widest rounded-lg"
+                                    onClick={() => navigate("/plans")}
+                                >
+                                    Upgrade Now
+                                </Button>
                             </div>
                         </div>
                     )}
@@ -432,6 +451,13 @@ export default function Analytics() {
                     </GlassCard>
                 </div>
             </div>
+
+            {/* Community Benchmarking Section */}
+            {isPro && (
+                <div className="pt-4">
+                    <CommunityBenchmark userStats={userStats} />
+                </div>
+            )}
         </div>
     );
 }

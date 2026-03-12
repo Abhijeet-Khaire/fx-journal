@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { useTrades } from "@/hooks/useTrades";
 import { usePlan } from "@/hooks/usePlan";
 import { motion } from "framer-motion";
@@ -7,15 +8,17 @@ import {
     getRiskStats
 } from "@/lib/tradeStore";
 import {
-    AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line
+    AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer
 } from "recharts";
-import { Shield, TrendingDown, Activity, AlertTriangle, Lock } from "lucide-react";
-import { useState, useEffect } from "react";
+import { Shield, TrendingDown, Activity, AlertTriangle, Lock, Zap, Fingerprint, ShieldAlert, Crosshair } from "lucide-react";
+import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { RiskMetrics } from "@/components/Risk/RiskMetrics";
 
 export default function Risk() {
+    const navigate = useNavigate();
     const { trades, loading } = useTrades();
     const { plan } = usePlan();
     const isUltimate = plan === "ultimate";
@@ -33,75 +36,174 @@ export default function Risk() {
         toast.success("Daily Loss Limit Updated");
     };
 
-    if (loading) return <div>Loading...</div>;
+    const stats = useMemo(() => {
+        if (!trades.length) return null;
+        
+        const totalTrades = trades.length;
+        const wins = trades.filter(t => t.profitLoss > 0).length;
+        const winRate = (wins / totalTrades) * 100;
+        
+        const winners = trades.filter(t => t.profitLoss > 0);
+        const losers = trades.filter(t => t.profitLoss < 0);
+        
+        const avgWin = winners.reduce((s, t) => s + t.profitLoss, 0) / (winners.length || 1);
+        const avgLoss = Math.abs(losers.reduce((s, t) => s + t.profitLoss, 0) / (losers.length || 1));
+        const avgRR = avgWin / (avgLoss || 1);
+
+        // Calculate avg risk per trade (conceptual for now, or based on pips/value)
+        // Let's assume average risk is the average loss if not explicitly tracked
+        const avgRisk = avgLoss; 
+        
+        return { winRate, avgRR, avgRisk };
+    }, [trades]);
+
+    if (loading) return (
+        <div className="space-y-6">
+            <div className="h-40 w-full rounded-2xl bg-white/5 animate-pulse" />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="h-64 rounded-2xl bg-white/5 animate-pulse" />
+                <div className="h-64 rounded-2xl bg-white/5 animate-pulse" />
+                <div className="h-64 rounded-2xl bg-white/5 animate-pulse" />
+            </div>
+        </div>
+    );
 
     const drawdownStats = getDrawdownStats(trades);
     const riskStats = getRiskStats(trades);
 
-    // Check if daily loss limit exceeded (simple check for today)
     const today = new Date().toISOString().split("T")[0];
     const todayTrades = trades.filter(t => t.date === today);
     const todayPnL = todayTrades.reduce((s, t) => s + t.profitLoss, 0);
 
-    // Assume generic account balance for % calc if user didn't set one? 
-    // For now we just show PnL. If user sets %, we need an account balance setting.
-    // We'll stick to a conceptual guard or absolute value for MVP if balance is missing.
-    // Actually, let's interpret the input as $ amount for simplicity or just save it.
-
     return (
-        <div className="space-y-8 pb-10">
-            <motion.div
-                initial={{ opacity: 0, y: -20 }}
+        <div className="space-y-10 pb-20 relative">
+            {/* Page Header */}
+            <motion.div 
+                initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
+                className="relative overflow-hidden rounded-[2.5rem] p-10 border border-white/10 bg-black/40 backdrop-blur-3xl group shadow-2xl"
             >
-                <h1 className="text-3xl font-bold text-foreground mb-2">Risk Management</h1>
-                <p className="text-muted-foreground">Protect your capital with advanced drawdown monitoring and risk analysis.</p>
+                <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity">
+                    <Fingerprint className="w-48 h-48 text-primary" />
+                </div>
+
+                <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-10">
+                    <div className="space-y-4">
+                        <div className="flex items-center gap-3">
+                            <div className="px-3 py-1 rounded-full bg-primary/10 border border-primary/20 flex items-center gap-2">
+                                <Shield className="w-4 h-4 text-primary animate-pulse" />
+                                <span className="text-[10px] font-black tracking-[0.3em] uppercase text-primary">Risk Oversight Active</span>
+                            </div>
+                        </div>
+                        <div>
+                            <h1 className="text-5xl font-black tracking-tighter text-white uppercase italic">Risk <span className="text-primary not-italic">Manager</span></h1>
+                            <p className="text-muted-foreground text-lg font-medium mt-2">
+                                Advanced drawdown monitoring and statistical risk modeling.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="flex items-center gap-6">
+                        <div className="text-right">
+                            <p className="text-[10px] text-muted-foreground font-black uppercase tracking-widest mb-1">Execution Risk</p>
+                            <div className="flex items-baseline gap-2">
+                                <p className="text-6xl font-black text-white tracking-tighter shimmer-text">
+                                    {riskStats.riskConsistency}%
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </motion.div>
 
             {/* Top Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <GlassCard className="p-6">
-                    <div className="flex items-center justify-between mb-2">
-                        <h3 className="text-muted-foreground text-xs uppercase tracking-wider">Current Drawdown</h3>
-                        <TrendingDown className="w-5 h-5 text-red-500" />
+                <GlassCard className="p-8 border-t-2 border-t-red-500/50">
+                    <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-muted-foreground text-[10px] font-black uppercase tracking-widest">Active Drawdown</h3>
+                        <div className="p-2 rounded-lg bg-red-500/10">
+                            <TrendingDown className="w-5 h-5 text-red-500" />
+                        </div>
                     </div>
-                    <div className="text-3xl font-bold text-red-500 font-mono">
+                    <div className="text-4xl font-black text-red-500 font-mono italic">
                         -${drawdownStats.currentDrawdown}
                     </div>
-                    <p className="text-xs text-muted-foreground mt-2">Peak: -${drawdownStats.maxDrawdown}</p>
+                    <div className="mt-4 flex items-center gap-2">
+                        <span className="text-[10px] font-black uppercase text-muted-foreground">Historical Peak:</span>
+                        <span className="text-xs font-bold text-white">-${drawdownStats.maxDrawdown}</span>
+                    </div>
                 </GlassCard>
 
-                <GlassCard className="p-6">
-                    <div className="flex items-center justify-between mb-2">
-                        <h3 className="text-muted-foreground text-xs uppercase tracking-wider">Avg Risk / Trade</h3>
-                        <Shield className="w-5 h-5 text-indigo-500" />
+                <GlassCard className="p-8 border-t-2 border-t-indigo-500/50">
+                    <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-muted-foreground text-[10px] font-black uppercase tracking-widest">Avg Exposure</h3>
+                        <div className="p-2 rounded-lg bg-indigo-500/10">
+                            <Crosshair className="w-5 h-5 text-indigo-500" />
+                        </div>
                     </div>
-                    <div className="text-3xl font-bold text-foreground font-mono">
+                    <div className="text-4xl font-black text-white font-mono italic">
                         ${riskStats.avgRisk}
                     </div>
-                    <p className="text-xs text-muted-foreground mt-2">Max Risk Taken: ${riskStats.maxRisk}</p>
+                    <div className="mt-4 flex items-center gap-2">
+                        <span className="text-[10px] font-black uppercase text-muted-foreground">Highest Risk:</span>
+                        <span className="text-xs font-bold text-white">${riskStats.maxRisk}</span>
+                    </div>
                 </GlassCard>
 
-                <GlassCard className="p-6">
-                    <div className="flex items-center justify-between mb-2">
-                        <h3 className="text-muted-foreground text-xs uppercase tracking-wider">Risk Consistency</h3>
-                        <Activity className="w-5 h-5 text-primary" />
+                <GlassCard className="p-8 border-t-2 border-t-primary/50">
+                    <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-muted-foreground text-[10px] font-black uppercase tracking-widest">Risk Variance</h3>
+                        <div className="p-2 rounded-lg bg-primary/10">
+                            <Activity className="w-5 h-5 text-primary" />
+                        </div>
                     </div>
-                    <div className="text-3xl font-bold text-primary font-mono">
-                        {riskStats.riskConsistency}%
+                    <div className="text-4xl font-black text-primary font-mono italic">
+                        ±{Math.abs(100 - riskStats.riskConsistency)}%
                     </div>
-                    <p className="text-xs text-muted-foreground mt-2">Consistency Score</p>
+                    <div className="mt-4 flex items-center gap-2">
+                        <span className="text-[10px] font-black uppercase text-muted-foreground">Consistency Score:</span>
+                        <span className="text-xs font-bold text-white">{riskStats.riskConsistency}%</span>
+                    </div>
                 </GlassCard>
+            </div>
+
+            {/* Critical Risk Metrics Section */}
+            <div className="space-y-6">
+                <div className="flex items-center justify-between px-2">
+                    <h3 className="text-xl font-black uppercase tracking-widest flex items-center gap-3">
+                        <ShieldAlert className="w-6 h-6 text-primary" />
+                        Statistical <span className="text-primary not-italic">Edge</span>
+                    </h3>
+                    <span className="h-px flex-1 bg-gradient-to-r from-primary/30 to-transparent ml-6" />
+                </div>
+                
+                {stats && (
+                    <RiskMetrics 
+                        winRate={stats.winRate} 
+                        avgRR={stats.avgRR} 
+                        avgRiskPerTrade={1.5} // Defaulting to 1.5% as placeholder
+                    />
+                )}
             </div>
 
             {/* Drawdown Chart - Ultimate Feature */}
             <div className="relative">
-                <GlassCard className={`p-6 ${!isUltimate ? "blur-sm pointer-events-none opacity-50" : ""}`}>
-                    <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
-                        <RoundingDownIcon className="w-5 h-5 text-red-500" />
-                        Drawdown Monitor
-                    </h2>
-                    <div className="h-[300px] w-full">
+                <GlassCard className={`p-8 rounded-[2rem] ${!isUltimate ? "blur-sm pointer-events-none opacity-50" : ""}`}>
+                    <div className="flex items-center justify-between mb-10">
+                        <div>
+                            <h2 className="text-2xl font-black uppercase tracking-tighter flex items-center gap-3 italic">
+                                <TrendingDown className="w-6 h-6 text-red-500" />
+                                Drawdown <span className="text-red-500 not-italic">History</span>
+                            </h2>
+                            <p className="text-sm text-muted-foreground font-medium mt-1">Real-time equity curve performance monitoring.</p>
+                        </div>
+                        <div className="flex gap-2">
+                            <div className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />
+                            <span className="text-[10px] font-black uppercase tracking-widest">Live Analysis</span>
+                        </div>
+                    </div>
+                    
+                    <div className="h-[350px] w-full">
                         <ResponsiveContainer width="100%" height="100%">
                             <AreaChart data={drawdownStats.equityCurve}>
                                 <defs>
@@ -114,21 +216,38 @@ export default function Risk() {
                                 <YAxis hide domain={['auto', 'auto']} />
                                 <Tooltip
                                     contentStyle={{
-                                        background: "hsl(var(--card))",
-                                        border: "1px solid hsl(var(--border))",
+                                        background: "rgba(0,0,0,0.8)",
+                                        backdropFilter: "blur(10px)",
+                                        border: "1px solid rgba(255,255,255,0.1)",
+                                        borderRadius: "12px",
+                                        padding: "12px"
                                     }}
+                                    itemStyle={{ color: "#ef4444", fontWeight: "bold", fontSize: "12px" }}
                                 />
-                                <Area type="monotone" dataKey="drawdown" stroke="#ef4444" fillOpacity={1} fill="url(#colorDd)" />
+                                <Area 
+                                    type="monotone" 
+                                    dataKey="drawdown" 
+                                    stroke="#ef4444" 
+                                    strokeWidth={3}
+                                    fillOpacity={1} 
+                                    fill="url(#colorDd)" 
+                                />
                             </AreaChart>
                         </ResponsiveContainer>
                     </div>
                 </GlassCard>
                 {!isUltimate && (
                     <div className="absolute inset-0 flex flex-col items-center justify-center z-10">
-                        <div className="bg-background/80 backdrop-blur-md p-6 rounded-2xl border border-white/10 text-center shadow-2xl">
-                            <Lock className="w-10 h-10 text-primary mx-auto mb-3" />
-                            <h3 className="text-lg font-bold">Ultimate Feature</h3>
-                            <p className="text-sm text-muted-foreground mb-4">Upgrade to unlock Drawdown Monitoring.</p>
+                        <div className="bg-black/60 backdrop-blur-xl p-10 rounded-[2.5rem] border border-white/10 text-center shadow-2xl max-w-sm">
+                            <Lock className="w-12 h-12 text-primary mx-auto mb-4" />
+                            <h3 className="text-2xl font-black uppercase tracking-tighter italic">Institutional Access Required</h3>
+                            <p className="text-sm text-muted-foreground mb-8 leading-relaxed font-medium">Drawdown statistics and performance history analysis are exclusive to Institutional traders.</p>
+                            <Button 
+                                onClick={() => navigate("/plans")}
+                                className="w-full bg-primary hover:scale-105 transition-transform py-6 rounded-2xl font-black uppercase text-xs tracking-widest"
+                            >
+                                Upgrade Plan
+                            </Button>
                         </div>
                     </div>
                 )}
@@ -136,56 +255,61 @@ export default function Risk() {
 
             {/* Daily Loss Guard */}
             <div className="relative">
-                <GlassCard className={`p-6 ${!isUltimate ? "opacity-60 pointer-events-none" : ""}`}>
+                <GlassCard className={`p-8 rounded-[2rem] border-l-8 border-l-primary/30 ${!isUltimate ? "opacity-60 pointer-events-none" : ""}`}>
                     <div className="flex items-start justify-between">
-                        <div>
-                            <h2 className="text-lg font-bold flex items-center gap-2">
-                                <Shield className="w-5 h-5 text-primary" />
-                                Daily Loss Guard
+                        <div className="space-y-4">
+                            <h2 className="text-2xl font-black uppercase tracking-tighter flex items-center gap-3 italic">
+                                <Zap className="w-6 h-6 text-primary" />
+                                Loss <span className="text-primary not-italic">Limit</span> Gate
                             </h2>
-                            <p className="text-sm text-muted-foreground mt-1">
-                                Set a maximum daily loss limit. We'll warn you if you cross it.
+                            <p className="text-sm text-muted-foreground font-medium max-w-md">
+                                Hard-coded circuit breaker. Set your maximum tolerable daily loss and the system will actively warn you upon breach.
                             </p>
                         </div>
                         {todayPnL < 0 && (
-                            <div className="text-right">
-                                <span className="text-xs uppercase text-muted-foreground">Today's PnL</span>
-                                <div className={`text-xl font-bold font-mono ${todayPnL < 0 ? "text-loss" : "text-profit"}`}>
+                            <div className="text-right p-4 rounded-2xl bg-white/5 border border-white/10">
+                                <span className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Today's PnL Status</span>
+                                <div className={`text-4xl font-black font-mono italic mt-1 ${todayPnL < 0 ? "text-loss" : "text-profit"}`}>
                                     ${todayPnL.toFixed(2)}
                                 </div>
                             </div>
                         )}
                     </div>
 
-                    <div className="mt-6 flex gap-4 max-w-sm">
+                    <div className="mt-10 flex gap-4 max-w-sm">
                         <Input
                             type="number"
-                            placeholder="Max Loss $ (e.g. 100)"
+                            placeholder="MAX LOSS THRESHOLD ($)"
                             value={maxDailyLossPercent}
                             onChange={(e) => setMaxDailyLossPercent(e.target.value)}
+                            className="bg-white/5 border-white/10 rounded-xl h-12 font-bold focus:ring-primary"
                         />
-                        <Button onClick={saveDailyLoss}>Save Limit</Button>
+                        <Button onClick={saveDailyLoss} className="h-12 px-8 rounded-xl bg-white/10 hover:bg-primary transition-colors font-black uppercase text-[10px] tracking-widest">
+                            Set Risk Alert
+                        </Button>
                     </div>
 
-                    {/* Mock Warning if exceeded (using todayPnL vs logic) */}
                     {maxDailyLossPercent && todayPnL < -Math.abs(parseFloat(maxDailyLossPercent)) && (
                         <motion.div
                             initial={{ opacity: 0, scale: 0.9 }}
                             animate={{ opacity: 1, scale: 1 }}
-                            className="mt-6 p-4 rounded-xl bg-destructive/10 border border-destructive/30 flex items-center gap-4 text-destructive"
+                            className="mt-8 p-6 rounded-2xl bg-destructive/10 border border-destructive/30 flex items-center gap-6 text-destructive"
                         >
-                            <AlertTriangle className="w-8 h-8" />
+                            <AlertTriangle className="w-12 h-12 animate-bounce" />
                             <div>
-                                <h3 className="font-bold text-lg">Daily Limit Exceeded</h3>
-                                <p className="text-sm text-destructive-foreground/80">Stop trading for today. You have hit your risk limit.</p>
+                                <h3 className="font-black text-xl uppercase tracking-widest italic">Circuit Breaker Tripped</h3>
+                                <p className="text-sm font-medium opacity-80 uppercase tracking-tighter">Daily maximum loss exceeded. Cease all trading operations immediately to preserve capital.</p>
                             </div>
                         </motion.div>
                     )}
                 </GlassCard>
+                
                 {!isUltimate && (
                     <div className="absolute inset-0 flex flex-col items-center justify-center z-10">
-                        <Lock className="w-8 h-8 text-primary mb-2" />
-                        <span className="text-sm font-bold bg-background/80 px-3 py-1 rounded-full border border-white/10">Ultimate Feature</span>
+                         <div className="px-4 py-2 bg-primary/20 backdrop-blur-md rounded-full border border-primary/30 flex items-center gap-2">
+                            <Lock className="w-4 h-4 text-primary" />
+                            <span className="text-[10px] font-black uppercase tracking-widest">Institutional Feature</span>
+                         </div>
                     </div>
                 )}
             </div>

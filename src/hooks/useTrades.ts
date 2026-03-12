@@ -103,13 +103,10 @@ export function useTrades() {
                 createdAt: new Date().toISOString()
             };
 
-            const docRef = doc(db, "traders", user.uid, "trade-history", "main");
+            const docName = tradeData.challengeId ? `challenge_${tradeData.challengeId}` : "main";
+            const docRef = doc(db, "traders", user.uid, "trade-history", docName);
 
             // Use arrayUnion to add the new trade
-            // Accessing docRef triggers creation if we use setDoc with merge, but updateDoc fails if doc doesn't exist.
-            // Check existence or use setDoc with merge for safety on first trade?
-            // The listener usually creates it, but race conditions exist.
-            // Using setDoc with merge: true and arrayUnion is safe.
             await setDoc(docRef, {
                 trades: arrayUnion(newTrade)
             }, { merge: true });
@@ -121,10 +118,11 @@ export function useTrades() {
         }
     };
 
-    const deleteTrade = async (id: string) => {
+    const deleteTrade = async (id: string, challengeId?: string) => {
         if (!user) return;
         try {
-            const docRef = doc(db, "traders", user.uid, "trade-history", "main");
+            const docName = challengeId ? `challenge_${challengeId}` : "main";
+            const docRef = doc(db, "traders", user.uid, "trade-history", docName);
             const docSnap = await getDoc(docRef);
 
             if (docSnap.exists()) {
@@ -142,22 +140,66 @@ export function useTrades() {
         }
     };
 
-    const updateTrade = async (id: string, tradeUpdate: Partial<Trade>) => {
+    const updateTrade = async (id: string, tradeUpdate: Partial<Trade>, currentChallengeId?: string) => {
         if (!user) return;
         try {
-            const docRef = doc(db, "traders", user.uid, "trade-history", "main");
-            const docSnap = await getDoc(docRef);
+            const newChallengeId = tradeUpdate.challengeId;
+            const hasMoved = currentChallengeId !== newChallengeId;
 
-            if (docSnap.exists()) {
-                const currentTrades = (docSnap.data().trades || []) as Trade[];
-                const updatedTrades = currentTrades.map(t =>
-                    t.id === id ? { ...t, ...tradeUpdate } : t
-                );
+            if (!hasMoved) {
+                // Normal update in place
+                const docName = currentChallengeId ? `challenge_${currentChallengeId}` : "main";
+                const docRef = doc(db, "traders", user.uid, "trade-history", docName);
+                const docSnap = await getDoc(docRef);
 
-                await updateDoc(docRef, {
-                    trades: updatedTrades
-                });
-                toast.success("Trade updated (Server)");
+                if (docSnap.exists()) {
+                    const currentTrades = (docSnap.data().trades || []) as Trade[];
+                    const updatedTrades = currentTrades.map(t =>
+                        t.id === id ? { ...t, ...tradeUpdate } : t
+                    );
+
+                    await updateDoc(docRef, {
+                        trades: updatedTrades
+                    });
+                    toast.success("Trade updated (Server)");
+                }
+            } else {
+                // Handle moving between collections
+                console.log(`Moving trade ${id} from ${currentChallengeId || 'main'} to ${newChallengeId || 'main'}`);
+                
+                // 1. Get from old location
+                const oldDocName = currentChallengeId ? `challenge_${currentChallengeId}` : "main";
+                const oldDocRef = doc(db, "traders", user.uid, "trade-history", oldDocName);
+                const oldDocSnap = await getDoc(oldDocRef);
+                
+                if (!oldDocSnap.exists()) {
+                    toast.error("Source trade not found");
+                    return;
+                }
+
+                const oldTrades = (oldDocSnap.data().trades || []) as Trade[];
+                const tradeToMove = oldTrades.find(t => t.id === id);
+
+                if (!tradeToMove) {
+                    toast.error("Trade not found in source");
+                    return;
+                }
+
+                // 2. Prepare new data
+                const updatedTrade = { ...tradeToMove, ...tradeUpdate };
+
+                // 3. Remove from old
+                const remainingTrades = oldTrades.filter(t => t.id !== id);
+                await updateDoc(oldDocRef, { trades: remainingTrades });
+
+                // 4. Add to new
+                const newDocName = newChallengeId ? `challenge_${newChallengeId}` : "main";
+                const newDocRef = doc(db, "traders", user.uid, "trade-history", newDocName);
+                await setDoc(newDocRef, {
+                    trades: arrayUnion(updatedTrade)
+                }, { merge: true });
+
+                toast.success("Trade moved and updated");
             }
         } catch (error: any) {
             console.error("Error updating trade:", error);

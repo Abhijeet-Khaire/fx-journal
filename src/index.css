@@ -62,8 +62,33 @@
   }
 
   body {
-    @apply bg-background text-foreground font-sans antialiased;
+    @apply bg-background text-foreground font-sans antialiased selection:bg-primary/30 selection:text-primary-foreground;
     font-family: 'Inter', system-ui, sans-serif;
+  }
+
+  /* Custom Cursor - Hide default on Desktop */
+  @media (min-width: 1024px) {
+    *, body, html {
+      cursor: none !important;
+    }
+    
+    /* Ensure inputs have some visual feedback if needed, but still hide native cursor */
+    input, textarea, [contenteditable] {
+      cursor: none !important;
+    }
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-white/10 rounded-full hover:bg-white/20 transition-colors;
   }
 
   code,
@@ -74,57 +99,144 @@
 
 @layer components {
   .glass {
-    @apply bg-[hsl(var(--glass)/0.6)] backdrop-blur-xl border border-[hsl(var(--glass-border)/0.4)] rounded-xl;
-  }
-
-  .glass-hover {
-    @apply glass transition-all duration-300;
-  }
-
-  .glass-hover:hover {
-    @apply bg-[hsl(var(--glass-hover)/0.8)] border-[hsl(var(--cyan-glow)/0.3)];
-    box-shadow: 0 0 30px -5px hsl(var(--cyan-glow) / 0.15),
-      0 8px 30px -10px hsl(0 0% 0% / 0.4);
-    transform: translateY(-2px);
+    @apply bg-[hsl(var(--glass)/0.6)] backdrop-blur-xl border border-[hsl(var(--glass-border)/0.4)] rounded-2xl;
   }
 
   .glass-input {
-    @apply bg-[hsl(var(--glass)/0.4)] backdrop-blur-md border border-[hsl(var(--glass-border)/0.5)] rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-[hsl(var(--cyan-glow)/0.5)] focus:ring-2 focus:ring-[hsl(var(--cyan-glow)/0.15)] transition-all duration-300;
+    @apply bg-[hsl(var(--glass)/0.5)] backdrop-blur-md border border-[hsl(var(--glass-border)/0.5)] text-foreground placeholder:text-muted-foreground/40 outline-none;
+    transition: all 0.2s ease;
+    color-scheme: dark;
   }
 
   .glass-input:focus {
-    box-shadow: 0 0 20px -5px hsl(var(--cyan-glow) / 0.2);
+    @apply border-[hsl(var(--primary)/0.5)] ring-2 ring-[hsl(var(--primary)/0.15)];
+    box-shadow: 0 0 12px -3px hsl(var(--primary) / 0.2);
   }
 
-  .glow-text {
-    color: hsl(var(--primary));
-    text-shadow: 0 0 20px hsl(var(--cyan-glow) / 0.5);
+  .glass-input:hover:not(:focus) {
+    @apply bg-[hsl(var(--glass-hover)/0.6)] border-[hsl(var(--glass-border)/0.7)];
   }
 
-  .profit-text {
-    color: hsl(var(--profit));
+  .glass-hover {
+    @apply glass transition-all duration-500;
   }
 
-  .loss-text {
-    color: hsl(var(--loss));
+  .glass-hover:hover {
+    @apply bg-[hsl(var(--glass-hover)/0.8)] border-[hsl(var(--cyan-glow)/0.4)];
+    box-shadow: 0 0 30px -10px hsl(var(--cyan-glow) / 0.15),
+      0 8px 30px -15px hsl(0 0% 0% / 0.4);
+    transform: translateY(-2px) scale(1.005);
   }
 
-  .shimmer {
-    background: linear-gradient(90deg,
-        hsl(var(--glass) / 0.3) 0%,
-        hsl(var(--glass-border) / 0.5) 50%,
-        hsl(var(--glass) / 0.3) 100%);
-    background-size: 200% 100%;
-    animation: shimmer 1.5s ease-in-out infinite;
+  .premium-gradient {
+    background: radial-gradient(circle at top left, hsl(var(--primary) / 0.15), transparent 40%),
+                radial-gradient(circle at bottom right, hsl(var(--primary) / 0.1), transparent 40%);
   }
 
-  @keyframes shimmer {
-    0% {
-      background-position: 200% 0;
+  .text-glow {
+    text-shadow: 0 0 15px hsl(var(--primary) / 0.5);
+  }
+
+  .shadow-glow {
+    box-shadow: 0 0 20px -5px hsl(var(--primary) / 0.5);
+  }
+
+  .shimmer-text {
+    background: linear-gradient(
+      90deg,
+      #fff 0%,
+      hsl(var(--primary)) 50%,
+      #fff 100%
+    );
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: shimmer-text 3s linear infinite;
+  }
+
+  @keyframes shimmer-text {
+    to {
+      background-position: 200% center;
     }
+  }
 
-    100% {
-      background-position: -200% 0;
-    }
+  .shimmer-btn {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .shimmer-btn::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+      45deg,
+      transparent,
+      rgba(255, 255, 255, 0.1),
+      transparent
+    );
+    transform: rotate(45deg);
+    transition: 0.5s;
+  }
+
+  .shimmer-btn:hover::after {
+    left: 100%;
+    top: 100%;
+  }
+
+  .circuit-pattern {
+    background-image: radial-gradient(hsl(var(--primary) / 0.1) 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+}
+
+/* Custom Glassmorphism for Sonner Toasts */
+.sonner-toast {
+  @apply glass shadow-2xl !important;
+  border: 1px solid hsl(var(--glass-border) / 0.5) !important;
+}
+
+/* Scaling down big fonts by one step using standard Tailwind values to avoid circular dependencies */
+@layer utilities {
+  .font-dense .text-6xl {
+    font-size: 3rem;
+    line-height: 1;
+  }
+  .font-dense .text-5xl {
+    font-size: 2.25rem;
+    line-height: 2.5rem;
+  }
+  .font-dense .text-4xl {
+    font-size: 1.875rem;
+    line-height: 2.25rem;
+  }
+  .font-dense .text-3xl {
+    font-size: 1.5rem;
+    line-height: 2rem;
+  }
+  .font-dense .text-2xl {
+    font-size: 1.25rem;
+    line-height: 1.75rem;
+  }
+
+  @keyframes scan {
+    0% { transform: translateY(-100%); }
+    100% { transform: translateY(100%); }
+  }
+
+  .animate-scan {
+    animation: scan 3s linear infinite;
+  }
+
+  @keyframes spin-slow {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  .animate-spin-slow {
+    animation: spin-slow 8s linear infinite;
   }
 }

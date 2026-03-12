@@ -1,3 +1,33 @@
+import { z } from "zod";
+
+export const TradeSchema = z.object({
+  id: z.string().optional(),
+  userId: z.string().optional(),
+  createdAt: z.string().optional(),
+  pair: z.string().min(1, "Pair is required"),
+  direction: z.enum(["BUY", "SELL"]),
+  entryPrice: z.number().positive("Entry price must be positive"),
+  exitPrice: z.number().positive("Exit price must be positive"),
+  stopLoss: z.number().nonnegative().optional(),
+  takeProfit: z.number().nonnegative().optional(),
+  lotSize: z.number().positive("Lot size must be positive"),
+  profitLoss: z.number(),
+  pips: z.number(),
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format"),
+  time: z.string().regex(/^\d{2}:\d{2}$/, "Invalid time format"),
+  session: z.enum(["Asian", "London", "New York"]),
+  strategy: z.string().min(1, "Strategy is required"),
+  rulesFollowed: z.boolean(),
+  notes: z.string().optional(),
+  emotionBefore: z.string().optional(),
+  emotionAfter: z.string().optional(),
+  confidence: z.number().min(1).max(5).optional(),
+  mistakes: z.array(z.string()).optional(),
+  challengeId: z.string().optional(),
+});
+
+export type TradeValue = z.infer<typeof TradeSchema>;
+
 export interface Trade {
   id: string;
   userId: string;
@@ -21,6 +51,7 @@ export interface Trade {
   emotionAfter?: string;
   confidence?: number;
   mistakes?: string[];
+  challengeId?: string;
 }
 
 

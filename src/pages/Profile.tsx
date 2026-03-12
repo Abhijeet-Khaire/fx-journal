@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTrades } from "@/hooks/useTrades";
 import { GlassCard } from "@/components/GlassCard";
@@ -5,14 +6,18 @@ import { motion } from "framer-motion";
 import {
     Trophy, Medal, Star, TrendingUp, Target, Zap, User, Shield, Gem, Crown,
     Flame, Rocket, Briefcase, DollarSign, BarChart, Activity, Globe, Database,
-    Landmark, Crosshair, Eye, Scale, RefreshCw, Award, Layers, LogOut, Brain, Lock
+    Landmark, Crosshair, Eye, Scale, RefreshCw, Award, Layers, LogOut, Brain, Lock,
+    Fingerprint, Cpu, Search, Terminal, Settings, ShieldCheck, ZapOff, Sparkles
 } from "lucide-react";
 import * as importTrades from "@/components/ImportTrades";
 import { getNetProfit, getWinRate } from "@/lib/tradeStore";
 import { usePlan } from "@/hooks/usePlan";
 import { auth } from "@/lib/firebase";
+import { cn } from "@/lib/utils";
+import { AnimatedCounter } from "@/components/AnimatedCounter";
 
 export default function Profile() {
+    const navigate = useNavigate();
     const { user } = useAuth();
     const { plan } = usePlan();
     const isUltimate = plan === "ultimate";
@@ -23,7 +28,7 @@ export default function Profile() {
     const totalTrades = trades.length;
 
     // Advanced Gamification Logic
-    // XP Formula: (Trades * 10) + (Positive Profit * 0.1) + (Win Rate * 20)
+    // XP Formula: (Trades * 15) + (Positive Profit * 0.1) + (Win Rate * 20)
     const xp = Math.floor(
         (totalTrades * 15) +
         (Math.max(0, netProfit) * 0.1) +
@@ -151,213 +156,305 @@ export default function Profile() {
         show: { opacity: 1, y: 0 }
     };
 
-    const RankIcon = currentRank.icon;
-
-    // Plan Logic
-    // const { plan } = usePlan(); // Already defined at top
-
     const handleLogout = async () => {
         try {
             await auth.signOut();
-            // navigate("/auth"); // Handled by AuthContext usually, but safe to redirect if needed
         } catch (error) {
             console.error("Logout failed", error);
         }
     };
 
-
-
     return (
-        <div className="space-y-8 pb-10">
-            {/* Header Section */}
+        <div className="space-y-12 pb-20">
+            {/* Trader Header */}
             <motion.div
-                initial={{ opacity: 0, y: -20 }}
+                initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="relative overflow-hidden rounded-2xl glass p-8"
+                className="relative overflow-hidden rounded-[2.5rem] p-12 border border-white/10 bg-black/40 backdrop-blur-3xl group shadow-2xl"
             >
-                <div className={`absolute inset-0 opacity-10 ${currentRank.bg}`} />
-
-                {/* Logout Button */}
-                <div className="absolute top-4 right-4 flex gap-2 z-20">
-
-                    <button
-                        onClick={handleLogout}
-                        className="p-2 rounded-full bg-background/20 hover:bg-destructive/20 text-muted-foreground hover:text-destructive transition-colors"
-                        title="Log Out"
-                    >
-                        <LogOut className="w-5 h-5" />
-                    </button>
+                <div className="absolute top-0 right-0 p-12 opacity-10 group-hover:opacity-20 transition-opacity text-primary">
+                    <Fingerprint className="w-64 h-64" />
                 </div>
 
-                <div className="relative z-10 flex flex-col md:flex-row items-center gap-8">
-                    {/* Avatar with Rank Border */}
-                    <div className="relative">
-                        <div className={`h-28 w-28 rounded-full flex items-center justify-center border-4 ${currentRank.borderColor} shadow-[0_0_30px_rgba(0,0,0,0.5)] bg-background/80 backdrop-blur-sm relative z-10`}>
+                <div className="relative z-10 flex flex-col lg:flex-row items-center gap-12">
+                    {/* Avatar System */}
+                    <div className="relative flex-shrink-0">
+                        <div className={cn(
+                            "h-48 w-48 rounded-[3rem] border-2 bg-black/60 backdrop-blur-xl flex items-center justify-center relative overflow-hidden group-hover:scale-105 transition-transform duration-500 shadow-2xl",
+                            currentRank.borderColor
+                        )}>
                             {user?.photoURL ? (
-                                <img src={user.photoURL} alt="Profile" className="h-full w-full rounded-full object-cover" />
+                                <img src={user.photoURL} alt="Trader" className="h-full w-full object-cover" />
                             ) : (
-                                <User className={`h-12 w-12 ${currentRank.color}`} />
+                                <User className={cn("h-24 w-24 opacity-20", currentRank.color)} />
                             )}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
                         </div>
-                        <div className={`absolute -bottom-4 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full text-sm font-black uppercase tracking-widest text-white ${currentRank.bg} shadow-lg z-20 whitespace-nowrap`}>
+                        <div className={cn(
+                            "absolute -bottom-4 left-1/2 -translate-x-1/2 px-8 py-2 rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] text-white shadow-xl z-20 whitespace-nowrap italic",
+                            currentRank.bg
+                        )}>
                             {currentRank.name}
                         </div>
+                        {/* Glow Effect */}
+                        <div className={cn(
+                            "absolute inset-0 blur-[40px] opacity-20 transition-opacity duration-1000 group-hover:opacity-40 rounded-[3rem]",
+                            currentRank.bg
+                        )} />
                     </div>
 
-                    <div className="flex-1 text-center md:text-left space-y-2">
-                        <div className="flex items-center justify-center md:justify-start gap-3">
-                            <h1 className="text-4xl font-bold text-foreground tracking-tight">{user?.displayName || "Trader"}</h1>
-                            <div className={`p-2 rounded-lg bg-background/50 backdrop-blur-md border ${currentRank.borderColor}`}>
-                                <RankIcon className={`w-6 h-6 ${currentRank.color}`} />
-                            </div>
-                            <div className="px-3 py-1 rounded-full bg-primary/20 border border-primary/30 text-primary text-xs font-bold uppercase tracking-wider">
-                                {plan} Plan
-                            </div>
-                        </div>
-                        <p className="text-muted-foreground text-lg">{user?.email}</p>
-
-                        {/* Level & XP */}
-                        <div className="flex items-center justify-center md:justify-start gap-4 text-sm font-medium pt-2">
-                            <span className="px-3 py-1 rounded-full bg-primary/10 text-primary border border-primary/20">
-                                Level {Math.floor(Math.sqrt(totalTrades)) + 1}
-                            </span>
-                            <span className={`${currentRank.color}`}>
-                                {xp.toLocaleString()} XP
-                            </span>
-                            <span className="text-muted-foreground">
-                                {unlockedCount} / {badges.length} Achievements
-                            </span>
-                        </div>
-
-                        {/* Progress Bar */}
-                        <div className="pt-4 max-w-xl">
-                            <div className="flex justify-between text-xs mb-2 font-medium">
-                                <span className={currentRank.color}>{currentRank.name}</span>
-                                <span className="text-muted-foreground">{nextRank ? `Next: ${nextRank.name}` : "Max Rank"}</span>
-                            </div>
-                            <div className="relative h-3 w-full bg-secondary/50 rounded-full overflow-hidden backdrop-blur-sm border border-white/5">
-                                <motion.div
-                                    initial={{ width: 0 }}
-                                    animate={{ width: `${progress}%` }}
-                                    transition={{ duration: 1.5, ease: "easeOut" }}
-                                    className={`absolute top-0 left-0 h-full ${currentRank.bg} shadow-[0_0_20px_currentColor]`}
-                                />
-                            </div>
-                            {nextRank && (
-                                <p className="text-xs text-right text-muted-foreground mt-1.5">
-                                    {Math.round(nextThreshold - xp).toLocaleString()} XP to promotion
-                                </p>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            </motion.div>
-
-            {/* Stats Overview */}
-            <motion.div
-                variants={container}
-                initial="hidden"
-                animate="show"
-                className="grid grid-cols-1 md:grid-cols-3 gap-6"
-            >
-                <GlassCard className="p-6 flex flex-col items-center justify-center gap-2">
-                    <h3 className="text-muted-foreground text-sm font-medium uppercase tracking-wider">Total Trades</h3>
-                    <span className="text-4xl font-bold text-foreground">{totalTrades}</span>
-                </GlassCard>
-                <GlassCard className="p-6 flex flex-col items-center justify-center gap-2">
-                    <h3 className="text-muted-foreground text-sm font-medium uppercase tracking-wider">Win Rate</h3>
-                    <span className={`text-4xl font-bold ${winRate >= 50 ? "text-profit" : "text-loss"}`}>{winRate}%</span>
-                </GlassCard>
-                <GlassCard className="p-6 flex flex-col items-center justify-center gap-2">
-                    <h3 className="text-muted-foreground text-sm font-medium uppercase tracking-wider">Net Profit</h3>
-                    <span className={`text-4xl font-bold ${netProfit >= 0 ? "text-profit" : "text-loss"}`}>
-                        ${netProfit.toLocaleString()}
-                    </span>
-                </GlassCard>
-            </motion.div>
-
-            {/* Achievements Section */}
-            <div className="space-y-6">
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                        <Trophy className="h-6 w-6 text-yellow-500" />
-                        <h2 className="text-2xl font-bold text-foreground">Achievements</h2>
-                    </div>
-                    <span className="text-sm text-muted-foreground">
-                        {Math.round((unlockedCount / badges.length) * 100)}% Completed
-                    </span>
-                </div>
-
-                <motion.div
-                    variants={container}
-                    initial="hidden"
-                    animate="show"
-                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"
-                >
-                    {badges.map((badge) => (
-                        <motion.div key={badge.id} variants={item}>
-                            <GlassCard
-                                className={`h-full flex flex-col items-center p-6 text-center transition-all duration-300 hover:scale-[1.02] ${badge.unlocked
-                                    ? "bg-primary/5 border-primary/20 shadow-[0_0_20px_-10px_hsl(var(--primary)/0.3)] relative overflow-hidden"
-                                    : "opacity-40 grayscale border-dashed"
-                                    }`}
-                            >
-                                {badge.unlocked && <div className="absolute inset-0 bg-gradient-to-tr from-primary/5 to-transparent" />}
-
-                                <div className={`relative p-4 rounded-full mb-4 ${badge.unlocked ? "bg-primary/20 text-primary ring-4 ring-primary/10" : "bg-secondary text-muted-foreground"}`}>
-                                    <badge.icon className="h-8 w-8" />
+                    <div className="flex-1 space-y-8 w-full">
+                        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-white/5">
+                            <div className="space-y-2">
+                                <div className="flex items-center gap-4">
+                                    <h1 className="text-5xl font-black text-white italic tracking-tighter uppercase">
+                                        {user?.displayName || "Trader"}
+                                    </h1>
+                                    <div className="p-2 rounded-xl bg-white/5 border border-white/10 text-primary">
+                                        <Terminal className="w-5 h-5" />
+                                    </div>
                                 </div>
-
-                                <h3 className={`font-bold text-sm mb-2 ${badge.unlocked ? "text-foreground" : "text-muted-foreground"}`}>
-                                    {badge.name}
-                                </h3>
-
-                                <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">
-                                    {badge.description}
+                                <p className="text-muted-foreground font-mono text-sm tracking-widest uppercase flex items-center gap-3">
+                                    <Globe className="w-4 h-4" /> {user?.email}
                                 </p>
-                            </GlassCard>
-                        </motion.div>
-                    ))}
-                </motion.div>
-            </div>
-            {/* AI Coach & Import */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Weekly Coach - AI Layer */}
-                <GlassCard className="p-6 relative overflow-hidden">
-                    <div className="flex items-start gap-3 relative z-10">
-                        <div className="p-2 rounded-lg bg-indigo-500/10 text-indigo-500">
-                            <Brain className="w-6 h-6" />
+                            </div>
+                            <div className="flex gap-4">
+                                <div className="flex flex-col items-end">
+                                    <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Subscription</span>
+                                    <div className="px-5 py-2 rounded-2xl bg-primary/10 border border-primary/20 text-primary text-[10px] font-black uppercase tracking-widest italic shadow-lg shadow-primary/5">
+                                        {plan === 'ultimate' ? 'Institutional' : plan === 'pro' ? 'Professional' : 'Standard'} ACCESS
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={handleLogout}
+                                    className="p-4 rounded-2xl bg-white/5 border border-white/10 text-white/40 hover:text-loss hover:bg-loss/10 hover:border-loss/30 transition-all shadow-xl group/logout"
+                                >
+                                    <LogOut className="w-5 h-5 group-hover/logout:-translate-x-1 transition-transform" />
+                                </button>
+                            </div>
                         </div>
-                        <div>
-                            <h3 className="font-bold text-lg">Weekly AI Coach</h3>
-                            <p className="text-xs text-muted-foreground mb-4">Personalized feedback based on your recent 20 trades.</p>
+
+                        {/* Performance Stats */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                            <div className="space-y-4">
+                                <div className="flex justify-between items-end">
+                                    <div className="flex flex-col gap-1">
+                                        <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Growth Path</span>
+                                        <span className={cn("text-lg font-black italic uppercase", currentRank.color)}>
+                                            {currentRank.name}
+                                        </span>
+                                    </div>
+                                    <div className="text-right">
+                                        <span className="text-2xl font-black italic text-white">{xp.toLocaleString()}</span>
+                                        <span className="text-[10px] font-black text-muted-foreground uppercase ml-2 tracking-widest">XP</span>
+                                    </div>
+                                </div>
+                                <div className="relative h-2 w-full bg-white/5 rounded-full overflow-hidden border border-white/10">
+                                    <motion.div
+                                        initial={{ width: 0 }}
+                                        animate={{ width: `${progress}%` }}
+                                        transition={{ duration: 2, ease: "circOut" }}
+                                        className={cn("absolute top-0 left-0 h-full shadow-[0_0_15px_currentColor]", currentRank.bg)}
+                                    />
+                                </div>
+                                <div className="flex justify-between text-[8px] font-black uppercase tracking-[0.2em] text-muted-foreground opacity-60">
+                                    <span>Entry Level</span>
+                                    <span>Target: {nextRank?.name || "Apex reached"}</span>
+                                </div>
+                            </div>
+
+                            <div className="flex items-center gap-6">
+                                <div className="flex-1 bg-white/5 border border-white/10 rounded-3xl p-5 flex flex-col items-center justify-center text-center transition-colors hover:bg-white/10">
+                                    <span className="text-[8px] font-black text-muted-foreground uppercase tracking-widest mb-2">Unlocking Progress</span>
+                                    <span className="text-2xl font-black italic text-white">{unlockedCount} / {badges.length}</span>
+                                </div>
+                                <div className="flex-1 bg-white/5 border border-white/10 rounded-3xl p-5 flex flex-col items-center justify-center text-center transition-colors hover:bg-white/10">
+                                    <span className="text-[8px] font-black text-muted-foreground uppercase tracking-widest mb-2">Trader Level</span>
+                                    <span className="text-2xl font-black italic text-primary">LVL {Math.floor(Math.sqrt(totalTrades)) + 1}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </motion.div>
+
+            {/* Grid Layout: Stats & Achievements */}
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+                {/* Left Column: Stats */}
+                <div className="space-y-8">
+                    <div className="flex items-center gap-3 mb-6">
+                        <Activity className="w-5 h-5 text-primary" />
+                        <h2 className="text-xl font-black text-white uppercase italic tracking-tighter">Performance Overview</h2>
+                    </div>
+                    <div className="grid grid-cols-1 gap-6">
+                        <GlassCard className="p-8 group hover:border-primary/20 transition-all overflow-hidden relative">
+                            <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
+                                <BarChart className="w-24 h-24" />
+                            </div>
+                            <h3 className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-4">Total trades</h3>
+                            <div className="text-5xl font-black italic text-white flex items-center gap-4">
+                                <AnimatedCounter value={totalTrades} />
+                                <div className="p-2 rounded-xl bg-white/5 border border-white/10">
+                                    <Layers className="w-6 h-6 text-primary" />
+                                </div>
+                            </div>
+                        </GlassCard>
+
+                        <GlassCard className="p-8 group hover:border-profit/20 transition-all overflow-hidden relative">
+                            <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity text-profit">
+                                <Target className="w-24 h-24" />
+                            </div>
+                            <h3 className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-4">Win rate</h3>
+                            <div className={cn("text-5xl font-black italic flex items-center gap-4", winRate >= 50 ? "text-profit" : "text-loss")}>
+                                <AnimatedCounter value={winRate} suffix="%" />
+                                <div className="p-2 rounded-xl bg-white/5 border border-white/10">
+                                    <Target className="w-6 h-6" />
+                                </div>
+                            </div>
+                        </GlassCard>
+
+                        <GlassCard className="p-8 group hover:border-profit/20 transition-all overflow-hidden relative">
+                            <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity text-profit">
+                                <DollarSign className="w-24 h-24" />
+                            </div>
+                            <h3 className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-4">Net Profit</h3>
+                            <div className={cn("text-5xl font-black italic flex items-center gap-4", netProfit >= 0 ? "text-profit" : "text-loss")}>
+                                <span className="text-2xl mt-1">$</span>
+                                <AnimatedCounter value={netProfit} />
+                            </div>
+                        </GlassCard>
+                    </div>
+
+                    {/* Weekly AI Coach Section */}
+                    <GlassCard className="p-8 border-indigo-500/20 bg-indigo-500/5 relative overflow-hidden group">
+                        <div className="absolute -top-10 -right-10 opacity-10 group-hover:opacity-20 transition-opacity text-indigo-500 rotate-12">
+                            <Brain className="w-48 h-48" />
+                        </div>
+                        <div className="relative z-10 space-y-6">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-3 rounded-2xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                                        <Brain className="w-6 h-6" />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-black text-white uppercase italic tracking-tighter">AI Coach</h3>
+                                        <p className="text-[10px] font-black text-indigo-400/60 uppercase tracking-widest">Trading Insights</p>
+                                    </div>
+                                </div>
+                                {!isUltimate && <Lock className="w-4 h-4 text-white/20" />}
+                            </div>
 
                             {!isUltimate ? (
-                                <div className="flex flex-col items-center justify-center py-6 text-center">
-                                    <Lock className="w-8 h-8 text-primary mb-2" />
-                                    <p className="text-sm font-semibold">Upgrade to Ultimate</p>
+                                <div className="py-8 flex flex-col items-center justify-center text-center space-y-4">
+                                    <div className="p-4 rounded-full bg-white/5 border border-white/10 text-indigo-400">
+                                        <ZapOff className="w-8 h-8" />
+                                    </div>
+                                    <div className="space-y-4">
+                                        <div className="space-y-1">
+                                            <p className="text-xs font-bold text-white/60">Module Locked</p>
+                                            <p className="text-[10px] text-muted-foreground uppercase tracking-widest">Institutional Plan Required</p>
+                                        </div>
+                                        <button
+                                            onClick={() => navigate("/plans")}
+                                            className="px-6 py-2 bg-indigo-500 text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:scale-105 transition-transform shadow-lg shadow-indigo-500/20"
+                                        >
+                                            Elevate Access
+                                        </button>
+                                    </div>
                                 </div>
                             ) : (
-                                <div className="space-y-4">
-                                    <div className="p-3 rounded-lg bg-secondary/30 text-sm">
-                                        <span className="font-bold block mb-1 text-profit">What went well:</span>
-                                        You maintained a 2:1 Reward ratio on 80% of winning trades. Great discipline!
+                                <div className="space-y-4 font-medium leading-relaxed">
+                                    <div className="p-4 rounded-2xl bg-black/40 border border-white/5 text-sm group/tip">
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-profit animate-pulse" />
+                                            <span className="text-[10px] font-black text-profit uppercase tracking-widest">Performance Gain</span>
+                                        </div>
+                                        <p className="text-white/70 italic group-hover/tip:text-white transition-colors">
+                                            You maintained a 2:1 Reward ratio on 80% of winning trades. Great discipline!
+                                        </p>
                                     </div>
-                                    <div className="p-3 rounded-lg bg-secondary/30 text-sm">
-                                        <span className="font-bold block mb-1 text-loss">Review needed:</span>
-                                        Your win rate drops to 18% during the Asian session. Consider avoiding this time.
+                                    <div className="p-4 rounded-2xl bg-black/40 border border-white/5 text-sm group/tip">
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-loss animate-pulse" />
+                                            <span className="text-[10px] font-black text-loss uppercase tracking-widest">Efficiency Alert</span>
+                                        </div>
+                                        <p className="text-white/70 italic group-hover/tip:text-white transition-colors">
+                                            Your win rate drops to 18% during the Asian session. Consider session adjustment.
+                                        </p>
                                     </div>
                                 </div>
                             )}
                         </div>
-                    </div>
-                </GlassCard>
+                    </GlassCard>
+                </div>
 
-                {/* Import Section */}
-                <importTrades.ImportTrades />
+                {/* Right Columns: Achievements & Import */}
+                <div className="xl:col-span-2 space-y-8">
+                    <div className="flex items-center justify-between mb-6">
+                        <div className="flex items-center gap-3">
+                            <Trophy className="w-5 h-5 text-yellow-500" />
+                            <h2 className="text-xl font-black text-white uppercase italic tracking-tighter">Achievement Milestones</h2>
+                        </div>
+                        <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">
+                            Completion status: {Math.round((unlockedCount / badges.length) * 100)}% Complete
+                        </span>
+                    </div>
+
+                    <motion.div
+                        variants={container}
+                        initial="hidden"
+                        animate="show"
+                        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
+                    >
+                        {badges.map((badge) => (
+                            <motion.div key={badge.id} variants={item}>
+                                <GlassCard
+                                    className={cn(
+                                        "p-6 h-full flex flex-col gap-4 items-center text-center transition-all duration-500 overflow-hidden relative group",
+                                        badge.unlocked
+                                            ? "border-primary/20 bg-primary/5 shadow-xl shadow-primary/5"
+                                            : "opacity-30 grayscale border-dashed border-white/10"
+                                    )}
+                                >
+
+                                    <div className={cn(
+                                        "p-5 rounded-3xl shrink-0 transition-transform duration-500 group-hover:scale-110",
+                                        badge.unlocked
+                                            ? "bg-primary/20 text-primary border border-primary/30 ring-8 ring-primary/5 shadow-2xl"
+                                            : "bg-white/5 text-white/20 border border-white/10"
+                                    )}>
+                                        <badge.icon className="w-8 h-8" />
+                                    </div>
+
+                                    <div className="space-y-1">
+                                        <h3 className={cn("font-black uppercase italic tracking-tighter text-sm", badge.unlocked ? "text-white" : "text-white/40")}>
+                                            {badge.name}
+                                        </h3>
+                                        <p className="text-[10px] text-muted-foreground leading-relaxed italic line-clamp-2">{badge.description}</p>
+                                    </div>
+
+                                    {badge.unlocked && (
+                                        <div className="absolute bottom-4 right-4 animate-pulse">
+                                            <ShieldCheck className="w-4 h-4 text-primary opacity-50" />
+                                        </div>
+                                    )}
+                                </GlassCard>
+                            </motion.div>
+                        ))}
+                    </motion.div>
+
+                    {/* Trade Import System */}
+                    <div className="mt-12">
+                        <div className="flex items-center gap-3 mb-8">
+                            <Settings className="w-5 h-5 text-primary" />
+                            <h2 className="text-xl font-black text-white uppercase italic tracking-tighter">Trade History Import</h2>
+                        </div>
+                        <div className="rounded-[2.5rem] overflow-hidden border border-white/5 bg-black/20 p-2 shadow-inner">
+                            <importTrades.ImportTrades />
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     );
 }
-
-// Need to import Brain, Lock and ImportTrades at top
