@@ -344,7 +344,7 @@ export default function TradeHistory() {
           </div>
 
           {/* Mobile Card View */}
-          <div className="grid grid-cols-1 gap-6 lg:hidden">
+          <div className="grid grid-cols-1 gap-6 xl:hidden">
             <AnimatePresence mode="popLayout">
               {paginatedTrades.map((trade, i) => (
                 <motion.div
@@ -415,7 +415,7 @@ export default function TradeHistory() {
           </div>
 
           {/* Desktop Table View */}
-          <div className="hidden lg:block overflow-hidden rounded-[2.5rem] border border-white/10 bg-black/40 backdrop-blur-3xl shadow-2xl">
+          <div className="hidden xl:block overflow-hidden rounded-[2.5rem] border border-white/10 bg-black/40 backdrop-blur-3xl shadow-2xl">
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>

@@ -68,7 +68,13 @@ export function CustomCursor() {
         };
     }, [cursorX, cursorY, isVisible]);
 
-    if (!isVisible) return null;
+    const [isTouchDevice, setIsTouchDevice] = useState(false);
+
+    useEffect(() => {
+        setIsTouchDevice('ontouchstart' in window || navigator.maxTouchPoints > 0);
+    }, []);
+
+    if (!isVisible || isTouchDevice) return null;
 
     return (
         <div className="fixed inset-0 pointer-events-none z-[9999] hidden lg:block overflow-hidden">

@@ -97,7 +97,7 @@ export default function Dashboard() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative overflow-hidden rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-10 border border-white/10 bg-black/40 backdrop-blur-3xl group shadow-2xl"
+        className="relative overflow-hidden rounded-[1.5rem] md:rounded-[2.5rem] p-5 md:p-10 border border-white/10 bg-black/40 backdrop-blur-3xl group shadow-2xl"
       >
         <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity text-primary">
           <Fingerprint className="w-32 h-32 md:w-48 md:h-48" />
@@ -183,44 +183,44 @@ export default function Dashboard() {
       <DRPAlert trades={allTrades} />
 
       {/* Core Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        <GlassCard className="p-8 border-t-2 border-t-primary/50 relative overflow-hidden group">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+        <GlassCard className="p-6 md:p-8 border-t-2 border-t-primary/50 relative overflow-hidden group">
           <div className="absolute -right-4 -bottom-4 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
-            <BarChart3 className="w-32 h-32 text-primary" />
+            <BarChart3 className="w-24 md:w-32 h-24 md:h-32 text-primary" />
           </div>
-          <div className="flex items-center gap-3 mb-6">
+          <div className="flex items-center gap-3 mb-4 md:mb-6">
             <div className="p-2 rounded-xl bg-primary/10">
               <Activity className="w-5 h-5 text-primary" />
             </div>
             <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Activity</span>
           </div>
           <div className="flex items-baseline gap-2">
-            <AnimatedCounter value={trades.length} className="text-5xl font-black text-white italic" />
-            <span className="text-xs font-black text-muted-foreground uppercase tracking-widest">Total</span>
+            <AnimatedCounter value={trades.length} className="text-3xl md:text-5xl font-black text-white italic" />
+            <span className="text-[10px] md:text-xs font-black text-muted-foreground uppercase tracking-widest">Total</span>
           </div>
         </GlassCard>
 
-        <GlassCard className="p-8 border-t-2 border-t-profit/50 relative overflow-hidden group">
+        <GlassCard className="p-6 md:p-8 border-t-2 border-t-profit/50 relative overflow-hidden group">
           <div className="absolute -right-4 -bottom-4 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
-            <Target className="w-32 h-32 text-profit" />
+            <Target className="w-24 md:w-32 h-24 md:h-32 text-profit" />
           </div>
-          <div className="flex items-center gap-3 mb-6">
+          <div className="flex items-center gap-3 mb-4 md:mb-6">
             <div className="p-2 rounded-xl bg-profit/10">
               <Target className="w-5 h-5 text-profit" />
             </div>
             <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Performance</span>
           </div>
           <div className="flex items-baseline gap-2">
-            <AnimatedCounter value={winRate} suffix="%" className="text-5xl font-black text-white italic" />
-            <span className="text-xs font-black text-profit uppercase tracking-widest">Win Rate</span>
+            <AnimatedCounter value={winRate} suffix="%" className="text-3xl md:text-5xl font-black text-white italic" />
+            <span className="text-[10px] md:text-xs font-black text-profit uppercase tracking-widest">Win Rate</span>
           </div>
         </GlassCard>
 
-        <GlassCard className="p-8 border-t-2 border-t-white/10 relative overflow-hidden group">
+        <GlassCard className="p-6 md:p-8 border-t-2 border-t-white/10 relative overflow-hidden group sm:col-span-2 lg:col-span-1">
           <div className="absolute -right-4 -bottom-4 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
-            <DollarSign className="w-32 h-32 text-white" />
+            <DollarSign className="w-24 md:w-32 h-24 md:h-32 text-white" />
           </div>
-          <div className="flex items-center gap-3 mb-6">
+          <div className="flex items-center gap-3 mb-4 md:mb-6">
             <div className="p-2 rounded-xl bg-white/5">
               <DollarSign className={`w-5 h-5 ${netProfit >= 0 ? "text-profit" : "text-loss"}`} />
             </div>
@@ -231,7 +231,7 @@ export default function Dashboard() {
               value={netProfit}
               prefix="$"
               decimals={2}
-              className={`text-5xl font-black italic ${netProfit >= 0 ? "text-profit" : "text-loss"}`}
+              className={`text-3xl md:text-5xl font-black italic ${netProfit >= 0 ? "text-profit" : "text-loss"}`}
             />
           </div>
         </GlassCard>
@@ -242,7 +242,7 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Equity Curve - Pro Gated */}
         <div className="lg:col-span-8 relative">
-          <GlassCard hover={false} className={`p-8 rounded-[2rem] ${!isPro ? "blur-xl pointer-events-none opacity-50" : ""}`}>
+          <GlassCard hover={false} className={`p-6 md:p-8 rounded-[1.5rem] md:rounded-[2rem] ${!isPro ? "blur-xl pointer-events-none opacity-50" : ""}`}>
             <div className="flex items-center justify-between mb-8">
               <h3 className="text-sm font-black uppercase tracking-widest flex items-center gap-3">
                 <TrendingUp className="w-5 h-5 text-primary" />
@@ -313,7 +313,7 @@ export default function Dashboard() {
 
         {/* Win Rate Pie */}
         <div className="lg:col-span-4">
-          <GlassCard hover={false} className="p-8 rounded-[2rem] h-full">
+          <GlassCard hover={false} className="p-6 md:p-8 rounded-[1.5rem] md:rounded-[2rem] h-full">
             <h3 className="text-sm font-black uppercase tracking-widest mb-8">P/L Distribution</h3>
             {trades.length > 0 ? (
               <div className="relative h-[240px] w-full">

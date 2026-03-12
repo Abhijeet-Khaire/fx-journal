@@ -158,10 +158,10 @@ export default function Auth() {
             </AnimatePresence>
 
             {/* Main Content Layout */}
-            <div className="relative z-10 w-full h-screen flex flex-col lg:flex-row divide-x divide-white/5">
+            <div className="relative z-10 w-full min-h-screen py-10 lg:py-0 flex flex-col lg:flex-row lg:divide-x lg:divide-white/5 scrollbar-none overflow-y-auto lg:overflow-hidden">
                 
                 {/* Left Side: Brand & Visuals */}
-                <div className="flex-1 flex flex-col justify-center px-12 lg:px-24 relative overflow-hidden">
+                <div className="flex-1 flex flex-col justify-center px-6 md:px-12 lg:px-24 relative overflow-hidden mb-12 lg:mb-0">
                     {/* Animated Wireframe Background */}
                     <svg className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[150%] h-[150%] opacity-10 pointer-events-none" viewBox="0 0 100 100">
                         <path d="M10,10 L90,10 L90,90 L10,90 Z" fill="none" stroke="cyan" strokeWidth="0.1" />
@@ -193,48 +193,41 @@ export default function Auth() {
                         </motion.div>
 
                         <div className="space-y-4">
-                            <h1 className="text-[7rem] lg:text-[9rem] font-black leading-[0.8] tracking-tighter uppercase text-white drop-shadow-[0_0_30px_rgba(255,255,255,0.1)]">
+                            <h1 className="text-[4rem] sm:text-[6rem] lg:text-[9rem] font-black leading-[0.8] tracking-tighter uppercase text-white drop-shadow-[0_0_30px_rgba(255,255,255,0.1)]">
                                 <span className="block italic">ZENITH</span>
                                 <span className="block text-cyan-400">JOURNAL</span>
                             </h1>
-                            <p className="text-xl lg:text-2xl text-white/40 font-light max-w-xl italic leading-relaxed">
+                            <p className="text-lg lg:text-2xl text-white/40 font-light max-w-xl italic leading-relaxed">
                                 The pinnacle of <span className="text-white font-medium">quantitative trading</span> psychology. Master the markets from within.
                             </p>
                         </div>
 
                         {/* Interactive Stats */}
-                        <div className="flex flex-wrap gap-8">
-                            <div className="flex flex-col gap-4 p-8 rounded-[2rem] bg-white/[0.03] border border-white/10 backdrop-blur-2xl min-w-[200px] hover:border-cyan-500/40 transition-all group">
+                        <div className="flex flex-wrap gap-4 md:gap-8">
+                            <div className="flex flex-col gap-4 p-6 md:p-8 rounded-[1.5rem] md:rounded-[2rem] bg-white/[0.03] border border-white/10 backdrop-blur-2xl flex-1 md:min-w-[200px] hover:border-cyan-500/40 transition-all group">
                                 <div className="flex items-center gap-3 text-white/40">
-                                    <Activity className="w-5 h-5 text-cyan-500" />
-                                    <span className="text-[10px] font-black uppercase tracking-widest">NETWORK ACTIVITY</span>
+                                    <Activity className="w-4 md:w-5 h-4 md:h-5 text-cyan-500" />
+                                    <span className="text-[8px] md:text-[10px] font-black uppercase tracking-widest text-nowrap">NETWORK ACTIVITY</span>
                                 </div>
-                                <div className="text-5xl font-black italic tracking-tighter text-cyan-400 drop-shadow-[0_0_15px_rgba(34,211,238,0.3)]">
+                                <div className="text-3xl md:text-5xl font-black italic tracking-tighter text-cyan-400 drop-shadow-[0_0_15px_rgba(34,211,238,0.3)]">
                                     <AnimatedCounter value={activeTraders} />
                                 </div>
                             </div>
 
-                            <div className="flex items-center gap-6 p-8 rounded-[2rem] bg-white/[0.03] border border-white/10 backdrop-blur-2xl min-w-[280px] hover:border-emerald-500/40 transition-all group overflow-hidden relative">
+                            <div className="flex items-center gap-6 p-6 md:p-8 rounded-[1.5rem] md:rounded-[2rem] bg-white/[0.03] border border-white/10 backdrop-blur-2xl flex-1 md:min-w-[280px] hover:border-emerald-500/40 transition-all group overflow-hidden relative">
                                 <div className="flex flex-col gap-4 relative z-10">
                                     <div className="flex items-center gap-3 text-white/40">
-                                        <TrendingUp className="w-5 h-5 text-emerald-400" />
-                                        <span className="text-[10px] font-black uppercase tracking-widest">LIQUIDITY LOGGED</span>
+                                        <TrendingUp className="w-4 md:w-5 h-4 md:h-5 text-emerald-400" />
+                                        <span className="text-[8px] md:text-[10px] font-black uppercase tracking-widest text-nowrap">LIQUIDITY LOGGED</span>
                                     </div>
-                                    <div className="text-5xl font-black italic tracking-tighter text-emerald-400 drop-shadow-[0_0_15px_rgba(52,211,153,0.3)]">
+                                    <div className="text-3xl md:text-5xl font-black italic tracking-tighter text-emerald-400 drop-shadow-[0_0_15px_rgba(52,211,153,0.3)]">
                                         ${(totalProfit / 1000000).toFixed(1)}M+
                                     </div>
                                 </div>
                                 {/* Globe Visualizer */}
-                                <div className="absolute right-[-10%] top-1/2 -translate-y-1/2 w-32 h-32 opacity-40 group-hover:scale-110 transition-transform duration-700">
+                                <div className="absolute right-[-10%] top-1/2 -translate-y-1/2 w-24 md:w-32 h-24 md:h-32 opacity-40 group-hover:scale-110 transition-transform duration-700">
                                     <div className="w-full h-full rounded-full border-2 border-emerald-500/20 border-t-emerald-500 animate-spin-slow" />
-                                    <Globe className="absolute inset-0 m-auto w-16 h-16 text-emerald-500/60" />
-                                    <motion.div 
-                                        animate={{ y: [-5, 5, -5] }}
-                                        transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                                        className="absolute top-0 right-0"
-                                    >
-                                        <ChevronRight className="w-8 h-8 text-emerald-400 rotate-[-90deg]" />
-                                    </motion.div>
+                                    <Globe className="absolute inset-0 m-auto w-12 md:w-16 h-12 md:h-16 text-emerald-500/60" />
                                 </div>
                             </div>
                         </div>
@@ -242,7 +235,7 @@ export default function Auth() {
                 </div>
 
                 {/* Right Side: Access Terminal */}
-                <div className="w-full lg:w-[450px] bg-black/40 backdrop-blur-[60px] flex flex-col items-center justify-center p-8 relative overflow-hidden">
+                <div className="w-full lg:w-[450px] bg-black/40 backdrop-blur-[60px] flex flex-col items-center justify-center p-6 md:p-8 relative overflow-hidden">
                     {/* Terminal Frame Decor */}
                     <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent" />
                     <div className="absolute bottom-0 left-0 w-full h-2 bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent" />
