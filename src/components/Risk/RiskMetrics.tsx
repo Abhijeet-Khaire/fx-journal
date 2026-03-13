@@ -34,7 +34,7 @@ export const RiskMetrics: React.FC<RiskMetricsProps> = ({ winRate, avgRR, avgRis
                 </h3>
                 
                 <div className="flex items-baseline gap-2 mb-2">
-                    <span className="text-5xl font-black text-white italic">{survivalScore.toFixed(0)}</span>
+                    <span className="text-5xl font-black text-white ">{survivalScore.toFixed(0)}</span>
                     <span className="text-muted-foreground text-xs uppercase font-bold">/ 100 Score</span>
                 </div>
                 
@@ -99,7 +99,7 @@ export const RiskMetrics: React.FC<RiskMetricsProps> = ({ winRate, avgRR, avgRis
                                 <span className="text-[10px] font-black text-muted-foreground uppercase">{s.streak} Losses In Row</span>
                             </div>
                             <div className="flex items-center gap-2">
-                                <span className="text-sm font-black text-white italic">{s.probability.toFixed(2)}%</span>
+                                <span className="text-sm font-black text-white ">{s.probability.toFixed(2)}%</span>
                                 <div className="w-12 h-1 bg-white/5 rounded-full overflow-hidden">
                                     <div className="h-full bg-yellow-500" style={{ width: `${s.probability}%` }} />
                                 </div>

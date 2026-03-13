@@ -30,6 +30,7 @@ import AdminTraderView from "./pages/AdminTraderView";
 import { AdminRoute } from "@/components/AdminRoute";
 
 import { CustomCursor } from "@/components/CustomCursor";
+import { ThemeSettingsProvider, useThemeSettings } from "@/contexts/ThemeSettingsContext";
 
 const queryClient = new QueryClient();
 
@@ -96,8 +97,10 @@ const AppContent = () => {
   const excludedPaths = ["/analytics", "/add-trade"];
   const isExcluded = excludedPaths.includes(location.pathname) || location.pathname.startsWith("/edit-trade");
 
+  const { theme } = useThemeSettings();
+
   return (
-    <div className="flex min-h-screen w-full dark bg-background relative overflow-hidden">
+    <div className={`flex min-h-screen w-full ${theme} bg-background relative overflow-hidden`}>
       {/* Premium Background Effects */}
       <div className="fixed inset-0 pointer-events-none z-0">
         <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-primary/10 blur-[120px]" />
@@ -137,15 +140,17 @@ const AppContent = () => {
 const App = () => (
   <ErrorBoundary>
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <CustomCursor />
-          <ScrollToTop />
-          <AppContent />
-        </BrowserRouter>
-      </TooltipProvider>
+      <ThemeSettingsProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <CustomCursor />
+            <ScrollToTop />
+            <AppContent />
+          </BrowserRouter>
+        </TooltipProvider>
+      </ThemeSettingsProvider>
     </QueryClientProvider>
   </ErrorBoundary>
 );

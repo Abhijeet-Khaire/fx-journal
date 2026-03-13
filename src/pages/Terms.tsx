@@ -48,7 +48,7 @@ export default function Terms() {
                             <p>
                                 The materials on Zenith Journal's website are provided on an 'as is' basis. Zenith Journal makes no warranties, expressed or implied, and hereby disclaims and negates all other warranties including, without limitation, implied warranties or conditions of merchantability, fitness for a particular purpose, or non-infringement of intellectual property or other violation of rights.
                             </p>
-                            <p className="mt-2 text-primary/80 italic">
+                            <p className="mt-2 text-primary/80 ">
                                 Trading involves substantial risk of loss and is not suitable for every investor. Zenith Journal is a tool for analysis and journaling, not financial advice.
                             </p>
                         </section>

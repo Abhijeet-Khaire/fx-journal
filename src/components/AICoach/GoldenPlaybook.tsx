@@ -40,7 +40,7 @@ export function GoldenPlaybook({ playbook }: GoldenPlaybookProps) {
                     </div>
                     <h1 className="text-5xl font-black tracking-tighter">
                         <span className="text-white">GOLDEN</span>{" "}
-                        <span className="text-primary italic">STRATEGY</span>
+                        <span className="text-primary ">STRATEGY</span>
                     </h1>
                     <div className="flex items-center gap-3">
                         <p className="text-muted-foreground text-lg font-medium">Verified Optimization:</p>
@@ -150,7 +150,7 @@ export function GoldenPlaybook({ playbook }: GoldenPlaybookProps) {
                     </h3>
                     <div className="relative">
                         <span className="absolute -left-2 -top-2 text-4xl text-indigo-500/30 font-serif">"</span>
-                        <p className="text-md text-foreground leading-relaxed font-medium italic relative z-10 px-4">
+                        <p className="text-md text-foreground leading-relaxed font-medium  relative z-10 px-4">
                             {playbook.psychologyNote}
                         </p>
                         <span className="absolute -right-2 -bottom-2 text-4xl text-indigo-500/30 font-serif">"</span>

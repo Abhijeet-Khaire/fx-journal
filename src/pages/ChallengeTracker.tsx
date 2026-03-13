@@ -165,8 +165,8 @@ export default function ChallengeTracker() {
                 </div>
                 <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
                     <div>
-                        <h1 className="text-5xl font-black text-white tracking-tighter uppercase italic">
-                            Challenge <span className="text-amber-400 not-italic">Tracker</span>
+                        <h1 className="text-5xl font-black text-white tracking-tighter uppercase ">
+                            Challenge <span className="text-amber-400 not-">Tracker</span>
                         </h1>
                         <p className="text-muted-foreground font-medium text-lg leading-relaxed max-w-xl mt-2">
                             Monitor your prop firm evaluations in real-time. Track profit targets, drawdown limits, and trading days across multiple challenges.
@@ -201,7 +201,7 @@ export default function ChallengeTracker() {
                                 <Edit3 className="w-5 h-5" />
                             </div>
                             <div>
-                                <h3 className="text-xl font-black uppercase tracking-tighter italic">
+                                <h3 className="text-xl font-black uppercase tracking-tighter ">
                                     {editingId ? "Edit" : "Configure"} Challenge
                                 </h3>
                                 <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Set your evaluation parameters</p>
@@ -271,7 +271,7 @@ export default function ChallengeTracker() {
             {!loading && challenges.length === 0 && !showForm ? (
                 <GlassCard className="p-16 rounded-[2.5rem] border-white/10 text-center">
                     <Trophy className="w-16 h-16 text-muted-foreground/20 mx-auto mb-6" />
-                    <h3 className="text-2xl font-black uppercase tracking-tighter italic text-white mb-2">No Active Challenges</h3>
+                    <h3 className="text-2xl font-black uppercase tracking-tighter  text-white mb-2">No Active Challenges</h3>
                     <p className="text-muted-foreground text-sm max-w-md mx-auto mb-8">
                         Start tracking your prop firm evaluation by creating a new challenge. Set your profit target, drawdown limits, and evaluation parameters.
                     </p>
@@ -387,7 +387,7 @@ function ChallengeCard({ challenge, index, onEdit, onDelete }: {
                             <Trophy className="w-6 h-6" />
                         </div>
                         <div>
-                            <h3 className="text-2xl font-black uppercase tracking-tighter italic">{c.name}</h3>
+                            <h3 className="text-2xl font-black uppercase tracking-tighter ">{c.name}</h3>
                             <div className="flex items-center gap-3 mt-1">
                                 <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">{c.firmName} • {c.phase}</span>
                                 <span className={`px-2.5 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-widest border ${challengeStatus === "PASSED" ? "bg-profit/10 text-profit border-profit/20" :

@@ -164,7 +164,7 @@ export function PreTradeCopilot({ trades }: PreTradeCopilotProps) {
                                     <p className="font-bold text-sm leading-relaxed">
                                         {prediction.warning || "System signals are optimal. Strategic execution is highly recommended."}
                                     </p>
-                                    <p className="text-[11px] opacity-70 italic">
+                                    <p className="text-[11px] opacity-70 ">
                                         {prediction.warning ? "AI Engine identifies significant psychological or statistical friction." : "Statistical edge detected on the current asset and time window."}
                                     </p>
                                 </div>

@@ -56,7 +56,7 @@ export function TrialTimer({ joinedDate, isTrial, isSidebar }: TrialTimerProps) 
                         </span>
                         <div className="flex items-center gap-1.5 min-h-[1.5rem]">
                             <Zap className="w-3.5 h-3.5 text-primary shadow-glow" />
-                            <span className="text-sm font-black text-white italic font-mono tracking-tighter">
+                            <span className="text-sm font-black text-white  font-mono tracking-tighter">
                                 {timeLeft}
                             </span>
                         </div>
@@ -87,7 +87,7 @@ export function TrialTimer({ joinedDate, isTrial, isSidebar }: TrialTimerProps) 
                             <h4 className="text-[10px] font-black uppercase tracking-widest text-primary mb-1">Professional Trial Active</h4>
                             <div className="flex items-center gap-2">
                                 <Timer className="w-4 h-4 text-white/40" />
-                                <span className="text-xl font-black text-white italic font-mono tracking-tighter">
+                                <span className="text-xl font-black text-white  font-mono tracking-tighter">
                                     {timeLeft}
                                 </span>
                             </div>

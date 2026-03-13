@@ -115,7 +115,7 @@ export default function Dashboard() {
                 </span>
             </div>
             <div>
-              <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-white uppercase italic">Executive <span className="text-primary not-italic">Dashboard</span></h1>
+              <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-white uppercase ">Executive <span className="text-primary not-">Dashboard</span></h1>
               <p className="text-muted-foreground text-sm md:text-lg font-medium mt-2">
                 Statistical analysis of <span className="text-white font-bold">{trades.length}</span> closed trades.
               </p>
@@ -195,7 +195,7 @@ export default function Dashboard() {
             <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Activity</span>
           </div>
           <div className="flex items-baseline gap-2">
-            <AnimatedCounter value={trades.length} className="text-3xl md:text-5xl font-black text-white italic" />
+            <AnimatedCounter value={trades.length} className="text-3xl md:text-5xl font-black text-white " />
             <span className="text-[10px] md:text-xs font-black text-muted-foreground uppercase tracking-widest">Total</span>
           </div>
         </GlassCard>
@@ -211,7 +211,7 @@ export default function Dashboard() {
             <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Performance</span>
           </div>
           <div className="flex items-baseline gap-2">
-            <AnimatedCounter value={winRate} suffix="%" className="text-3xl md:text-5xl font-black text-white italic" />
+            <AnimatedCounter value={winRate} suffix="%" className="text-3xl md:text-5xl font-black text-white " />
             <span className="text-[10px] md:text-xs font-black text-profit uppercase tracking-widest">Win Rate</span>
           </div>
         </GlassCard>
@@ -231,7 +231,7 @@ export default function Dashboard() {
               value={netProfit}
               prefix="$"
               decimals={2}
-              className={`text-3xl md:text-5xl font-black italic ${netProfit >= 0 ? "text-profit" : "text-loss"}`}
+              className={`text-3xl md:text-5xl font-black  ${netProfit >= 0 ? "text-profit" : "text-loss"}`}
             />
           </div>
         </GlassCard>
@@ -298,7 +298,7 @@ export default function Dashboard() {
             <div className="absolute inset-0 flex flex-col items-center justify-center z-20">
               <div className="bg-black/40 backdrop-blur-2xl p-10 rounded-[2.5rem] border border-white/10 text-center shadow-2xl max-w-sm">
                 <Lock className="w-10 h-10 text-primary mx-auto mb-4" />
-                <h3 className="text-2xl font-black uppercase tracking-tighter italic italic">Professional Restricted</h3>
+                <h3 className="text-2xl font-black uppercase tracking-tighter  ">Professional Restricted</h3>
                 <p className="text-xs text-muted-foreground mb-8 font-medium leading-relaxed">Advanced equity curve and performance forecasting are reserved for Professional traders.</p>
                 <Button 
                   onClick={() => navigate("/plans")}
@@ -348,12 +348,12 @@ export default function Dashboard() {
                 </ResponsiveContainer>
                 <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                   <span className="text-xs font-black uppercase tracking-widest text-muted-foreground">Win Rate</span>
-                  <span className="text-3xl font-black text-white italic">{winRate.toFixed(0)}%</span>
+                  <span className="text-3xl font-black text-white ">{winRate.toFixed(0)}%</span>
                 </div>
               </div>
             ) : (
               <div className="h-[240px] flex items-center justify-center text-muted-foreground">
-                <p className="text-[10px] font-black uppercase tracking-widest opacity-20 italic">No Data Available</p>
+                <p className="text-[10px] font-black uppercase tracking-widest opacity-20 ">No Data Available</p>
               </div>
             )}
             <div className="flex justify-center gap-10 mt-8">
@@ -380,7 +380,7 @@ export default function Dashboard() {
                   <div className="p-3 rounded-2xl bg-primary/10">
                     <Zap className="w-6 h-6 text-primary" />
                   </div>
-                  <h3 className="text-xl font-black uppercase tracking-widest italic">Edge <span className="text-primary not-italic">Score</span></h3>
+                  <h3 className="text-xl font-black uppercase tracking-widest ">Edge <span className="text-primary not-">Score</span></h3>
                 </div>
                 <p className="text-sm text-muted-foreground font-medium max-w-[240px]">Expectancy and statistical advantage modeling.</p>
               </div>
@@ -403,7 +403,7 @@ export default function Dashboard() {
                   <div className="p-3 rounded-2xl bg-cyan-400/10">
                     <Shield className="w-6 h-6 text-cyan-400" />
                   </div>
-                  <h3 className="text-xl font-black uppercase tracking-widest italic">Rule <span className="text-cyan-400 not-italic">Adherence</span></h3>
+                  <h3 className="text-xl font-black uppercase tracking-widest ">Rule <span className="text-cyan-400 not-">Adherence</span></h3>
                 </div>
                 <p className="text-sm text-muted-foreground font-medium max-w-[240px]">Behavioral discipline and rule adherence index.</p>
               </div>
@@ -429,19 +429,19 @@ export default function Dashboard() {
                 <Brain className="w-8 h-8 text-pink-500" />
               </div>
               <div>
-                <h3 className="text-2xl font-black uppercase tracking-tighter italic">Trading <span className="text-pink-500 not-italic">Psychology</span></h3>
+                <h3 className="text-2xl font-black uppercase tracking-tighter ">Trading <span className="text-pink-500 not-">Psychology</span></h3>
                 <p className="text-sm text-muted-foreground font-medium">Emotional performance analysis.</p>
               </div>
             </div>
             <div className="h-32 flex items-center justify-center p-6 bg-black/20 rounded-3xl border border-white/5 border-dashed">
-              <p className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground italic">Analyzing Mental State...</p>
+              <p className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground ">Analyzing Mental State...</p>
             </div>
           </GlassCard>
           {!isUltimate && (
             <div className="absolute inset-0 flex flex-col items-center justify-center z-20">
               <div className="bg-black/60 backdrop-blur-xl p-8 rounded-[2rem] border border-white/5 text-center shadow-2xl scale-90">
                 <Brain className="w-8 h-8 text-pink-500 mx-auto mb-4" />
-                <h4 className="text-lg font-black uppercase italic tracking-tighter">Institutional Access Only</h4>
+                <h4 className="text-lg font-black uppercase  tracking-tighter">Institutional Access Only</h4>
                 <p className="text-[10px] text-muted-foreground mt-2 mb-6 font-bold uppercase tracking-widest">Upgrade to initialize psychology module</p>
                 <Button 
                   onClick={() => navigate("/plans")}
@@ -462,7 +462,7 @@ export default function Dashboard() {
                 <Book className="w-8 h-8 text-indigo-500" />
               </div>
               <div>
-                <h3 className="text-2xl font-black uppercase tracking-tighter italic">Strategy <span className="text-indigo-500 not-italic">Hub</span></h3>
+                <h3 className="text-2xl font-black uppercase tracking-tighter ">Strategy <span className="text-indigo-500 not-">Hub</span></h3>
                 <p className="text-sm text-muted-foreground font-medium">Strategic playbook management.</p>
               </div>
             </div>
@@ -474,7 +474,7 @@ export default function Dashboard() {
             <div className="absolute inset-0 flex flex-col items-center justify-center z-20">
               <div className="bg-black/60 backdrop-blur-xl p-8 rounded-[2rem] border border-white/5 text-center shadow-2xl scale-90">
                 <Book className="w-8 h-8 text-indigo-500 mx-auto mb-4" />
-                <h4 className="text-lg font-black uppercase italic tracking-tighter">Institutional Access Only</h4>
+                <h4 className="text-lg font-black uppercase  tracking-tighter">Institutional Access Only</h4>
                 <p className="text-[10px] text-muted-foreground mt-2 mb-6 font-bold uppercase tracking-widest">Unlock Advanced Strategy Playbook</p>
                 <Button 
                   onClick={() => navigate("/plans")}
@@ -493,7 +493,7 @@ export default function Dashboard() {
         <div className="flex items-center justify-between px-2">
           <h3 className="text-xl font-black uppercase tracking-widest flex items-center gap-3 text-white">
             <Activity className="w-6 h-6 text-primary" />
-            Performance <span className="text-primary not-italic">Insights</span>
+            Performance <span className="text-primary not-">Insights</span>
           </h3>
           <span className="h-px flex-1 bg-gradient-to-r from-primary/30 to-transparent ml-6" />
         </div>
@@ -503,9 +503,9 @@ export default function Dashboard() {
       {/* Strategy Performance */}
       <div className="space-y-6">
         <div className="flex items-center justify-between px-2">
-          <h3 className="text-xl font-black uppercase tracking-widest flex items-center gap-3 italic text-white">
+          <h3 className="text-xl font-black uppercase tracking-widest flex items-center gap-3  text-white">
             <Zap className="w-6 h-6 text-primary" />
-            Strategy <span className="text-primary not-italic">Breakdown</span>
+            Strategy <span className="text-primary not-">Breakdown</span>
           </h3>
           <span className="h-px flex-1 bg-gradient-to-r from-primary/30 to-transparent ml-6" />
         </div>
@@ -523,7 +523,7 @@ export default function Dashboard() {
                       </div>
                     </div>
                     <div className="flex items-baseline justify-between">
-                      <span className={`text-2xl font-black italic ${s.profit >= 0 ? "text-profit" : "text-loss"}`}>
+                      <span className={`text-2xl font-black  ${s.profit >= 0 ? "text-profit" : "text-loss"}`}>
                         ${s.profit > 0 ? "+" : ""}{s.profit.toLocaleString()}
                       </span>
                       <span className="text-[10px] font-black uppercase tracking-widest text-white/40">{s.winRate}% WR</span>
@@ -534,7 +534,7 @@ export default function Dashboard() {
                   </div>
                 ))}
               </div>
-            ) : <div className="text-sm font-black uppercase tracking-[0.2em] text-muted-foreground py-10 text-center opacity-20 italic">No Strategy Data Available</div>}
+            ) : <div className="text-sm font-black uppercase tracking-[0.2em] text-muted-foreground py-10 text-center opacity-20 ">No Strategy Data Available</div>}
           </GlassCard>
           {!isPro && (
             <div className="absolute inset-0 flex flex-col items-center justify-center z-20">

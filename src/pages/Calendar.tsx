@@ -169,12 +169,12 @@ export default function CalendarPage() {
                             </div>
                         </div>
                         <div>
-                            <h1 className="text-5xl font-black tracking-tighter text-white uppercase italic">Performance <span className="text-primary not-italic">Calendar</span></h1>
+                            <h1 className="text-5xl font-black tracking-tighter text-white uppercase ">Performance <span className="text-primary not-">Calendar</span></h1>
                             <div className="flex items-center gap-4 mt-2">
                                 <button onClick={() => setViewDate(subMonths(viewDate, 1))} className="p-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors">
                                     <ChevronLeft className="w-5 h-5 text-muted-foreground" />
                                 </button>
-                                <span className="text-white font-black px-4 py-1.5 rounded-2xl bg-white/5 border border-white/10 uppercase italic text-lg shadow-inner min-w-[200px] text-center">
+                                <span className="text-white font-black px-4 py-1.5 rounded-2xl bg-white/5 border border-white/10 uppercase  text-lg shadow-inner min-w-[200px] text-center">
                                     {format(viewDate, "MMMM yyyy")}
                                 </span>
                                 <button onClick={() => setViewDate(addMonths(viewDate, 1))} className="p-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors">
@@ -212,7 +212,7 @@ export default function CalendarPage() {
                                 <div className={`p-3 rounded-2xl ${stat.bg} ${stat.color}`}>
                                     <stat.icon className="w-5 h-5" />
                                 </div>
-                                <div className="text-[8px] font-black uppercase tracking-widest text-muted-foreground opacity-40 italic">Performance Node 0{i+1}</div>
+                                <div className="text-[8px] font-black uppercase tracking-widest text-muted-foreground opacity-40 ">Performance Node 0{i+1}</div>
                             </div>
                             <div>
                                 <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">{stat.label}</p>
@@ -268,7 +268,7 @@ export default function CalendarPage() {
                                             {stats?.status === 'loss' && <div className="absolute -top-10 -right-10 w-20 h-20 bg-loss/10 rounded-full blur-xl" />}
                                             
                                             <div className="flex justify-between items-start z-10 w-full">
-                                                <span className={`text-xs font-black italic ${isToday(day) ? 'text-primary' : 'text-muted-foreground/60'}`}>
+                                                <span className={`text-xs font-black  ${isToday(day) ? 'text-primary' : 'text-muted-foreground/60'}`}>
                                                     {format(day, "d")}
                                                 </span>
                                                 {hasTrades && (
@@ -352,7 +352,7 @@ export default function CalendarPage() {
                                             <Zap className="w-5 h-5 fill-primary" />
                                         </div>
                                         <div>
-                                            <h3 className="text-xl font-black uppercase tracking-tighter italic">Trade Notes</h3>
+                                            <h3 className="text-xl font-black uppercase tracking-tighter ">Trade Notes</h3>
                                             <div className="flex items-center gap-2">
                                                 <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Timestamp:</span>
                                                 <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">{format(selectedDate, "dd-MM-yyyy")}</span>
@@ -403,8 +403,8 @@ export default function CalendarPage() {
                                     animate={{ scale: 1, opacity: 1 }}
                                 >
                                     <div className={`absolute inset-0 opacity-20 blur-3xl transition-opacity group-hover:opacity-30 ${selectedDayStats.pnl > 0 ? "bg-profit" : "bg-loss"}`} />
-                                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground mb-3 opacity-60 italic">Daily Performance</p>
-                                    <p className={`text-6xl font-black tracking-tighter ${selectedDayStats.pnl > 0 ? 'text-profit shimmer-text italic' : 'text-loss'}`}>
+                                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground mb-3 opacity-60 ">Daily Performance</p>
+                                    <p className={`text-6xl font-black tracking-tighter ${selectedDayStats.pnl > 0 ? 'text-profit shimmer-text ' : 'text-loss'}`}>
                                         {selectedDayStats.pnl > 0 ? "+" : ""}{selectedDayStats.pnl.toFixed(0)}
                                     </p>
                                     <div className="mt-4 flex flex-wrap justify-center gap-2">
@@ -434,7 +434,7 @@ export default function CalendarPage() {
                                     <div className="absolute -inset-4 bg-muted/20 rounded-full blur-xl" />
                                     <Activity className="w-12 h-12 text-muted-foreground/20 relative" />
                                 </div>
-                                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground opacity-30 italic">No Data Nodes Found</p>
+                                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground opacity-30 ">No Data Nodes Found</p>
                             </div>
                         )}
                     </GlassCard>
@@ -443,7 +443,7 @@ export default function CalendarPage() {
                         {selectedDayTrades.length > 0 && (
                             <div className="space-y-4">
                                 <div className="flex items-center justify-between px-2">
-                                    <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground italic">Trade Log <span className="text-primary not-italic">({selectedDayTrades.length})</span></h3>
+                                    <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground ">Trade Log <span className="text-primary not-">({selectedDayTrades.length})</span></h3>
                                     <span className="h-px flex-1 bg-gradient-to-r from-white/10 to-transparent ml-4" />
                                 </div>
                                 
@@ -460,7 +460,7 @@ export default function CalendarPage() {
                                                 
                                                 <div className="flex justify-between items-start mb-4">
                                                     <div>
-                                                        <h4 className="font-black text-xl tracking-tighter uppercase italic group-hover:text-primary transition-colors">{trade.pair}</h4>
+                                                        <h4 className="font-black text-xl tracking-tighter uppercase  group-hover:text-primary transition-colors">{trade.pair}</h4>
                                                         <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest flex items-center gap-1">
                                                             <Zap className="w-3 h-3" />
                                                             {trade.strategy}

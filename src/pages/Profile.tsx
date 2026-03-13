@@ -15,6 +15,8 @@ import { usePlan } from "@/hooks/usePlan";
 import { auth } from "@/lib/firebase";
 import { cn } from "@/lib/utils";
 import { AnimatedCounter } from "@/components/AnimatedCounter";
+import { useThemeSettings, AVAILABLE_FONTS } from "@/contexts/ThemeSettingsContext";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function Profile() {
     const navigate = useNavigate();
@@ -22,6 +24,7 @@ export default function Profile() {
     const { plan } = usePlan();
     const isUltimate = plan === "ultimate";
     const { trades } = useTrades();
+    const { theme, setTheme, fontFamily, setFontFamily } = useThemeSettings();
 
     const netProfit = getNetProfit(trades);
     const winRate = getWinRate(trades);
@@ -191,7 +194,7 @@ export default function Profile() {
                             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
                         </div>
                         <div className={cn(
-                            "absolute -bottom-4 left-1/2 -translate-x-1/2 px-8 py-2 rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] text-white shadow-xl z-20 whitespace-nowrap italic",
+                            "absolute -bottom-4 left-1/2 -translate-x-1/2 px-8 py-2 rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] text-white shadow-xl z-20 whitespace-nowrap ",
                             currentRank.bg
                         )}>
                             {currentRank.name}
@@ -207,7 +210,7 @@ export default function Profile() {
                         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-white/5">
                             <div className="space-y-2">
                                 <div className="flex items-center gap-4">
-                                    <h1 className="text-5xl font-black text-white italic tracking-tighter uppercase">
+                                    <h1 className="text-5xl font-black text-white  tracking-tighter uppercase">
                                         {user?.displayName || "Trader"}
                                     </h1>
                                     <div className="p-2 rounded-xl bg-white/5 border border-white/10 text-primary">
@@ -221,7 +224,7 @@ export default function Profile() {
                             <div className="flex gap-4">
                                 <div className="flex flex-col items-end">
                                     <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Subscription</span>
-                                    <div className="px-5 py-2 rounded-2xl bg-primary/10 border border-primary/20 text-primary text-[10px] font-black uppercase tracking-widest italic shadow-lg shadow-primary/5">
+                                    <div className="px-5 py-2 rounded-2xl bg-primary/10 border border-primary/20 text-primary text-[10px] font-black uppercase tracking-widest  shadow-lg shadow-primary/5">
                                         {plan === 'ultimate' ? 'Institutional' : plan === 'pro' ? 'Professional' : 'Standard'} ACCESS
                                     </div>
                                 </div>
@@ -240,12 +243,12 @@ export default function Profile() {
                                 <div className="flex justify-between items-end">
                                     <div className="flex flex-col gap-1">
                                         <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Growth Path</span>
-                                        <span className={cn("text-lg font-black italic uppercase", currentRank.color)}>
+                                        <span className={cn("text-lg font-black  uppercase", currentRank.color)}>
                                             {currentRank.name}
                                         </span>
                                     </div>
                                     <div className="text-right">
-                                        <span className="text-2xl font-black italic text-white">{xp.toLocaleString()}</span>
+                                        <span className="text-2xl font-black  text-white">{xp.toLocaleString()}</span>
                                         <span className="text-[10px] font-black text-muted-foreground uppercase ml-2 tracking-widest">XP</span>
                                     </div>
                                 </div>
@@ -266,16 +269,87 @@ export default function Profile() {
                             <div className="flex items-center gap-6">
                                 <div className="flex-1 bg-white/5 border border-white/10 rounded-3xl p-5 flex flex-col items-center justify-center text-center transition-colors hover:bg-white/10">
                                     <span className="text-[8px] font-black text-muted-foreground uppercase tracking-widest mb-2">Unlocking Progress</span>
-                                    <span className="text-2xl font-black italic text-white">{unlockedCount} / {badges.length}</span>
+                                    <span className="text-2xl font-black  text-white">{unlockedCount} / {badges.length}</span>
                                 </div>
                                 <div className="flex-1 bg-white/5 border border-white/10 rounded-3xl p-5 flex flex-col items-center justify-center text-center transition-colors hover:bg-white/10">
                                     <span className="text-[8px] font-black text-muted-foreground uppercase tracking-widest mb-2">Trader Level</span>
-                                    <span className="text-2xl font-black italic text-primary">LVL {Math.floor(Math.sqrt(totalTrades)) + 1}</span>
+                                    <span className="text-2xl font-black  text-primary">LVL {Math.floor(Math.sqrt(totalTrades)) + 1}</span>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
+            </motion.div>
+
+            {/* Interface Configuration */}
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="grid grid-cols-1 md:grid-cols-2 gap-8"
+            >
+                <GlassCard className="p-8 border-primary/20 bg-primary/5">
+                    <div className="flex items-center gap-4 mb-6">
+                        <div className="p-3 rounded-2xl bg-primary/10 text-primary">
+                            <Settings className="w-6 h-6" />
+                        </div>
+                        <div>
+                            <h3 className="font-black text-white uppercase tracking-tighter">Theme Selection</h3>
+                            <p className="text-[10px] text-muted-foreground uppercase tracking-widest">Interface Appearance</p>
+                        </div>
+                    </div>
+                    <div className="flex gap-4">
+                        <button
+                            onClick={() => setTheme("light")}
+                            className={cn(
+                                "flex-1 px-6 py-4 rounded-2xl border transition-all font-black uppercase text-[10px] tracking-widest",
+                                theme === "light" 
+                                    ? "bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20" 
+                                    : "bg-white/5 border-white/10 text-white/40 hover:bg-white/10"
+                            )}
+                        >
+                            Light Mode
+                        </button>
+                        <button
+                            onClick={() => setTheme("dark")}
+                            className={cn(
+                                "flex-1 px-6 py-4 rounded-2xl border transition-all font-black uppercase text-[10px] tracking-widest",
+                                theme === "dark" 
+                                    ? "bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20" 
+                                    : "bg-white/5 border-white/10 text-white/40 hover:bg-white/10"
+                            )}
+                        >
+                            Dark Mode
+                        </button>
+                    </div>
+                </GlassCard>
+
+                <GlassCard className="p-8 border-indigo-500/20 bg-indigo-500/5">
+                    <div className="flex items-center gap-4 mb-6">
+                        <div className="p-3 rounded-2xl bg-indigo-500/10 text-indigo-400">
+                            <Sparkles className="w-6 h-6" />
+                        </div>
+                        <div>
+                            <h3 className="font-black text-white uppercase tracking-tighter">Typography</h3>
+                            <p className="text-[10px] text-indigo-400/60 uppercase tracking-widest">System Font Family</p>
+                        </div>
+                    </div>
+                    <Select value={fontFamily} onValueChange={setFontFamily}>
+                        <SelectTrigger className="w-full bg-black/40 border-white/10 rounded-2xl h-14 font-black uppercase text-[10px] tracking-widest">
+                            <SelectValue placeholder="Select font" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-black/90 border-white/10 backdrop-blur-xl rounded-2xl">
+                            {AVAILABLE_FONTS.map((font) => (
+                                <SelectItem 
+                                    key={font.family} 
+                                    value={font.family}
+                                    className="font-black uppercase text-[10px] tracking-widest focus:bg-primary/20 focus:text-primary"
+                                >
+                                    {font.name}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </GlassCard>
             </motion.div>
 
             {/* Grid Layout: Stats & Achievements */}
@@ -284,7 +358,7 @@ export default function Profile() {
                 <div className="space-y-8">
                     <div className="flex items-center gap-3 mb-6">
                         <Activity className="w-5 h-5 text-primary" />
-                        <h2 className="text-xl font-black text-white uppercase italic tracking-tighter">Performance Overview</h2>
+                        <h2 className="text-xl font-black text-white uppercase  tracking-tighter">Performance Overview</h2>
                     </div>
                     <div className="grid grid-cols-1 gap-6">
                         <GlassCard className="p-8 group hover:border-primary/20 transition-all overflow-hidden relative">
@@ -292,7 +366,7 @@ export default function Profile() {
                                 <BarChart className="w-24 h-24" />
                             </div>
                             <h3 className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-4">Total trades</h3>
-                            <div className="text-5xl font-black italic text-white flex items-center gap-4">
+                            <div className="text-5xl font-black  text-white flex items-center gap-4">
                                 <AnimatedCounter value={totalTrades} />
                                 <div className="p-2 rounded-xl bg-white/5 border border-white/10">
                                     <Layers className="w-6 h-6 text-primary" />
@@ -305,7 +379,7 @@ export default function Profile() {
                                 <Target className="w-24 h-24" />
                             </div>
                             <h3 className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-4">Win rate</h3>
-                            <div className={cn("text-5xl font-black italic flex items-center gap-4", winRate >= 50 ? "text-profit" : "text-loss")}>
+                            <div className={cn("text-5xl font-black  flex items-center gap-4", winRate >= 50 ? "text-profit" : "text-loss")}>
                                 <AnimatedCounter value={winRate} suffix="%" />
                                 <div className="p-2 rounded-xl bg-white/5 border border-white/10">
                                     <Target className="w-6 h-6" />
@@ -318,7 +392,7 @@ export default function Profile() {
                                 <DollarSign className="w-24 h-24" />
                             </div>
                             <h3 className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-4">Net Profit</h3>
-                            <div className={cn("text-5xl font-black italic flex items-center gap-4", netProfit >= 0 ? "text-profit" : "text-loss")}>
+                            <div className={cn("text-5xl font-black  flex items-center gap-4", netProfit >= 0 ? "text-profit" : "text-loss")}>
                                 <span className="text-2xl mt-1">$</span>
                                 <AnimatedCounter value={netProfit} />
                             </div>
@@ -337,7 +411,7 @@ export default function Profile() {
                                         <Brain className="w-6 h-6" />
                                     </div>
                                     <div>
-                                        <h3 className="font-black text-white uppercase italic tracking-tighter">AI Coach</h3>
+                                        <h3 className="font-black text-white uppercase  tracking-tighter">AI Coach</h3>
                                         <p className="text-[10px] font-black text-indigo-400/60 uppercase tracking-widest">Trading Insights</p>
                                     </div>
                                 </div>
@@ -369,7 +443,7 @@ export default function Profile() {
                                             <div className="w-1.5 h-1.5 rounded-full bg-profit animate-pulse" />
                                             <span className="text-[10px] font-black text-profit uppercase tracking-widest">Performance Gain</span>
                                         </div>
-                                        <p className="text-white/70 italic group-hover/tip:text-white transition-colors">
+                                        <p className="text-white/70  group-hover/tip:text-white transition-colors">
                                             You maintained a 2:1 Reward ratio on 80% of winning trades. Great discipline!
                                         </p>
                                     </div>
@@ -378,7 +452,7 @@ export default function Profile() {
                                             <div className="w-1.5 h-1.5 rounded-full bg-loss animate-pulse" />
                                             <span className="text-[10px] font-black text-loss uppercase tracking-widest">Efficiency Alert</span>
                                         </div>
-                                        <p className="text-white/70 italic group-hover/tip:text-white transition-colors">
+                                        <p className="text-white/70  group-hover/tip:text-white transition-colors">
                                             Your win rate drops to 18% during the Asian session. Consider session adjustment.
                                         </p>
                                     </div>
@@ -393,7 +467,7 @@ export default function Profile() {
                     <div className="flex items-center justify-between mb-6">
                         <div className="flex items-center gap-3">
                             <Trophy className="w-5 h-5 text-yellow-500" />
-                            <h2 className="text-xl font-black text-white uppercase italic tracking-tighter">Achievement Milestones</h2>
+                            <h2 className="text-xl font-black text-white uppercase  tracking-tighter">Achievement Milestones</h2>
                         </div>
                         <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">
                             Completion status: {Math.round((unlockedCount / badges.length) * 100)}% Complete
@@ -427,10 +501,10 @@ export default function Profile() {
                                     </div>
 
                                     <div className="space-y-1">
-                                        <h3 className={cn("font-black uppercase italic tracking-tighter text-sm", badge.unlocked ? "text-white" : "text-white/40")}>
+                                        <h3 className={cn("font-black uppercase  tracking-tighter text-sm", badge.unlocked ? "text-white" : "text-white/40")}>
                                             {badge.name}
                                         </h3>
-                                        <p className="text-[10px] text-muted-foreground leading-relaxed italic line-clamp-2">{badge.description}</p>
+                                        <p className="text-[10px] text-muted-foreground leading-relaxed  line-clamp-2">{badge.description}</p>
                                     </div>
 
                                     {badge.unlocked && (
@@ -447,7 +521,7 @@ export default function Profile() {
                     <div className="mt-12">
                         <div className="flex items-center gap-3 mb-8">
                             <Settings className="w-5 h-5 text-primary" />
-                            <h2 className="text-xl font-black text-white uppercase italic tracking-tighter">Trade History Import</h2>
+                            <h2 className="text-xl font-black text-white uppercase  tracking-tighter">Trade History Import</h2>
                         </div>
                         <div className="rounded-[2.5rem] overflow-hidden border border-white/5 bg-black/20 p-2 shadow-inner">
                             <importTrades.ImportTrades />

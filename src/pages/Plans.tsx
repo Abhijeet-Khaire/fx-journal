@@ -120,10 +120,10 @@ export default function Plans() {
                         </div>
                     </div>
                     <div>
-                        <h1 className="text-6xl font-black tracking-tighter text-white uppercase italic">Pricing <span className="text-primary not-italic">Tiers</span></h1>
+                        <h1 className="text-6xl font-black tracking-tighter text-white uppercase ">Pricing <span className="text-primary not-">Tiers</span></h1>
                         <p className="text-muted-foreground text-xl font-medium mt-4">
                             Enhance your trading environment with advanced account tiers. 
-                            Unlock <span className="text-white font-bold italic">AI Analytics</span> and <span className="text-white font-bold italic">Risk Oversight</span> modules.
+                            Unlock <span className="text-white font-bold ">AI Analytics</span> and <span className="text-white font-bold ">Risk Oversight</span> modules.
                         </p>
                     </div>
                 </div>
@@ -162,11 +162,11 @@ export default function Plans() {
                                             <PlanIcon className="w-8 h-8" />
                                         </div>
                                         <div className="flex flex-col items-end">
-                                            <span className="text-4xl font-black italic text-white tracking-tighter">{p.price}</span>
+                                            <span className="text-4xl font-black  text-white tracking-tighter">{p.price}</span>
                                             <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">{p.period}</span>
                                         </div>
                                     </div>
-                                    <h3 className="text-2xl font-black text-white uppercase italic tracking-tighter mb-2">{p.name}</h3>
+                                    <h3 className="text-2xl font-black text-white uppercase  tracking-tighter mb-2">{p.name}</h3>
                                     <p className="text-[10px] font-black text-primary tracking-[0.2em] mb-4">{p.code}</p>
                                     <p className="text-sm text-muted-foreground font-medium leading-relaxed">{p.description}</p>
                                 </div>

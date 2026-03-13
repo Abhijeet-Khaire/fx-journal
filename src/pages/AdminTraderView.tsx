@@ -80,7 +80,7 @@ export default function AdminTraderView() {
         return (
             <div className="flex flex-col items-center justify-center min-h-[50vh] text-center space-y-4">
                 <Target className="w-16 h-16 text-muted-foreground/20" />
-                <h2 className="text-2xl font-black uppercase tracking-tighter italic">Trader Not Found</h2>
+                <h2 className="text-2xl font-black uppercase tracking-tighter ">Trader Not Found</h2>
                 <button onClick={() => navigate('/admin')} className="text-primary text-sm font-bold hover:underline">Return to Admin Dashboard</button>
             </div>
         );
@@ -130,7 +130,7 @@ export default function AdminTraderView() {
                                 <span className="text-[8px] font-black tracking-[0.3em] uppercase text-primary">Trader Account</span>
                             </div>
                         </div>
-                        <h1 className="text-4xl font-black text-white tracking-tighter uppercase italic">{trader.displayName}</h1>
+                        <h1 className="text-4xl font-black text-white tracking-tighter uppercase ">{trader.displayName}</h1>
                         <p className="text-muted-foreground font-medium flex items-center gap-2 mt-1">
                             <Fingerprint className="w-3.5 h-3.5" /> {trader.email}
                         </p>
@@ -155,7 +155,7 @@ export default function AdminTraderView() {
                                     <stat.icon className="w-4 h-4" />
                                 </div>
                             </div>
-                            <p className={`text-2xl font-black tracking-tighter italic ${stat.color}`}>{stat.value}</p>
+                            <p className={`text-2xl font-black tracking-tighter  ${stat.color}`}>{stat.value}</p>
                         </GlassCard>
                     </motion.div>
                 ))}
@@ -168,7 +168,7 @@ export default function AdminTraderView() {
                     <div className="flex items-center gap-4 mb-8 relative z-10">
                         <div className="p-3 rounded-2xl bg-primary/10 text-primary"><TrendingUp className="w-5 h-5" /></div>
                         <div>
-                            <h3 className="text-xl font-black uppercase tracking-tighter italic">Equity Curve</h3>
+                            <h3 className="text-xl font-black uppercase tracking-tighter ">Equity Curve</h3>
                             <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Cumulative Performance Over Time</p>
                         </div>
                         <div className="ml-auto flex items-center gap-2">
@@ -249,7 +249,7 @@ export default function AdminTraderView() {
                 <div className="p-8 pb-4 flex items-center gap-4">
                     <div className="p-3 rounded-2xl bg-primary/10 text-primary"><Zap className="w-5 h-5" /></div>
                     <div>
-                        <h3 className="text-xl font-black uppercase tracking-tighter italic">Trade History</h3>
+                        <h3 className="text-xl font-black uppercase tracking-tighter ">Trade History</h3>
                         <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">{trades.length} Records</p>
                     </div>
                 </div>

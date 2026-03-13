@@ -45,7 +45,7 @@ export default function PlaybookPage() {
             </div>
         </div>
         <div className="space-y-3 relative z-10">
-            <h2 className="text-4xl font-black uppercase tracking-tighter italic">Access Restricted</h2>
+            <h2 className="text-4xl font-black uppercase tracking-tighter ">Access Restricted</h2>
             <p className="text-muted-foreground max-w-md mx-auto font-medium">
                 The <span className="text-indigo-400 font-bold">Strategy Playbook</span> is exclusive to the Institutional Plan. 
                 Upgrade now to unlock advanced strategy synthesis and automated behavior rules.
@@ -75,9 +75,9 @@ export default function PlaybookPage() {
             </div>
           </div>
           <div className="space-y-2 relative z-10">
-            <h2 className="text-3xl font-black tracking-tighter uppercase italic">Strategy Synthesis in Progress</h2>
+            <h2 className="text-3xl font-black tracking-tighter uppercase ">Strategy Synthesis in Progress</h2>
             <p className="text-muted-foreground max-w-md mx-auto font-medium">
-                AI is compiling your <span className="text-primary font-bold italic">Primary Strategy</span>. 
+                AI is compiling your <span className="text-primary font-bold ">Primary Strategy</span>. 
                 Keep journaling to reach the <span className="text-primary font-bold">5-10 trade baseline</span> for synthesis.
             </p>
           </div>
@@ -98,8 +98,8 @@ export default function PlaybookPage() {
                         <span className="text-[8px] font-black tracking-[0.3em] uppercase text-primary">Strategy Synthesis Active</span>
                     </div>
                 </div>
-                <h1 className="text-5xl font-black text-white tracking-tighter uppercase italic">
-                    AI <span className="text-primary not-italic">Strategy Hub</span>
+                <h1 className="text-5xl font-black text-white tracking-tighter uppercase ">
+                    AI <span className="text-primary not-">Strategy Hub</span>
                 </h1>
                 <p className="text-muted-foreground font-medium text-lg leading-relaxed max-w-xl">
                     Dynamic strategy framework synthesized from your highest-performing trading patterns.
@@ -132,8 +132,8 @@ export default function PlaybookPage() {
                             Online
                         </div>
                     </div>
-                    <h2 className="text-4xl font-black uppercase tracking-tighter italic flex items-center gap-4">
-                        Practice Your <span className="text-primary not-italic ml-2">Edge</span>
+                    <h2 className="text-4xl font-black uppercase tracking-tighter  flex items-center gap-4">
+                        Practice Your <span className="text-primary not- ml-2">Edge</span>
                     </h2>
                     <p className="text-muted-foreground font-medium text-base leading-relaxed max-w-xl">
                         Relive past trades candlestick by candlestick. Practice entries and exits with zero capital risk, powered by your historical trade data.

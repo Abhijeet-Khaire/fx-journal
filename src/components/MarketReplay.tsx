@@ -176,7 +176,7 @@ export function MarketReplay({ trades }: MarketReplayProps) {
                             <Target className="w-5 h-5" />
                         </div>
                         <div>
-                            <h3 className="text-xl font-black uppercase tracking-tighter italic">Simulator Hub</h3>
+                            <h3 className="text-xl font-black uppercase tracking-tighter ">Simulator Hub</h3>
                             <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Performance Training v4.0</p>
                         </div>
                     </div>
@@ -207,7 +207,7 @@ export function MarketReplay({ trades }: MarketReplayProps) {
                     {bootStatus === 'idle' ? (
                         <button 
                             onClick={startBoot}
-                            className="w-full py-5 bg-primary text-primary-foreground rounded-2xl font-black uppercase tracking-[0.2em] italic hover:scale-[1.03] active:scale-[0.98] transition-all shadow-[0_0_30px_rgba(var(--primary),0.3)] flex items-center justify-center gap-3"
+                            className="w-full py-5 bg-primary text-primary-foreground rounded-2xl font-black uppercase tracking-[0.2em]  hover:scale-[1.03] active:scale-[0.98] transition-all shadow-[0_0_30px_rgba(var(--primary),0.3)] flex items-center justify-center gap-3"
                         >
                             <Zap className="w-5 h-5 fill-current" />
                             Launch Session
@@ -217,12 +217,12 @@ export function MarketReplay({ trades }: MarketReplayProps) {
                             <div className="flex items-center justify-between">
                                 <div className="space-y-1">
                                     <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Simulator Profit</p>
-                                    <p className={`text-2xl font-black italic tracking-tighter ${realizedPnL >= 0 ? 'text-profit shimmer-text' : 'text-loss'}`}>
+                                    <p className={`text-2xl font-black  tracking-tighter ${realizedPnL >= 0 ? 'text-profit shimmer-text' : 'text-loss'}`}>
                                         {realizedPnL >= 0 ? '+' : ''}${realizedPnL.toFixed(2)}
                                     </p>
                                 </div>
                                 <div className="p-4 rounded-2xl bg-white/5 border border-white/10 text-center min-w-[100px]">
-                                    <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest mb-1 italic">Speed Phase</p>
+                                    <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest mb-1 ">Speed Phase</p>
                                     <p className="text-xl font-black text-primary">1.0x</p>
                                 </div>
                             </div>
@@ -273,12 +273,12 @@ export function MarketReplay({ trades }: MarketReplayProps) {
                             <div className="flex items-center gap-6">
                                 <div className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20">
                                     <Activity className="w-3.5 h-3.5 text-primary animate-pulse" />
-                                    <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em] italic">Executing Live Stream</span>
+                                    <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em] ">Executing Live Stream</span>
                                 </div>
                                 {isGoldenAlignment && (
                                     <div className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-profit/10 border border-profit/20">
                                         <ShieldCheck className="w-3.5 h-3.5 text-profit" />
-                                        <span className="text-[10px] font-black text-profit uppercase tracking-[0.2em] italic">Golden Setup Match</span>
+                                        <span className="text-[10px] font-black text-profit uppercase tracking-[0.2em] ">Golden Setup Match</span>
                                     </div>
                                 )}
                             </div>
@@ -391,7 +391,7 @@ export function MarketReplay({ trades }: MarketReplayProps) {
                                         <item.icon className="w-3 h-3 text-primary opacity-60" />
                                         {item.label}
                                     </p>
-                                    <p className={`text-sm font-black italic tracking-tight ${item.color || 'text-white'}`}>{item.value}</p>
+                                    <p className={`text-sm font-black  tracking-tight ${item.color || 'text-white'}`}>{item.value}</p>
                                 </div>
                             ))}
                         </div>

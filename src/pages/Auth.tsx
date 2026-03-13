@@ -194,10 +194,10 @@ export default function Auth() {
 
                         <div className="space-y-4">
                             <h1 className="text-[4rem] sm:text-[6rem] lg:text-[9rem] font-black leading-[0.8] tracking-tighter uppercase text-white drop-shadow-[0_0_30px_rgba(255,255,255,0.1)]">
-                                <span className="block italic">ZENITH</span>
+                                <span className="block ">ZENITH</span>
                                 <span className="block text-cyan-400">JOURNAL</span>
                             </h1>
-                            <p className="text-lg lg:text-2xl text-white/40 font-light max-w-xl italic leading-relaxed">
+                            <p className="text-lg lg:text-2xl text-white/40 font-light max-w-xl  leading-relaxed">
                                 The pinnacle of <span className="text-white font-medium">quantitative trading</span> psychology. Master the markets from within.
                             </p>
                         </div>
@@ -209,7 +209,7 @@ export default function Auth() {
                                     <Activity className="w-4 md:w-5 h-4 md:h-5 text-cyan-500" />
                                     <span className="text-[8px] md:text-[10px] font-black uppercase tracking-widest text-nowrap">NETWORK ACTIVITY</span>
                                 </div>
-                                <div className="text-3xl md:text-5xl font-black italic tracking-tighter text-cyan-400 drop-shadow-[0_0_15px_rgba(34,211,238,0.3)]">
+                                <div className="text-3xl md:text-5xl font-black  tracking-tighter text-cyan-400 drop-shadow-[0_0_15px_rgba(34,211,238,0.3)]">
                                     <AnimatedCounter value={activeTraders} />
                                 </div>
                             </div>
@@ -220,7 +220,7 @@ export default function Auth() {
                                         <TrendingUp className="w-4 md:w-5 h-4 md:h-5 text-emerald-400" />
                                         <span className="text-[8px] md:text-[10px] font-black uppercase tracking-widest text-nowrap">LIQUIDITY LOGGED</span>
                                     </div>
-                                    <div className="text-3xl md:text-5xl font-black italic tracking-tighter text-emerald-400 drop-shadow-[0_0_15px_rgba(52,211,153,0.3)]">
+                                    <div className="text-3xl md:text-5xl font-black  tracking-tighter text-emerald-400 drop-shadow-[0_0_15px_rgba(52,211,153,0.3)]">
                                         ${(totalProfit / 1000000).toFixed(1)}M+
                                     </div>
                                 </div>
@@ -246,7 +246,7 @@ export default function Auth() {
                         className="w-full max-w-[340px] space-y-10"
                     >
                         <div className="text-center space-y-2">
-                            <h2 className="text-3xl font-black italic uppercase tracking-tighter text-white">ACCESS TERMINAL</h2>
+                            <h2 className="text-3xl font-black  uppercase tracking-tighter text-white">ACCESS TERMINAL</h2>
                             <p className="text-[10px] font-bold text-white/20 uppercase tracking-[0.4em]">IDENTITY VERIFICATION REQUIRED</p>
                         </div>
 
@@ -255,13 +255,13 @@ export default function Auth() {
                                 <TabsList className="grid w-full grid-cols-2 mb-8 bg-black/40 p-1.5 rounded-[1.8rem] h-14 border border-white/5">
                                     <TabsTrigger
                                         value="login"
-                                        className="rounded-[1.4rem] h-full text-[11px] font-black uppercase tracking-widest italic transition-all data-[state=active]:bg-white/10 data-[state=active]:text-white data-[state=active]:shadow-[0_0_20px_rgba(255,255,255,0.1)]"
+                                        className="rounded-[1.4rem] h-full text-[11px] font-black uppercase tracking-widest  transition-all data-[state=active]:bg-white/10 data-[state=active]:text-white data-[state=active]:shadow-[0_0_20px_rgba(255,255,255,0.1)]"
                                     >
                                         LOGIN
                                     </TabsTrigger>
                                     <TabsTrigger
                                         value="signup"
-                                        className="rounded-[1.4rem] h-full text-[11px] font-black uppercase tracking-widest italic transition-all data-[state=active]:bg-white/10 data-[state=active]:text-white data-[state=active]:shadow-[0_0_20px_rgba(255,255,255,0.1)]"
+                                        className="rounded-[1.4rem] h-full text-[11px] font-black uppercase tracking-widest  transition-all data-[state=active]:bg-white/10 data-[state=active]:text-white data-[state=active]:shadow-[0_0_20px_rgba(255,255,255,0.1)]"
                                     >
                                         JOIN
                                     </TabsTrigger>
@@ -289,7 +289,7 @@ export default function Auth() {
                                             <div className="space-y-2.5">
                                                 <div className="flex justify-between items-center ml-2">
                                                     <Label className="text-[9px] font-black text-white/30 uppercase tracking-[0.3em]">SEC_KEY</Label>
-                                                    <button type="button" className="text-[8px] font-bold text-cyan-500/40 hover:text-cyan-400 uppercase tracking-widest italic">RECOVER</button>
+                                                    <button type="button" className="text-[8px] font-bold text-cyan-500/40 hover:text-cyan-400 uppercase tracking-widest ">RECOVER</button>
                                                 </div>
                                                 <div className="relative group">
                                                     <Input
@@ -333,7 +333,7 @@ export default function Auth() {
                                             <Button
                                                 onClick={() => handleAuth("login")}
                                                 disabled={loading}
-                                                className="w-full h-16 rounded-[2rem] bg-cyan-400 text-black font-black italic uppercase tracking-[0.4em] hover:bg-cyan-300 hover:scale-[1.02] active:scale-[0.98] transition-all duration-500 shadow-[0_10px_40px_-5px_rgba(34,211,238,0.5)] text-sm group"
+                                                className="w-full h-16 rounded-[2rem] bg-cyan-400 text-black font-black  uppercase tracking-[0.4em] hover:bg-cyan-300 hover:scale-[1.02] active:scale-[0.98] transition-all duration-500 shadow-[0_10px_40px_-5px_rgba(34,211,238,0.5)] text-sm group"
                                             >
                                                 {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : (
                                                     <span className="flex items-center gap-2">
@@ -385,7 +385,7 @@ export default function Auth() {
                                             <Button
                                                 onClick={() => handleAuth("signup")}
                                                 disabled={loading}
-                                                className="w-full h-16 rounded-[2rem] bg-cyan-400 text-black font-black italic uppercase tracking-[0.4em] hover:bg-cyan-300 transition-all shadow-[0_10px_40px_-5px_rgba(34,211,238,0.5)] mt-4"
+                                                className="w-full h-16 rounded-[2rem] bg-cyan-400 text-black font-black  uppercase tracking-[0.4em] hover:bg-cyan-300 transition-all shadow-[0_10px_40px_-5px_rgba(34,211,238,0.5)] mt-4"
                                             >
                                                 {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : "ESTABLISH_IDENTITY"}
                                             </Button>
@@ -415,7 +415,7 @@ export default function Auth() {
                         </div>
 
                         <div className="text-center">
-                            <p className="text-[8px] font-bold text-white/10 uppercase tracking-[0.6em] italic leading-tight">
+                            <p className="text-[8px] font-bold text-white/10 uppercase tracking-[0.6em]  leading-tight">
                                 LINK SECURED. <span className="text-cyan-500/30">PROTOCOL_EXT</span>
                             </p>
                             <Link to="/" className="mt-8 inline-block opacity-20 hover:opacity-100 transition-opacity">

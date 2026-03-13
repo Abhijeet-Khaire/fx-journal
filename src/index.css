@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&display=swap');
+/* Fonts are now imported in index.html for better performance and selection */
 
 @tailwind base;
 @tailwind components;
@@ -53,6 +53,48 @@
     --loss: 0 72% 55%;
     --warning: 40 90% 55%;
     --cyan-glow: 187 85% 53%;
+    --font-family-dynamic: 'Inter', system-ui, sans-serif;
+  }
+
+  .light {
+    --background: 210 20% 98%;
+    --foreground: 220 20% 6%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 220 20% 6%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 20% 6%;
+
+    --primary: 187 85% 45%;
+    --primary-foreground: 210 20% 98%;
+
+    --secondary: 210 20% 90%;
+    --secondary-foreground: 220 16% 16%;
+
+    --muted: 210 20% 94%;
+    --muted-foreground: 215 15% 45%;
+
+    --accent: 160 70% 40%;
+    --accent-foreground: 210 20% 98%;
+
+    --destructive: 0 72% 50%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 210 20% 85%;
+    --input: 210 20% 85%;
+    --ring: 187 85% 45%;
+
+    --sidebar-background: 210 20% 96%;
+    --sidebar-foreground: 220 20% 20%;
+    --sidebar-border: 210 20% 90%;
+    --glass: 0 0% 100%;
+    --glass-border: 210 20% 88%;
+    --glass-hover: 210 20% 94%;
+  }
+
+  .light .text-muted-foreground {
+    @apply text-gray-500;
   }
 }
 
@@ -63,7 +105,13 @@
 
   body {
     @apply bg-background text-foreground font-sans antialiased selection:bg-primary/30 selection:text-primary-foreground;
-    font-family: 'Inter', system-ui, sans-serif;
+    font-family: var(--font-family-dynamic) !important;
+  }
+
+  /* Force all characters and numbers strictly to use the dynamic font */
+  *, *::before, *::after {
+    font-family: var(--font-family-dynamic) !important;
+    font-variant-numeric: tabular-nums;
   }
 
   /* Custom Cursor - Hide default on Desktop */
@@ -91,9 +139,8 @@
     @apply bg-white/10 rounded-full hover:bg-white/20 transition-colors;
   }
 
-  code,
-  .font-mono {
-    font-family: 'JetBrains Mono', monospace;
+  code {
+    font-family: 'JetBrains Mono', monospace !important;
   }
 }
 
@@ -238,5 +285,11 @@
 
   .animate-spin-slow {
     animation: spin-slow 8s linear infinite;
+  }
+
+  /* High impact numeric utility for Dashboard/Analytics consistency */
+  .num-impact {
+    @apply font-black tracking-tighter;
+    font-variant-numeric: tabular-nums !important;
   }
 }

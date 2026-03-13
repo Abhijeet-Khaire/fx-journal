@@ -12,6 +12,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { Trade } from "@/lib/tradeTypes";
 import { getNetProfit, getWinRate, getProfitFactor, getDrawdownStats } from "@/lib/tradeStore";
+import { AnimatedCounter } from "@/components/AnimatedCounter";
 
 interface Trader {
     uid: string;
@@ -177,8 +178,8 @@ export default function AdminDashboard() {
                                 <span className="text-[8px] font-black text-profit uppercase tracking-widest">Systems Online</span>
                             </div>
                         </div>
-                        <h1 className="text-5xl font-black text-white tracking-tighter uppercase italic">
-                            Admin <span className="text-primary not-italic">Control</span>
+                        <h1 className="text-5xl font-black text-white tracking-tighter uppercase ">
+                            Admin <span className="text-primary not-">Control</span>
                         </h1>
                         <p className="text-muted-foreground font-medium text-lg leading-relaxed max-w-xl">
                             Real-time platform analytics. Monitor traders, analyze performance metrics, and identify trading patterns.
@@ -257,7 +258,7 @@ export default function AdminDashboard() {
                                         <div className="relative z-10 flex items-start justify-between">
                                             <div className="space-y-3">
                                                 <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">{stat.label}</p>
-                                                <p className="text-4xl font-black tracking-tighter text-white italic">{stat.value}</p>
+                                                <AnimatedCounter value={stat.value} className="text-4xl text-white" />
                                             </div>
                                             <div className={`p-3.5 rounded-2xl ${stat.bg} ${stat.color} ${stat.glow}`}>
                                                 <stat.icon className="w-5 h-5" />
@@ -281,7 +282,7 @@ export default function AdminDashboard() {
                                         <BarChart3 className="w-5 h-5" />
                                     </div>
                                     <div>
-                                        <h3 className="text-xl font-black uppercase tracking-tighter italic">User Activity Distribution</h3>
+                                        <h3 className="text-xl font-black uppercase tracking-tighter ">User Activity Distribution</h3>
                                         <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Network Signal Analysis</p>
                                     </div>
                                 </div>
@@ -336,7 +337,7 @@ export default function AdminDashboard() {
                                         <Fingerprint className="w-5 h-5" />
                                     </div>
                                     <div>
-                                        <h3 className="text-xl font-black uppercase tracking-tighter italic">Trader Directory</h3>
+                                        <h3 className="text-xl font-black uppercase tracking-tighter ">Trader Directory</h3>
                                         <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">{filteredTraders.length} Nodes Detected</p>
                                     </div>
                                 </div>
@@ -428,7 +429,13 @@ export default function AdminDashboard() {
                                     <motion.div key={stat.label} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.08 }}>
                                         <GlassCard className="p-6 rounded-[2rem] border-white/10 relative overflow-hidden group">
                                             <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2">{stat.label}</p>
-                                            <p className={`text-3xl font-black tracking-tighter italic ${stat.color}`}>{stat.value}</p>
+                                            <AnimatedCounter 
+                                                value={typeof stat.value === 'number' ? stat.value : parseFloat(String(stat.value).replace(/[$,+]/g, ''))}
+                                                prefix={String(stat.value).startsWith('$') || String(stat.value).startsWith('+$') || String(stat.value).startsWith('-$') ? (String(stat.value).startsWith('-$') ? '-$' : (String(stat.value).startsWith('+$') ? '+$' : '$')) : ""}
+                                                suffix={String(stat.value).endsWith('%') ? '%' : ""}
+                                                decimals={String(stat.value).includes('.') ? 1 : 0}
+                                                className={`text-3xl ${stat.color}`} 
+                                            />
                                             <stat.icon className="absolute bottom-4 right-4 w-8 h-8 text-white/5 group-hover:text-white/10 transition-colors" />
                                         </GlassCard>
                                     </motion.div>
@@ -442,7 +449,7 @@ export default function AdminDashboard() {
                                 <div className="flex items-center gap-4 mb-8">
                                     <div className="p-3 rounded-2xl bg-primary/10 text-primary"><TrendingUp className="w-5 h-5" /></div>
                                     <div>
-                                        <h3 className="text-xl font-black uppercase tracking-tighter italic">Yield Distribution</h3>
+                                        <h3 className="text-xl font-black uppercase tracking-tighter ">Yield Distribution</h3>
                                         <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Net Profit Per Trader</p>
                                     </div>
                                 </div>
@@ -495,7 +502,7 @@ export default function AdminDashboard() {
                                 <div className="flex items-center gap-4">
                                     <div className="p-3 rounded-2xl bg-primary/10 text-primary"><Sparkles className="w-5 h-5" /></div>
                                     <div>
-                                        <h3 className="text-xl font-black uppercase tracking-tighter italic">Performance Leaderboard</h3>
+                                        <h3 className="text-xl font-black uppercase tracking-tighter ">Performance Leaderboard</h3>
                                         <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Ranked by Net Profit</p>
                                     </div>
                                 </div>
@@ -555,7 +562,7 @@ export default function AdminDashboard() {
                                                 </div>
                                             </div>
                                             <div className="col-span-2 text-center">
-                                                <span className="font-mono font-bold text-sm">{perf.totalTrades}</span>
+                                                <AnimatedCounter value={perf.totalTrades} className="text-sm border-b border-white/5" />
                                             </div>
                                             <div className="col-span-2">
                                                 <div className="flex items-center justify-center gap-2">
@@ -573,9 +580,11 @@ export default function AdminDashboard() {
                                                 </div>
                                             </div>
                                             <div className="col-span-2 text-right">
-                                                <span className={`font-mono text-lg font-black tracking-tighter ${perf.netProfit >= 0 ? 'text-profit' : 'text-loss'}`}>
-                                                    {perf.netProfit >= 0 ? '+' : ''}${perf.netProfit.toFixed(0)}
-                                                </span>
+                                                <AnimatedCounter 
+                                                    value={perf.netProfit} 
+                                                    prefix={perf.netProfit >= 0 ? '+$' : '-$'} 
+                                                    className={`text-lg ${perf.netProfit >= 0 ? 'text-profit' : 'text-loss'}`} 
+                                                />
                                             </div>
                                             <div className="col-span-1 text-center">
                                                 <span className={`font-mono text-xs font-bold px-2 py-1 rounded-lg ${

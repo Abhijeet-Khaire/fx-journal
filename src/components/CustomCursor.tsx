@@ -138,10 +138,10 @@ export function CustomCursor() {
             >
                 {/* Core Point */}
                 <motion.div 
-                    className="w-2 h-2 bg-white rounded-full shadow-[0_0_15px_#fff,0_0_30px_rgba(0,255,255,0.8)]"
+                    className="w-2 h-2 bg-white rounded-full shadow-[0_0_15px_#fff,0_0_30px_rgba(0,255,255,0.8)] cursor-core"
                     animate={{
                         scale: isClicked ? 0.5 : (isHovered ? 0.8 : 1),
-                        background: isHovered ? "#22d3ee" : "#fff",
+                        background: isHovered ? "#22d3ee" : undefined,
                     }}
                 />
                 

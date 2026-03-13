@@ -99,10 +99,10 @@ export default function AICoach() {
                             </div>
                         </div>
                         <div>
-                            <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-white uppercase italic">AI Coach <span className="text-primary not-italic">Hub</span></h1>
+                            <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-white uppercase ">AI Coach <span className="text-primary not-">Hub</span></h1>
                             <p className="text-muted-foreground text-sm md:text-lg font-medium mt-2 flex items-center gap-2">
                                 Autonomous Classification:
-                                <span className="text-white font-black px-3 py-1 rounded-xl bg-white/5 border border-white/10 uppercase italic">
+                                <span className="text-white font-black px-3 py-1 rounded-xl bg-white/5 border border-white/10 uppercase ">
                                     {data.profile.profile}
                                 </span>
                             </p>
@@ -169,7 +169,7 @@ export default function AICoach() {
                                 <Zap className="w-4 h-4" />
                                 Coach's Priority
                             </h3>
-                            <p className="text-md text-foreground/90 leading-relaxed font-bold italic">
+                            <p className="text-md text-foreground/90 leading-relaxed font-bold ">
                                 "Aggressive optimization required: elevate rule compliance to 90th percentile to mitigate variance and solidify equity curve."
                             </p>
                         </GlassCard>
@@ -201,7 +201,7 @@ export default function AICoach() {
                                         insight.type === 'weakness' ? 'border-l-loss bg-loss/5' :
                                             insight.type === 'recommendation' ? 'border-l-primary bg-primary/5' : 'border-l-indigo-500 bg-indigo-500/5'
                                         }`}>
-                                        <h4 className="text-md font-black italic uppercase tracking-tight mb-2 flex items-center gap-2">
+                                        <h4 className="text-md font-black  uppercase tracking-tight mb-2 flex items-center gap-2">
                                             {insight.type === 'weakness' && <ShieldAlert className="w-4 h-4 text-loss" />}
                                             {insight.type === 'strength' && <TrendingUp className="w-4 h-4 text-profit" />}
                                             {insight.title}
@@ -226,9 +226,9 @@ export default function AICoach() {
 
                     <div className="space-y-6">
                         <div className="flex items-center gap-6 px-2">
-                            <h3 className="text-xl font-black uppercase tracking-widest flex items-center gap-3 italic whitespace-nowrap">
+                            <h3 className="text-xl font-black uppercase tracking-widest flex items-center gap-3  whitespace-nowrap">
                                 <Brain className="w-6 h-6 text-primary" />
-                                Behavioral <span className="text-primary not-italic">Patterns</span>
+                                Behavioral <span className="text-primary not-">Patterns</span>
                             </h3>
                             <div className="h-px flex-1 bg-gradient-to-r from-primary/50 via-primary/10 to-transparent" />
                         </div>
@@ -246,7 +246,7 @@ export default function AICoach() {
                                                     <Lock className="w-6 h-6 text-primary shadow-glow" />
                                                 </div>
                                             </div>
-                                            <h4 className="text-lg font-black uppercase tracking-tighter mb-2 italic leading-tight">Professional <span className="text-primary not-italic">Access</span> Required</h4>
+                                            <h4 className="text-lg font-black uppercase tracking-tighter mb-2  leading-tight">Professional <span className="text-primary not-">Access</span> Required</h4>
                                             <p className="text-[10px] text-muted-foreground font-medium mb-6 leading-relaxed px-2">
                                                 Hidden pattern detection and deep behavioral clustering are exclusive to Professional & Institutional members.
                                             </p>

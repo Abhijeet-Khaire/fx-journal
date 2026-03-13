@@ -4,6 +4,7 @@ import { useTrades } from "@/hooks/useTrades";
 import { usePlan } from "@/hooks/usePlan";
 import { motion } from "framer-motion";
 import { GlassCard } from "@/components/GlassCard";
+import { AnimatedCounter } from "@/components/AnimatedCounter";
 import {
     getExpectancyBy,
     getBestTradingWindow,
@@ -109,8 +110,8 @@ export default function Analytics() {
                     animate={{ opacity: 1, x: 0 }}
                     className="flex flex-col gap-1"
                 >
-                    <h1 className="text-2xl md:text-3xl font-black italic tracking-tighter uppercase bg-clip-text text-transparent bg-gradient-to-r from-primary to-cyan-400">
-                        Performance <span className="text-primary not-italic">Analytics</span>
+                    <h1 className="text-2xl md:text-3xl font-black  tracking-tighter uppercase bg-clip-text text-transparent bg-gradient-to-r from-primary to-cyan-400">
+                        Performance <span className="text-primary not-">Analytics</span>
                     </h1>
                     <p className="text-muted-foreground text-sm font-medium">
                         Deep statistical analysis of trading patterns.
@@ -212,8 +213,8 @@ export default function Analytics() {
                                             <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
                                         </linearGradient>
                                     </defs>
-                                    <XAxis dataKey="date" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={false} minTickGap={30} />
-                                    <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={false} />
+                                    <XAxis dataKey="date" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))", fontFamily: "var(--font-family-dynamic)" }} tickLine={false} axisLine={false} minTickGap={30} />
+                                    <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))", fontFamily: "var(--font-family-dynamic)" }} tickLine={false} axisLine={false} />
                                     <Tooltip
                                         contentStyle={{
                                             backgroundColor: "hsl(var(--card))",
@@ -298,7 +299,7 @@ export default function Analytics() {
                         )}
                         {/* Center Text */}
                         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                            <span className="text-3xl font-bold font-mono">{trades.length}</span>
+                            <AnimatedCounter value={trades.length} className="text-3xl" />
                             <span className="text-xs text-muted-foreground uppercase">Trades</span>
                         </div>
                     </div>
@@ -348,7 +349,7 @@ export default function Analytics() {
                                         <YAxis
                                             dataKey="group"
                                             type="category"
-                                            tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }}
+                                            tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11, fontFamily: "var(--font-family-dynamic)" }}
                                             axisLine={false}
                                             tickLine={false}
                                             width={80}

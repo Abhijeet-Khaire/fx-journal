@@ -96,7 +96,7 @@ export default function Risk() {
                             </div>
                         </div>
                         <div>
-                            <h1 className="text-5xl font-black tracking-tighter text-white uppercase italic">Risk <span className="text-primary not-italic">Manager</span></h1>
+                            <h1 className="text-5xl font-black tracking-tighter text-white uppercase ">Risk <span className="text-primary not-">Manager</span></h1>
                             <p className="text-muted-foreground text-lg font-medium mt-2">
                                 Advanced drawdown monitoring and statistical risk modeling.
                             </p>
@@ -125,7 +125,7 @@ export default function Risk() {
                             <TrendingDown className="w-5 h-5 text-red-500" />
                         </div>
                     </div>
-                    <div className="text-4xl font-black text-red-500 font-mono italic">
+                    <div className="text-4xl font-black text-red-500 font-mono ">
                         -${drawdownStats.currentDrawdown}
                     </div>
                     <div className="mt-4 flex items-center gap-2">
@@ -141,7 +141,7 @@ export default function Risk() {
                             <Crosshair className="w-5 h-5 text-indigo-500" />
                         </div>
                     </div>
-                    <div className="text-4xl font-black text-white font-mono italic">
+                    <div className="text-4xl font-black text-white font-mono ">
                         ${riskStats.avgRisk}
                     </div>
                     <div className="mt-4 flex items-center gap-2">
@@ -157,7 +157,7 @@ export default function Risk() {
                             <Activity className="w-5 h-5 text-primary" />
                         </div>
                     </div>
-                    <div className="text-4xl font-black text-primary font-mono italic">
+                    <div className="text-4xl font-black text-primary font-mono ">
                         ±{Math.abs(100 - riskStats.riskConsistency)}%
                     </div>
                     <div className="mt-4 flex items-center gap-2">
@@ -172,7 +172,7 @@ export default function Risk() {
                 <div className="flex items-center justify-between px-2">
                     <h3 className="text-xl font-black uppercase tracking-widest flex items-center gap-3">
                         <ShieldAlert className="w-6 h-6 text-primary" />
-                        Statistical <span className="text-primary not-italic">Edge</span>
+                        Statistical <span className="text-primary not-">Edge</span>
                     </h3>
                     <span className="h-px flex-1 bg-gradient-to-r from-primary/30 to-transparent ml-6" />
                 </div>
@@ -191,9 +191,9 @@ export default function Risk() {
                 <GlassCard className={`p-8 rounded-[2rem] ${!isUltimate ? "blur-sm pointer-events-none opacity-50" : ""}`}>
                     <div className="flex items-center justify-between mb-10">
                         <div>
-                            <h2 className="text-2xl font-black uppercase tracking-tighter flex items-center gap-3 italic">
+                            <h2 className="text-2xl font-black uppercase tracking-tighter flex items-center gap-3 ">
                                 <TrendingDown className="w-6 h-6 text-red-500" />
-                                Drawdown <span className="text-red-500 not-italic">History</span>
+                                Drawdown <span className="text-red-500 not-">History</span>
                             </h2>
                             <p className="text-sm text-muted-foreground font-medium mt-1">Real-time equity curve performance monitoring.</p>
                         </div>
@@ -240,7 +240,7 @@ export default function Risk() {
                     <div className="absolute inset-0 flex flex-col items-center justify-center z-10">
                         <div className="bg-black/60 backdrop-blur-xl p-10 rounded-[2.5rem] border border-white/10 text-center shadow-2xl max-w-sm">
                             <Lock className="w-12 h-12 text-primary mx-auto mb-4" />
-                            <h3 className="text-2xl font-black uppercase tracking-tighter italic">Institutional Access Required</h3>
+                            <h3 className="text-2xl font-black uppercase tracking-tighter ">Institutional Access Required</h3>
                             <p className="text-sm text-muted-foreground mb-8 leading-relaxed font-medium">Drawdown statistics and performance history analysis are exclusive to Institutional traders.</p>
                             <Button 
                                 onClick={() => navigate("/plans")}
@@ -258,9 +258,9 @@ export default function Risk() {
                 <GlassCard className={`p-8 rounded-[2rem] border-l-8 border-l-primary/30 ${!isUltimate ? "opacity-60 pointer-events-none" : ""}`}>
                     <div className="flex items-start justify-between">
                         <div className="space-y-4">
-                            <h2 className="text-2xl font-black uppercase tracking-tighter flex items-center gap-3 italic">
+                            <h2 className="text-2xl font-black uppercase tracking-tighter flex items-center gap-3 ">
                                 <Zap className="w-6 h-6 text-primary" />
-                                Loss <span className="text-primary not-italic">Limit</span> Gate
+                                Loss <span className="text-primary not-">Limit</span> Gate
                             </h2>
                             <p className="text-sm text-muted-foreground font-medium max-w-md">
                                 Hard-coded circuit breaker. Set your maximum tolerable daily loss and the system will actively warn you upon breach.
@@ -269,7 +269,7 @@ export default function Risk() {
                         {todayPnL < 0 && (
                             <div className="text-right p-4 rounded-2xl bg-white/5 border border-white/10">
                                 <span className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Today's PnL Status</span>
-                                <div className={`text-4xl font-black font-mono italic mt-1 ${todayPnL < 0 ? "text-loss" : "text-profit"}`}>
+                                <div className={`text-4xl font-black font-mono  mt-1 ${todayPnL < 0 ? "text-loss" : "text-profit"}`}>
                                     ${todayPnL.toFixed(2)}
                                 </div>
                             </div>
@@ -297,7 +297,7 @@ export default function Risk() {
                         >
                             <AlertTriangle className="w-12 h-12 animate-bounce" />
                             <div>
-                                <h3 className="font-black text-xl uppercase tracking-widest italic">Circuit Breaker Tripped</h3>
+                                <h3 className="font-black text-xl uppercase tracking-widest ">Circuit Breaker Tripped</h3>
                                 <p className="text-sm font-medium opacity-80 uppercase tracking-tighter">Daily maximum loss exceeded. Cease all trading operations immediately to preserve capital.</p>
                             </div>
                         </motion.div>

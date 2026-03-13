@@ -219,7 +219,7 @@ export default function TradeHistory() {
             </div>
           </div>
           <div>
-            <h1 className="text-5xl font-black tracking-tighter text-white uppercase italic">Trade <span className="text-primary not-italic">Journal</span></h1>
+            <h1 className="text-5xl font-black tracking-tighter text-white uppercase ">Trade <span className="text-primary not-">Journal</span></h1>
             <p className="text-muted-foreground text-lg font-medium mt-2 max-w-2xl">
               Detailed log of <span className="text-white font-bold">{trades.length}</span> historical trades.
               Complete statistics for performance review.
@@ -241,7 +241,7 @@ export default function TradeHistory() {
             <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Net Profit</span>
           </div>
           <div className="flex items-baseline gap-2">
-            <h3 className={`text-5xl font-black italic ${stats.totalPnL >= 0 ? "text-profit" : "text-loss"}`}>
+            <h3 className={`text-5xl font-black  ${stats.totalPnL >= 0 ? "text-profit" : "text-loss"}`}>
               {stats.totalPnL >= 0 ? "+" : ""}${stats.totalPnL.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </h3>
           </div>
@@ -258,7 +258,7 @@ export default function TradeHistory() {
             <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Win Rate</span>
           </div>
           <div className="flex items-baseline gap-2">
-            <h3 className="text-5xl font-black text-white italic">
+            <h3 className="text-5xl font-black text-white ">
               {stats.winRate.toFixed(1)}%
             </h3>
             <span className="text-xs font-black text-primary uppercase tracking-widest">Performance</span>
@@ -276,7 +276,7 @@ export default function TradeHistory() {
             <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Total Volume</span>
           </div>
           <div className="flex items-baseline gap-2">
-            <h3 className="text-5xl font-black text-white italic">{stats.totalTrades}</h3>
+            <h3 className="text-5xl font-black text-white ">{stats.totalTrades}</h3>
             <span className="text-xs font-black text-muted-foreground uppercase tracking-widest">Trades</span>
           </div>
         </GlassCard>
@@ -286,7 +286,7 @@ export default function TradeHistory() {
         <div className="flex items-center justify-between px-2">
           <h3 className="text-xl font-black uppercase tracking-widest flex items-center gap-3 text-white">
             <Filter className="w-6 h-6 text-primary" />
-            Search & <span className="text-primary not-italic">Filters</span>
+            Search & <span className="text-primary not-">Filters</span>
           </h3>
           <span className="h-px flex-1 bg-gradient-to-r from-primary/30 to-transparent ml-6" />
           {isProPlus && (
@@ -318,7 +318,7 @@ export default function TradeHistory() {
             <div className="p-6 rounded-full bg-white/5 border border-white/10 border-dashed w-fit mx-auto mb-8">
               <Clock className="w-12 h-12 text-muted-foreground opacity-20" />
             </div>
-            <h3 className="text-2xl font-black uppercase italic tracking-tighter mb-2">No Trades Found</h3>
+            <h3 className="text-2xl font-black uppercase  tracking-tighter mb-2">No Trades Found</h3>
             <p className="text-muted-foreground text-sm font-medium mb-8">No trade records match the current filter criteria.</p>
             <button
               onClick={resetFilters}
@@ -333,7 +333,7 @@ export default function TradeHistory() {
           <div className="flex items-center justify-between px-2">
             <h3 className="text-xl font-black uppercase tracking-widest flex items-center gap-3 text-white">
               <Database className="w-6 h-6 text-primary" />
-              Trade <span className="text-primary not-italic">Records</span>
+              Trade <span className="text-primary not-">Records</span>
             </h3>
             <span className="h-px flex-1 bg-gradient-to-r from-primary/30 to-transparent ml-6" />
             <div className="ml-6 flex items-center gap-4">
@@ -357,7 +357,7 @@ export default function TradeHistory() {
                   <GlassCard hover={false} className="p-8 relative overflow-hidden group">
                     <div className="flex justify-between items-start mb-6">
                       <div className="space-y-1">
-                        <span className="text-2xl font-black italic text-white uppercase tracking-tighter">{trade.pair}</span>
+                        <span className="text-2xl font-black  text-white uppercase tracking-tighter">{trade.pair}</span>
                         <div className="flex items-center gap-2">
                           <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${getTradeQuality(trade).grade === 'A' ? 'bg-profit/10 text-profit border border-profit/20' :
                             getTradeQuality(trade).grade === 'B' ? 'bg-primary/10 text-primary border border-primary/20' :
@@ -377,14 +377,14 @@ export default function TradeHistory() {
                     <div className="grid grid-cols-2 gap-6 mb-8">
                       <div className="p-4 rounded-2xl bg-white/5 border border-white/10">
                         <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest mb-1">Trade Profit</p>
-                        <p className={`text-xl font-black italic ${trade.profitLoss >= 0 ? "text-profit" : "text-loss"}`}>
+                        <p className={`text-xl font-black  ${trade.profitLoss >= 0 ? "text-profit" : "text-loss"}`}>
                           {trade.profitLoss >= 0 ? "+" : ""}${Math.abs(trade.profitLoss).toFixed(2)}
                         </p>
                       </div>
                       <div className="p-4 rounded-2xl bg-white/5 border border-white/10">
                         <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest mb-1">Price Move</p>
-                        <p className={`text-xl font-black italic ${trade.pips >= 0 ? "text-profit" : "text-loss"}`}>
-                          {trade.pips > 0 ? "+" : ""}{trade.pips} <span className="text-[10px] not-italic text-muted-foreground">PIPS</span>
+                        <p className={`text-xl font-black  ${trade.pips >= 0 ? "text-profit" : "text-loss"}`}>
+                          {trade.pips > 0 ? "+" : ""}{trade.pips} <span className="text-[10px] not- text-muted-foreground">PIPS</span>
                         </p>
                       </div>
                     </div>
@@ -438,7 +438,7 @@ export default function TradeHistory() {
                       >
                         <td className="px-8 py-6">
                           <div className="flex flex-col">
-                            <span className="text-xs font-black text-white italic">{trade.date}</span>
+                            <span className="text-xs font-black text-white ">{trade.date}</span>
                             <span className="text-[10px] text-muted-foreground font-bold tracking-widest">{trade.time}</span>
                           </div>
                         </td>
@@ -467,12 +467,12 @@ export default function TradeHistory() {
                           <span className="text-xs font-bold text-muted-foreground font-mono">{trade.exitPrice}</span>
                         </td>
                         <td className="px-8 py-6">
-                          <span className={`text-sm font-black italic ${trade.pips >= 0 ? "text-profit" : "text-loss"}`}>
+                          <span className={`text-sm font-black  ${trade.pips >= 0 ? "text-profit" : "text-loss"}`}>
                             {trade.pips > 0 ? "+" : ""}{trade.pips}
                           </span>
                         </td>
                         <td className="px-8 py-6">
-                          <span className={`text-sm font-black italic ${trade.profitLoss >= 0 ? "text-profit" : "text-loss"}`}>
+                          <span className={`text-sm font-black  ${trade.profitLoss >= 0 ? "text-profit" : "text-loss"}`}>
                             {trade.profitLoss >= 0 ? "+" : ""}${trade.profitLoss.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                           </span>
                         </td>
@@ -572,7 +572,7 @@ export default function TradeHistory() {
       <AlertDialog open={!!tradeToDelete} onOpenChange={(open) => !open && setTradeToDelete(null)}>
         <AlertDialogContent className="glass border-white/10 rounded-[2.5rem] p-10 max-w-md">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-2xl font-black uppercase italic tracking-tighter">Delete Record?</AlertDialogTitle>
+            <AlertDialogTitle className="text-2xl font-black uppercase  tracking-tighter">Delete Record?</AlertDialogTitle>
             <AlertDialogDescription className="text-muted-foreground font-medium py-4">
               Deletion is irreversible. This trade data will be permanently removed from the history.
             </AlertDialogDescription>

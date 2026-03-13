@@ -1,6 +1,7 @@
 import React from "react";
 import { GlassCard } from "@/components/GlassCard";
 import { LucideIcon } from "lucide-react";
+import { AnimatedCounter } from "@/components/AnimatedCounter";
 
 interface MetricCardProps {
   label: string;
@@ -19,9 +20,13 @@ export function MetricCard({ label, value, icon: Icon, subValue, glow, trend }: 
       <div>
         <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">{label}</p>
         <div className="flex items-baseline gap-2">
-          <span className={`text-2xl font-bold font-mono ${trendColor}`}>
-            {value}
-          </span>
+          <AnimatedCounter 
+            value={typeof value === 'number' ? value : parseFloat(String(value).replace(/[$,+]/g, ''))}
+            prefix={String(value).startsWith('$') || String(value).startsWith('+$') || String(value).startsWith('-$') ? (String(value).startsWith('-$') ? '-$' : (String(value).startsWith('+$') ? '+$' : '$')) : ""}
+            suffix={String(value).endsWith('%') ? '%' : ""}
+            decimals={String(value).includes('.') ? 2 : 0}
+            className={`text-2xl ${trendColor}`}
+          />
           {subValue && <span className="text-[10px] text-muted-foreground font-medium">{subValue}</span>}
         </div>
       </div>

@@ -41,9 +41,12 @@ export function AnimatedCounter({
   }, [value, duration]);
 
   return (
-    <span className={`font-mono animate-count-up ${className}`}>
+    <span className={`num-impact animate-count-up ${className}`} style={{ fontFamily: 'var(--font-family-dynamic) !important' }}>
       {prefix}
-      {display.toFixed(decimals)}
+      {display.toLocaleString(undefined, {
+        minimumFractionDigits: decimals,
+        maximumFractionDigits: decimals,
+      })}
       {suffix}
     </span>
   );
