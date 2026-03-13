@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
+import { createPortal } from "react-dom";
 import { motion, useSpring, useMotionValue, AnimatePresence, useVelocity, useTransform } from "framer-motion";
 
 export function CustomCursor() {
@@ -52,19 +53,12 @@ export function CustomCursor() {
         const mouseDown = () => setIsClicked(true);
         const mouseUp = () => setIsClicked(false);
 
-        const handleMouseLeave = (e: MouseEvent) => {
-            // Only hide if the mouse leaves the window entirely
-            if (!e.relatedTarget || (e.relatedTarget as HTMLElement).nodeName === "HTML") {
-                setIsVisible(false);
-            }
-        };
-
         window.addEventListener("mousemove", moveCursor);
         window.addEventListener("mouseover", handleHover);
         window.addEventListener("mousedown", mouseDown);
         window.addEventListener("mouseup", mouseUp);
         
-        window.addEventListener("mouseout", handleMouseLeave);
+        document.addEventListener("mouseleave", () => setIsVisible(false));
         document.addEventListener("mouseenter", () => setIsVisible(true));
 
         return () => {
@@ -81,10 +75,18 @@ export function CustomCursor() {
         setIsTouchDevice('ontouchstart' in window || navigator.maxTouchPoints > 0);
     }, []);
 
-    if (!isVisible || isTouchDevice) return null;
+    // Always render to keep in DOM, just hide via opacity/position if needed
+    if (isTouchDevice) return null;
 
-    return (
-        <div className="fixed inset-0 pointer-events-none z-[999999] hidden lg:block overflow-hidden">
+    const cursorContent = (
+        <div 
+            className="fixed inset-0 pointer-events-none hidden lg:block overflow-hidden"
+            style={{ 
+                zIndex: 2147483647,
+                opacity: isVisible ? 1 : 0,
+                transition: 'opacity 0.2s ease'
+            }}
+        >
             {/* Soft Ambient Aura */}
             <motion.div
                 style={{
@@ -179,4 +181,6 @@ export function CustomCursor() {
             </AnimatePresence>
         </div>
     );
+
+    return createPortal(cursorContent, document.body);
 }
