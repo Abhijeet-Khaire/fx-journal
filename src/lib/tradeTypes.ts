@@ -52,6 +52,7 @@ export interface Trade {
   confidence?: number;
   mistakes?: string[];
   challengeId?: string;
+  sourceDoc?: string;
 }
 
 

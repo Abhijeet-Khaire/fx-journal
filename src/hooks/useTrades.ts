@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Trade } from "@/lib/tradeTypes";
 import { toast } from "sonner";
 import { db } from "@/lib/firebase";
-import { doc, onSnapshot, updateDoc, arrayUnion, getDoc, setDoc } from "firebase/firestore";
+import { collection, doc, onSnapshot, getDoc, updateDoc, arrayUnion, setDoc } from "firebase/firestore";
 import { useAuth } from "@/contexts/AuthContext";
 
 export function useTrades() {
@@ -17,63 +17,42 @@ export function useTrades() {
             return;
         }
 
-        // Subscribe to real-time updates for the specific user
-        // Path: traders/{uid}/trade-history/main
-        console.log("Subscribing to trades for user:", user.uid);
-        const docRef = doc(db, "traders", user.uid, "trade-history", "main");
+        // Subscribe to real-time updates for the entire collection
+        // Path: traders/{uid}/trade-history/*
+        console.log("Subscribing to all trades for user:", user.uid);
+        const colRef = collection(db, "traders", user.uid, "trade-history");
 
-        const unsubscribe = onSnapshot(docRef, (docSnapshot) => {
-            if (docSnapshot.exists()) {
-                console.log("Trade history doc exists, data:", docSnapshot.data());
-                const rawTrades = docSnapshot.data().trades || [];
-                // Normalize trades to ensure date is a string and numeric fields are valid
+        const unsubscribe = onSnapshot(colRef, (querySnapshot) => {
+            let allTrades: Trade[] = [];
+            
+            querySnapshot.forEach((docSnap) => {
+                const docName = docSnap.id;
+                const rawTrades = docSnap.data().trades || [];
+                
                 const normalizedTrades = rawTrades.map((t: any) => ({
                     ...t,
                     id: t.id || crypto.randomUUID(),
+                    userId: user.uid,
+                    challengeId: docName.startsWith('challenge_') ? docName.replace('challenge_', '') : undefined,
+                    sourceDoc: docName, // Helper for easier deletion/updates
                     date: typeof t.date === 'string' ? t.date : new Date(t.date?.seconds * 1000 || Date.now()).toISOString().split('T')[0],
-                    time: t.time || "00:00",
-                    pair: t.pair || "Unknown",
-                    direction: t.direction || "BUY",
-                    entryPrice: Number(t.entryPrice || 0),
-                    exitPrice: Number(t.exitPrice || 0),
-                    stopLoss: Number(t.stopLoss || 0),
-                    takeProfit: Number(t.takeProfit || 0),
-                    lotSize: Number(t.lotSize || 0),
-                    profitLoss: Number(t.profitLoss ?? t.profit ?? 0),
                     pips: Number(t.pips || 0),
-                    session: t.session || "Asian",
-                    strategy: t.strategy || "Unknown",
-                    rulesFollowed: !!t.rulesFollowed,
-                    notes: t.notes || "",
-                    emotionBefore: t.emotionBefore || "",
-                    emotionAfter: t.emotionAfter || "",
-                    confidence: Number(t.confidence || 0),
-                    mistakes: t.mistakes || []
+                    profitLoss: Number(t.profitLoss ?? t.profit ?? 0),
                 }));
-                // Sort by date desc
-                normalizedTrades.sort((a, b) =>
-                    new Date(b.date + "T" + b.time).getTime() - new Date(a.date + "T" + a.time).getTime()
-                );
-                setTrades(normalizedTrades as Trade[]);
-            } else {
-                console.log("Trade history doc does not exist. Initializing...");
-                // Initialize document if it doesn't exist for this user
-                setDoc(docRef, { trades: [] }, { merge: true })
-                    .then(() => console.log("Trade history initialized"))
-                    .catch(err => {
-                        console.error("Error creating trade history doc:", err);
-                        toast.error(`Init failed: ${err.message}`);
-                    });
-                setTrades([]);
-            }
+                allTrades = [...allTrades, ...normalizedTrades];
+            });
+
+            // Sort by date desc
+            allTrades.sort((a, b) =>
+                new Date(b.date + "T" + b.time).getTime() - new Date(a.date + "T" + a.time).getTime()
+            );
+            
+            setTrades(allTrades as Trade[]);
             setLoading(false);
         }, (error) => {
             console.error("Error subscribing to trades:", error);
-            // Don't show toast on permission denied if likely just not logged in/rules issue
             if (error.code !== 'permission-denied') {
                 toast.error(`Load failed: ${error.message}`);
-            } else {
-                console.warn("Permission denied for trade history. Check Firestore rules.");
             }
             setLoading(false);
         });
@@ -88,11 +67,8 @@ export function useTrades() {
         }
 
         try {
-            // Simple ID generator fallback for non-secure contexts
             const generateId = () => {
-                if (typeof crypto !== 'undefined' && crypto.randomUUID) {
-                    return crypto.randomUUID();
-                }
+                if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID();
                 return Date.now().toString(36) + Math.random().toString(36).substr(2);
             };
 
@@ -106,12 +82,11 @@ export function useTrades() {
             const docName = tradeData.challengeId ? `challenge_${tradeData.challengeId}` : "main";
             const docRef = doc(db, "traders", user.uid, "trade-history", docName);
 
-            // Use arrayUnion to add the new trade
             await setDoc(docRef, {
                 trades: arrayUnion(newTrade)
             }, { merge: true });
 
-            toast.success("Trade added (Server)");
+            toast.success("Trade added");
         } catch (error: any) {
             console.error("Error adding trade:", error);
             toast.error(`Add failed: ${error.message}`);
@@ -121,7 +96,10 @@ export function useTrades() {
     const deleteTrade = async (id: string, challengeId?: string) => {
         if (!user) return;
         try {
-            const docName = challengeId ? `challenge_${challengeId}` : "main";
+            // Find the trade to get its sourceDoc if challengeId isn't provided
+            const trade = trades.find(t => t.id === id);
+            const docName = challengeId ? `challenge_${challengeId}` : (trade?.sourceDoc || "main");
+            
             const docRef = doc(db, "traders", user.uid, "trade-history", docName);
             const docSnap = await getDoc(docRef);
 
@@ -132,7 +110,7 @@ export function useTrades() {
                 await updateDoc(docRef, {
                     trades: updatedTrades
                 });
-                toast.success("Trade deleted (Server)");
+                toast.success("Trade deleted");
             }
         } catch (error: any) {
             console.error("Error deleting trade:", error);

@@ -1,7 +1,8 @@
 import { useEffect, useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { doc, getDoc } from "firebase/firestore";
+import { collection, doc, onSnapshot, getDoc, updateDoc, arrayUnion, setDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { useAuth } from "@/contexts/AuthContext";
 import { Trade } from "@/lib/tradeTypes";
 import { getNetProfit, getWinRate, getProfitFactor, getDrawdownStats } from "@/lib/tradeStore";
 import { GlassCard } from "@/components/GlassCard";
@@ -27,36 +28,42 @@ export default function AdminTraderView() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const fetchTraderData = async () => {
-            if (!uid) return;
-            try {
-                const traderDoc = await getDoc(doc(db, "traders", uid));
-                if (traderDoc.exists()) {
-                    setTrader(traderDoc.data() as Trader);
-                }
-                const { collection, getDocs } = await import("firebase/firestore");
-                const subRef = collection(db, "traders", uid, "trade-history");
-                const subSnap = await getDocs(subRef);
-                
-                let allTrades: Trade[] = [];
-                subSnap.forEach((doc) => {
-                    const data = doc.data();
-                    if (data.trades && Array.isArray(data.trades)) {
-                        allTrades = [...allTrades, ...(data.trades as Trade[])];
-                    }
-                });
+        if (!uid) return;
+        setLoading(true);
 
-                const sortedTrades = allTrades.sort((a, b) => {
-                    return new Date(`${b.date}T${b.time}`).getTime() - new Date(`${a.date}T${a.time}`).getTime();
-                });
-                setTrades(sortedTrades);
-            } catch (error) {
-                console.error("Failed to fetch trader details", error);
-            } finally {
-                setLoading(false);
+        // 1. Listen to Trader Profile
+        const traderRef = doc(db, "traders", uid);
+        const unsubTrader = onSnapshot(traderRef, (docSnap) => {
+            if (docSnap.exists()) {
+                setTrader(docSnap.data() as Trader);
             }
+        });
+
+        // 2. Listen to Trade History Collection
+        const historyRef = collection(db, "traders", uid, "trade-history");
+        const unsubHistory = onSnapshot(historyRef, (snapshot) => {
+            let allTrades: Trade[] = [];
+            snapshot.forEach((docSnap) => {
+                const data = docSnap.data();
+                if (data.trades && Array.isArray(data.trades)) {
+                    allTrades = [...allTrades, ...(data.trades as Trade[])];
+                }
+            });
+
+            const sortedTrades = allTrades.sort((a, b) => {
+                return new Date(`${b.date}T${b.time}`).getTime() - new Date(`${a.date}T${a.time}`).getTime();
+            });
+            setTrades(sortedTrades);
+            setLoading(false);
+        }, (err) => {
+            console.error("History fetch error:", err);
+            setLoading(false);
+        });
+
+        return () => {
+            unsubTrader();
+            unsubHistory();
         };
-        fetchTraderData();
     }, [uid]);
 
     // Equity Curve Data
