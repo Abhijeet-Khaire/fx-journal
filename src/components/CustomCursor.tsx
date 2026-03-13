@@ -52,12 +52,19 @@ export function CustomCursor() {
         const mouseDown = () => setIsClicked(true);
         const mouseUp = () => setIsClicked(false);
 
+        const handleMouseLeave = (e: MouseEvent) => {
+            // Only hide if the mouse leaves the window entirely
+            if (!e.relatedTarget || (e.relatedTarget as HTMLElement).nodeName === "HTML") {
+                setIsVisible(false);
+            }
+        };
+
         window.addEventListener("mousemove", moveCursor);
         window.addEventListener("mouseover", handleHover);
         window.addEventListener("mousedown", mouseDown);
         window.addEventListener("mouseup", mouseUp);
         
-        document.addEventListener("mouseleave", () => setIsVisible(false));
+        window.addEventListener("mouseout", handleMouseLeave);
         document.addEventListener("mouseenter", () => setIsVisible(true));
 
         return () => {
@@ -77,7 +84,7 @@ export function CustomCursor() {
     if (!isVisible || isTouchDevice) return null;
 
     return (
-        <div className="fixed inset-0 pointer-events-none z-[9999] hidden lg:block overflow-hidden">
+        <div className="fixed inset-0 pointer-events-none z-[999999] hidden lg:block overflow-hidden">
             {/* Soft Ambient Aura */}
             <motion.div
                 style={{

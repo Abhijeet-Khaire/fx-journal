@@ -477,7 +477,7 @@ export default function TradeHistory() {
                           </span>
                         </td>
                         <td className="px-8 py-6">
-                          <div className="flex items-center gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <div className="flex items-center gap-3 transition-opacity">
                             <Link
                               to={`/edit-trade/${trade.id}`}
                               className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-muted-foreground hover:text-primary transition-all"
