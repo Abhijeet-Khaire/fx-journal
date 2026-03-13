@@ -114,8 +114,8 @@
     font-variant-numeric: tabular-nums;
   }
 
-  /* Custom Cursor - Hide default on Desktop */
-  @media (min-width: 1024px) {
+  /* Custom Cursor - Hide default universally on desktop-like environments */
+  @media (pointer: fine) {
     *, html, body {
       cursor: none !important;
     }

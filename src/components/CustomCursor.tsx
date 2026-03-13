@@ -4,7 +4,7 @@ import { motion, useSpring, useMotionValue, AnimatePresence, useVelocity, useTra
 
 export function CustomCursor() {
     const [isHovered, setIsHovered] = useState(false);
-    const [isVisible, setIsVisible] = useState(false);
+    const [isVisible, setIsVisible] = useState(true);
     const [isClicked, setIsClicked] = useState(false);
 
     // Core position
@@ -35,7 +35,6 @@ export function CustomCursor() {
         const moveCursor = (e: MouseEvent) => {
             cursorX.set(e.clientX);
             cursorY.set(e.clientY);
-            if (!isVisible) setIsVisible(true);
         };
 
         const handleHover = (e: MouseEvent) => {
@@ -57,9 +56,6 @@ export function CustomCursor() {
         window.addEventListener("mouseover", handleHover);
         window.addEventListener("mousedown", mouseDown);
         window.addEventListener("mouseup", mouseUp);
-        
-        document.addEventListener("mouseleave", () => setIsVisible(false));
-        document.addEventListener("mouseenter", () => setIsVisible(true));
 
         return () => {
             window.removeEventListener("mousemove", moveCursor);
@@ -75,16 +71,12 @@ export function CustomCursor() {
         setIsTouchDevice('ontouchstart' in window || navigator.maxTouchPoints > 0);
     }, []);
 
-    // Always render to keep in DOM, just hide via opacity/position if needed
-    if (isTouchDevice) return null;
-
     const cursorContent = (
         <div 
-            className="fixed inset-0 pointer-events-none hidden lg:block overflow-hidden"
+            className="fixed inset-0 pointer-events-none overflow-hidden"
             style={{ 
-                zIndex: 2147483647,
-                opacity: isVisible ? 1 : 0,
-                transition: 'opacity 0.2s ease'
+                zIndex: 999999999,
+                opacity: 1
             }}
         >
             {/* Soft Ambient Aura */}
