@@ -608,7 +608,7 @@ function ChallengeCard({ challenge, index, onEdit, onDelete }: {
                                         <table className="w-full text-sm">
                                             <thead className="bg-white/5">
                                             <tr className="text-muted-foreground text-xs uppercase tracking-wider">
-                                                {["Date", "Pair", "Grade", "Dir", "P/L", "Actions"].map((h) => (
+                                                {["Date", "Pair", "Lot", "Dir", "P/L ($ & Pips)", "Actions"].map((h) => (
                                                 <th key={h} className="px-4 py-3 text-left font-medium">{h}</th>
                                                 ))}
                                             </tr>
@@ -622,8 +622,8 @@ function ChallengeCard({ challenge, index, onEdit, onDelete }: {
                                                         </td>
                                                         <td className="px-4 py-3 font-semibold text-white">{trade.pair}</td>
                                                         <td className="px-4 py-3">
-                                                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${getTradeQuality(trade).grade === 'A' ? 'bg-profit/20 text-profit' : getTradeQuality(trade).grade === 'B' ? 'bg-primary/20 text-primary' : 'bg-loss/20 text-loss'}`}>
-                                                                {getTradeQuality(trade).grade}
+                                                            <span className="text-[10px] font-black text-white bg-white/5 px-2 py-0.5 rounded border border-white/10 uppercase">
+                                                                {trade.lotSize}
                                                             </span>
                                                         </td>
                                                         <td className="px-4 py-3">
@@ -631,8 +631,15 @@ function ChallengeCard({ challenge, index, onEdit, onDelete }: {
                                                                 {trade.direction}
                                                             </span>
                                                         </td>
-                                                        <td className={`px-4 py-3 font-mono font-bold ${trade.profitLoss >= 0 ? "text-profit" : "text-loss"}`}>
-                                                            {trade.profitLoss > 0 ? "+" : ""}${trade.profitLoss.toFixed(2)}
+                                                        <td className="px-4 py-3">
+                                                            <div className="flex flex-col">
+                                                                <span className={`font-mono font-bold text-xs ${trade.profitLoss >= 0 ? "text-profit" : "text-loss"}`}>
+                                                                    {trade.profitLoss > 0 ? "+" : ""}${trade.profitLoss.toFixed(2)}
+                                                                </span>
+                                                                <span className={`text-[9px] font-bold ${trade.pips >= 0 ? "text-profit/70" : "text-loss/70"}`}>
+                                                                    {trade.pips > 0 ? "+" : ""}{trade.pips} pips
+                                                                </span>
+                                                            </div>
                                                         </td>
                                                         <td className="px-4 py-3">
                                                             <div className="flex items-center gap-1">

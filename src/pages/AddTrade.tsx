@@ -41,7 +41,7 @@ export default function AddTrade() {
     rulesFollowed: true,
     confidence: "3",
     emotionBefore: "Neutral",
-    mistakes: "",
+    mistakes: [] as string[],
     notes: "",
     challengeId: "",
   });
@@ -86,7 +86,7 @@ export default function AddTrade() {
               rulesFollowed: trade.rulesFollowed,
               confidence: (trade.confidence || 3).toString(),
               emotionBefore: trade.emotionBefore || "Neutral",
-              mistakes: trade.mistakes ? trade.mistakes.join(", ") : "",
+              mistakes: trade.mistakes || [],
               notes: trade.notes,
               challengeId: trade.challengeId || "",
             });
@@ -117,7 +117,7 @@ export default function AddTrade() {
             rulesFollowed: trade.rulesFollowed,
             confidence: (trade.confidence || 3).toString(),
             emotionBefore: trade.emotionBefore || "Neutral",
-            mistakes: trade.mistakes ? trade.mistakes.join(", ") : "",
+            mistakes: trade.mistakes || [],
             notes: trade.notes,
             challengeId: trade.challengeId || "",
           });
@@ -266,6 +266,7 @@ export default function AddTrade() {
         loading={uploading} 
         atLimit={atLimit} 
         initialData={form as any}
+        challenges={challenges}
       />
     </div>
   );

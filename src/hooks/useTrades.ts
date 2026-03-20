@@ -121,8 +121,9 @@ export function useTrades() {
     const updateTrade = async (id: string, tradeUpdate: Partial<Trade>, currentChallengeId?: string) => {
         if (!user) return;
         try {
-            const newChallengeId = tradeUpdate.challengeId;
-            const hasMoved = currentChallengeId !== newChallengeId;
+            const normalizedCurrent = currentChallengeId || "";
+            const normalizedNew = tradeUpdate.challengeId || "";
+            const hasMoved = normalizedCurrent !== normalizedNew;
 
             if (!hasMoved) {
                 // Normal update in place
@@ -143,7 +144,7 @@ export function useTrades() {
                 }
             } else {
                 // Handle moving between collections
-                console.log(`Moving trade ${id} from ${currentChallengeId || 'main'} to ${newChallengeId || 'main'}`);
+                console.log(`Moving trade ${id} from ${normalizedCurrent || 'main'} to ${normalizedNew || 'main'}`);
                 
                 // 1. Get from old location
                 const oldDocName = currentChallengeId ? `challenge_${currentChallengeId}` : "main";
@@ -171,7 +172,7 @@ export function useTrades() {
                 await updateDoc(oldDocRef, { trades: remainingTrades });
 
                 // 4. Add to new
-                const newDocName = newChallengeId ? `challenge_${newChallengeId}` : "main";
+                const newDocName = normalizedNew ? `challenge_${normalizedNew}` : "main";
                 const newDocRef = doc(db, "traders", user.uid, "trade-history", newDocName);
                 await setDoc(newDocRef, {
                     trades: arrayUnion(updatedTrade)

@@ -359,11 +359,8 @@ export default function TradeHistory() {
                       <div className="space-y-1">
                         <span className="text-2xl font-black  text-white uppercase tracking-tighter">{trade.pair}</span>
                         <div className="flex items-center gap-2">
-                          <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${getTradeQuality(trade).grade === 'A' ? 'bg-profit/10 text-profit border border-profit/20' :
-                            getTradeQuality(trade).grade === 'B' ? 'bg-primary/10 text-primary border border-primary/20' :
-                              'bg-loss/10 text-loss border border-loss/20'
-                            }`}>
-                            GRADE {getTradeQuality(trade).grade}
+                          <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-muted-foreground uppercase tracking-widest">
+                            LOT {trade.lotSize}
                           </span>
                           <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">{trade.date}</span>
                         </div>
@@ -420,7 +417,7 @@ export default function TradeHistory() {
               <table className="w-full">
                 <thead>
                   <tr className="bg-white/5 text-muted-foreground text-[10px] font-black uppercase tracking-[0.2em]">
-                    {["Trade Date", "Trading Pair", "Quality", "Direction", "Entry Price", "Exit Price", "Profit/Loss", "Outcome", "Action"].map((h) => (
+                    {["Trade Date", "Trading Pair", "Lot Size", "Direction", "Entry Price", "Exit Price", "P/L ($ & Pips)", "Action"].map((h) => (
                       <th key={h} className="px-8 py-6 text-left">{h}</th>
                     ))}
                   </tr>
@@ -446,11 +443,8 @@ export default function TradeHistory() {
                           <span className="text-sm font-black text-white uppercase tracking-tighter">{trade.pair}</span>
                         </td>
                         <td className="px-8 py-6">
-                          <span className={`px-2.5 py-1 rounded-full text-[10px] font-black border ${getTradeQuality(trade).grade === 'A' ? 'bg-profit/10 text-profit border-profit/20' :
-                            getTradeQuality(trade).grade === 'B' ? 'bg-primary/10 text-primary border-primary/20' :
-                              'bg-loss/10 text-loss border-loss/20'
-                            }`}>
-                            {getTradeQuality(trade).grade}
+                          <span className="text-xs font-black text-white">
+                            {trade.lotSize}
                           </span>
                         </td>
                         <td className="px-8 py-6">
@@ -467,14 +461,14 @@ export default function TradeHistory() {
                           <span className="text-xs font-bold text-muted-foreground font-mono">{trade.exitPrice}</span>
                         </td>
                         <td className="px-8 py-6">
-                          <span className={`text-sm font-black  ${trade.pips >= 0 ? "text-profit" : "text-loss"}`}>
-                            {trade.pips > 0 ? "+" : ""}{trade.pips}
-                          </span>
-                        </td>
-                        <td className="px-8 py-6">
-                          <span className={`text-sm font-black  ${trade.profitLoss >= 0 ? "text-profit" : "text-loss"}`}>
-                            {trade.profitLoss >= 0 ? "+" : ""}${trade.profitLoss.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                          </span>
+                          <div className="flex flex-col">
+                            <span className={`text-sm font-black ${trade.profitLoss >= 0 ? "text-profit" : "text-loss"}`}>
+                              {trade.profitLoss >= 0 ? "+" : ""}${trade.profitLoss.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                            </span>
+                            <span className={`text-[10px] font-bold ${trade.pips >= 0 ? "text-profit/70" : "text-loss/70"}`}>
+                              {trade.pips > 0 ? "+" : ""}{trade.pips} pips
+                            </span>
+                          </div>
                         </td>
                         <td className="px-8 py-6">
                           <div className="flex items-center gap-3 transition-opacity">

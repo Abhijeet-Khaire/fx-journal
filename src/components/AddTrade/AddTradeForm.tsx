@@ -4,20 +4,25 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { TradeSchema, TradeValue, PAIRS, STRATEGIES } from "@/lib/tradeTypes";
 import { GlassCard } from "@/components/GlassCard";
 import { ArrowUpRight, ArrowDownRight, Save, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 interface AddTradeFormProps {
   initialData?: Partial<TradeValue>;
   onSubmit: (data: TradeValue) => Promise<void>;
   loading?: boolean;
   atLimit?: boolean;
+  challenges?: any[];
 }
 
-export function AddTradeForm({ initialData, onSubmit, loading, atLimit }: AddTradeFormProps) {
+export function AddTradeForm({ initialData, onSubmit, loading, atLimit, challenges }: AddTradeFormProps) {
+  const [mistakesInput, setMistakesInput] = useState("");
+
   const {
     register,
     handleSubmit,
     setValue,
     watch,
+    reset,
     formState: { errors },
   } = useForm<TradeValue>({
     resolver: zodResolver(TradeSchema),
@@ -37,8 +42,29 @@ export function AddTradeForm({ initialData, onSubmit, loading, atLimit }: AddTra
       emotionBefore: initialData?.emotionBefore || "Neutral",
       mistakes: initialData?.mistakes || [],
       notes: initialData?.notes || "",
+      challengeId: initialData?.challengeId || "",
     },
   });
+
+  // Re-initialize form when initialData changes (important for async loading in edit mode)
+  React.useEffect(() => {
+    if (initialData && Object.keys(initialData).length > 0) {
+      reset(initialData);
+      if (initialData.mistakes) {
+        setMistakesInput(initialData.mistakes.join(", "));
+      }
+    }
+  }, [initialData, reset]);
+
+  // Effect to show validation errors to the user
+  React.useEffect(() => {
+    const errorKeys = Object.keys(errors);
+    if (errorKeys.length > 0) {
+      const firstError = (errors as any)[errorKeys[0]].message;
+      toast.error(`Form validation failed: ${firstError || "Please check all fields"}`);
+      console.log("Form Validation Errors:", errors);
+    }
+  }, [errors]);
 
   const direction = watch("direction");
   const rulesFollowed = watch("rulesFollowed");
@@ -62,6 +88,20 @@ export function AddTradeForm({ initialData, onSubmit, loading, atLimit }: AddTra
             </select>
             {errors.pair && <p className={errorClass}>{errors.pair.message}</p>}
           </div>
+          <div>
+            <label className={labelClass}>Target Journal / Challenge</label>
+            <select {...register("challengeId")} className={`${inputClass} appearance-none cursor-pointer border-amber-400/20`}>
+              <option value="" className="bg-[hsl(220,20%,8%)] text-white">Main Trade Journal</option>
+              {challenges?.map((c) => (
+                <option key={c.id} value={c.id} className="bg-[hsl(220,20%,8%)] text-white">
+                  {c.name} ({c.firmName})
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className={labelClass}>Direction</label>
             <div className="flex gap-2">
@@ -164,6 +204,23 @@ export function AddTradeForm({ initialData, onSubmit, loading, atLimit }: AddTra
               {[1, 2, 3, 4, 5].map((n) => <option key={n} value={n} className="bg-[hsl(220,20%,8%)] text-white">{n}</option>)}
             </select>
           </div>
+        </div>
+
+        <div>
+          <label className={labelClass}>Trade Mistakes (Comma separated)</label>
+          <input
+            type="text"
+            placeholder="e.g. Revenge Trading, Poor Risk, FOMO"
+            value={mistakesInput}
+            onChange={(e) => {
+              const str = e.target.value;
+              setMistakesInput(str);
+              const val = str.split(",").map(m => m.trim()).filter(Boolean);
+              setValue("mistakes", val);
+            }}
+            className={inputClass}
+          />
+          {errors.mistakes && <p className={errorClass}>{errors.mistakes.message}</p>}
         </div>
 
         <div>
