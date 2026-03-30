@@ -94,6 +94,17 @@ export default function Analytics() {
 
     const consistency = trades.length >= 5 ? calculateConsistencyScore(trades) : 0;
 
+    const disciplineRatingAvg = trades.length > 0 
+      ? trades.reduce((acc, t) => acc + (t.disciplineRating || 5), 0) / trades.length 
+      : 0;
+    
+    const emotionalControlAvg = trades.length > 0 
+      ? trades.reduce((acc, t) => acc + (t.emotionalControlRating || 5), 0) / trades.length 
+      : 0;
+
+    const bestTrade = trades.length > 0 ? trades.reduce((prev, current) => (prev.profitLoss > current.profitLoss) ? prev : current) : null;
+    const worstTrade = trades.length > 0 ? trades.reduce((prev, current) => (prev.profitLoss < current.profitLoss) ? prev : current) : null;
+
     const userStats = {
         winRate,
         consistency,
@@ -177,8 +188,8 @@ export default function Analytics() {
                     trend={netProfit > 0 ? "up" : netProfit < 0 ? "down" : "neutral"}
                 />
                 <MetricCard
-                    label="Win Rate"
-                    value={`${winRate}%`}
+                    label="Win Rate (Success Ratio)"
+                    value={`${winRate.toFixed(1)}%`}
                     icon={Target}
                     trend={winRate >= 50 ? "up" : "down"}
                 />
@@ -450,7 +461,77 @@ export default function Analytics() {
                             </div>
                         </div>
                     </GlassCard>
+
+                    <GlassCard className="p-6 relative overflow-hidden h-[190px]">
+                        <div className="flex items-start justify-between z-10 relative">
+                            <div className="space-y-3 w-full">
+                                <h3 className="text-xs uppercase tracking-wider text-muted-foreground mb-1">
+                                    Journal Ratings
+                                </h3>
+                                
+                                <div className="flex justify-between items-center text-sm font-medium">
+                                   <span>Discipline Score</span>
+                                   <span className={`px-2 py-0.5 rounded-md ${disciplineRatingAvg >= 7 ? "bg-profit/10 text-profit" : disciplineRatingAvg < 5 ? "bg-loss/10 text-loss" : "bg-secondary text-foreground"}`}>
+                                      {disciplineRatingAvg.toFixed(1)} / 10
+                                   </span>
+                                </div>
+                                <div className="flex justify-between items-center text-sm font-medium">
+                                   <span>Emotional Control</span>
+                                   <span className={`px-2 py-0.5 rounded-md ${emotionalControlAvg >= 7 ? "bg-profit/10 text-profit" : emotionalControlAvg < 5 ? "bg-loss/10 text-loss" : "bg-secondary text-foreground"}`}>
+                                      {emotionalControlAvg.toFixed(1)} / 10
+                                   </span>
+                                </div>
+                            </div>
+                        </div>
+                    </GlassCard>
                 </div>
+            </div>
+            
+            {/* Row 3: Trade Extremes */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                <GlassCard className="p-6 border-l-4 border-l-profit/50 relative overflow-hidden group">
+                   <h3 className="text-xs font-black text-muted-foreground uppercase tracking-[0.2em] mb-4">Best Trade Performance</h3>
+                   {bestTrade ? (
+                      <div className="space-y-2">
+                         <div className="flex items-end gap-3">
+                            <span className="text-4xl font-black text-white">{bestTrade.pair}</span>
+                            <span className="text-xl font-bold text-profit pb-1">+{bestTrade.profitLoss.toLocaleString()}</span>
+                         </div>
+                         <p className="text-sm font-medium text-muted-foreground">
+                            <span className="text-white">{bestTrade.date}</span> at <span className="text-white">{bestTrade.time}</span> • Strategy: {bestTrade.strategy}
+                         </p>
+                         {bestTrade.whatWorkedWell && (
+                           <p className="text-xs text-muted-foreground border-t border-white/5 pt-2 mt-2">
+                              "<span className="italic text-white/80">{bestTrade.whatWorkedWell}</span>"
+                           </p>
+                         )}
+                      </div>
+                   ) : (
+                      <p className="text-muted-foreground text-sm">No positive trades recorded yet.</p>
+                   )}
+                </GlassCard>
+
+                <GlassCard className="p-6 border-l-4 border-l-loss/50 relative overflow-hidden group">
+                   <h3 className="text-xs font-black text-muted-foreground uppercase tracking-[0.2em] mb-4">Worst Trade Performance</h3>
+                   {worstTrade ? (
+                      <div className="space-y-2">
+                         <div className="flex items-end gap-3">
+                            <span className="text-4xl font-black text-white">{worstTrade.pair}</span>
+                            <span className="text-xl font-bold text-loss pb-1">{worstTrade.profitLoss.toLocaleString()}</span>
+                         </div>
+                         <p className="text-sm font-medium text-muted-foreground">
+                            <span className="text-white">{worstTrade.date}</span> at <span className="text-white">{worstTrade.time}</span> • Mistake: {worstTrade.biggestMistake || "N/A"}
+                         </p>
+                         {worstTrade.whatDidntWork && (
+                           <p className="text-xs text-muted-foreground border-t border-white/5 pt-2 mt-2">
+                              "<span className="italic text-white/80">{worstTrade.whatDidntWork}</span>"
+                           </p>
+                         )}
+                      </div>
+                   ) : (
+                      <p className="text-muted-foreground text-sm">No negative trades recorded yet.</p>
+                   )}
+                </GlassCard>
             </div>
 
             {/* Community Benchmarking Section */}

@@ -18,6 +18,7 @@ import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import Profile from "./pages/Profile";
 import Plans from "./pages/Plans";
+import Payment from "./pages/Payment";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
 import Analytics from "./pages/Analytics";
@@ -29,7 +30,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import AdminTraderView from "./pages/AdminTraderView";
 import { AdminRoute } from "@/components/AdminRoute";
 
-import { CustomCursor } from "@/components/CustomCursor";
+
 import { ThemeSettingsProvider, useThemeSettings } from "@/contexts/ThemeSettingsContext";
 
 const queryClient = new QueryClient();
@@ -60,6 +61,7 @@ function AnimatedRoutes() {
           <Route path="/ai-coach" element={<ProtectedRoute><AICoach /></ProtectedRoute>} />
           <Route path="/playbook" element={<ProtectedRoute><Playbook /></ProtectedRoute>} />
           <Route path="/plans" element={<ProtectedRoute><Plans /></ProtectedRoute>} />
+          <Route path="/payment" element={<ProtectedRoute><Payment /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
           
           {/* Admin Routes */}
@@ -92,9 +94,10 @@ const AppContent = () => {
     if (path === "/risk") return "Risk";
     if (path === "/challenges") return "Challenge Tracker";
     if (path === "/ai-coach") return "AI Coach";
+    if (path === "/payment") return "Secure Checkout";
   };
 
-  const excludedPaths = ["/analytics", "/add-trade"];
+  const excludedPaths = ["/analytics", "/add-trade", "/payment"];
   const isExcluded = excludedPaths.includes(location.pathname) || location.pathname.startsWith("/edit-trade");
 
   const { theme } = useThemeSettings();
@@ -145,7 +148,7 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
-            <CustomCursor />
+
             <ScrollToTop />
             <AppContent />
           </BrowserRouter>

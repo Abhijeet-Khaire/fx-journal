@@ -159,12 +159,17 @@ export default function TradeHistory() {
       toast.error("CSV Export is a Pro feature. Please upgrade to Pro or Ultimate.");
       return;
     }
-    const headers = ["Date", "Time", "Pair", "Direction", "Entry", "Exit", "Pips", "P/L", "Session", "Strategy", "Notes"];
+    const headers = [
+      "Date", "Time", "Close Time", "Pair", "Direction", "Entry", "Exit", "Pips", "P/L", 
+      "Session", "Strategy", "Market Structure", "Bias", "Target Pips", "SL Pips", "RR Ratio",
+      "Mood Before", "Rules Followed", "Discipline Rating", "Emotion Rating", "Notes"
+    ];
     const csvContent = [
       headers.join(","),
       ...filteredAndSortedTrades.map(t => [
         t.date,
         t.time,
+        t.closeTime || "",
         t.pair,
         t.direction,
         t.entryPrice,
@@ -173,6 +178,15 @@ export default function TradeHistory() {
         t.profitLoss,
         t.session,
         t.strategy,
+        t.marketStructure || "",
+        t.biasBeforeTrade || "",
+        t.targetPips || "",
+        t.slPips || "",
+        t.rrRatio || "",
+        t.moodBefore || "",
+        t.rulesFollowed,
+        t.disciplineRating || "",
+        t.emotionalControlRating || "",
         `"${(t.notes || "").replace(/"/g, '""')}"`
       ].join(","))
     ].join("\n");

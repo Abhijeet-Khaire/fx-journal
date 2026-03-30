@@ -114,12 +114,7 @@
     font-variant-numeric: tabular-nums;
   }
 
-  /* Custom Cursor - Hide default universally on desktop-like environments */
-  @media (pointer: fine) {
-    *, html, body {
-      cursor: none !important;
-    }
-  }
+
 
   ::-webkit-scrollbar {
     width: 6px;

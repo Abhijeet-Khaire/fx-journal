@@ -3,22 +3,19 @@ import { Check, X, Loader2, Shield, Zap, Crown, Target, Activity, Lock, ArrowRig
 import { GlassCard } from "@/components/GlassCard";
 import { usePlan } from "@/hooks/usePlan";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { Plan } from "@/lib/tradeTypes";
 import { cn } from "@/lib/utils";
 
 export default function Plans() {
-    const { plan: currentPlan, upgradePlan } = usePlan();
+    const { plan: currentPlan } = usePlan();
     const [loading, setLoading] = useState<string | null>(null);
+    const navigate = useNavigate();
 
-    const handleUpgrade = async (plan: Plan) => {
+    const handleUpgrade = (plan: Plan) => {
         if (plan === currentPlan) return;
-        setLoading(plan);
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        upgradePlan(plan);
-        toast.success(`Account Tier Updated: ${plan.toUpperCase()}`);
-        setLoading(null);
+        navigate(`/payment?plan=${plan}`);
     };
 
     const plans = [

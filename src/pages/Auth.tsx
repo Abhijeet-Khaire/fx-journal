@@ -1,6 +1,13 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { 
+    createUserWithEmailAndPassword, 
+    signInWithEmailAndPassword, 
+    updateProfile,
+    signInWithPopup,
+    GoogleAuthProvider,
+    OAuthProvider
+} from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -97,6 +104,37 @@ export default function Auth() {
             toast.error(message);
             setError(message);
             setLoading(false);
+        }
+    };
+
+    const handleSocialAuth = async (providerType: "google" | "apple") => {
+        if (providerType === "apple") {
+            toast.error("This sign in method is temporarily unavailable due to technical glitch");
+            return;
+        }
+
+        try {
+            setLoading(true);
+            const provider = new GoogleAuthProvider();
+
+            await signInWithPopup(auth, provider);
+            // We don't toast success here because the page will redirect
+        } catch (error: any) {
+            setLoading(false);
+            
+            // Handle expected cancellation gracefully
+            if (error.code === 'auth/popup-closed-by-user' || error.code === 'auth/cancelled-popup-request') {
+                toast.info("Authentication cancelled.");
+                return;
+            }
+
+            console.error("Google auth error:", error);
+            const message = error.code === 'auth/operation-not-allowed'
+                ? "Google Sign-in is not enabled in Firebase Console."
+                : error.message || "Failed to authenticate with Google.";
+                
+            toast.error(message);
+            setError(message);
         }
     };
 
@@ -320,13 +358,13 @@ export default function Auth() {
                                                     onClick={() => setRememberMe(!rememberMe)}
                                                     className={cn(
                                                         "w-4 h-4 rounded border flex items-center justify-center transition-all",
-                                                        rememberMe ? "base-cyan border-cyan-500 text-black shadow-[0_0_15px_rgba(34,211,238,0.4)]" : "bg-white/5 border-white/10 text-transparent"
+                                                        rememberMe ? "bg-cyan-500 border-cyan-500 text-black shadow-[0_0_15px_rgba(34,211,238,0.4)]" : "bg-white/5 border-white/10 text-transparent"
                                                     )}
                                                 >
-                                                    <Check className="w-3 h-3" />
+                                                    <Check className="w-3 h-3 stroke-[3px]" />
                                                 </button>
-                                                <span className="text-[9px] font-bold text-white/30 uppercase tracking-widest cursor-pointer" onClick={() => setRememberMe(!rememberMe)}>
-                                                    PERSIST_LOCAL_STATE
+                                                <span className="text-[9px] font-bold text-white/30 uppercase tracking-widest cursor-pointer hover:text-white/60 transition-colors" onClick={() => setRememberMe(!rememberMe)}>
+                                                    REMEMBER ME
                                                 </span>
                                             </div>
 
@@ -403,11 +441,21 @@ export default function Auth() {
                                 <div className="h-px flex-1 bg-white/5" />
                             </div>
                             <div className="grid grid-cols-2 gap-4">
-                                <button className="h-12 flex items-center justify-center gap-3 rounded-xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.05] transition-all group">
+                                <button 
+                                    onClick={() => handleSocialAuth("google")}
+                                    disabled={loading}
+                                    className="h-12 flex items-center justify-center gap-3 rounded-xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.05] transition-all group"
+                                    type="button"
+                                >
                                     <Globe className="w-4 h-4 text-white/20 group-hover:text-white transition-colors" />
                                     <span className="text-[9px] font-black text-white/30 group-hover:text-white uppercase tracking-widest">GOOGLE NODE</span>
                                 </button>
-                                <button className="h-12 flex items-center justify-center gap-3 rounded-xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.05] transition-all group">
+                                <button 
+                                    onClick={() => handleSocialAuth("apple")}
+                                    disabled={loading}
+                                    className="h-12 flex items-center justify-center gap-3 rounded-xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.05] transition-all group"
+                                    type="button"
+                                >
                                     <Lock className="w-4 h-4 text-white/20 group-hover:text-white transition-colors" />
                                     <span className="text-[9px] font-black text-white/30 group-hover:text-white uppercase tracking-widest">APPLE AUTH</span>
                                 </button>
@@ -416,7 +464,7 @@ export default function Auth() {
 
                         <div className="text-center">
                             <p className="text-[8px] font-bold text-white/10 uppercase tracking-[0.6em]  leading-tight">
-                                LINK SECURED. <span className="text-cyan-500/30">PROTOCOL_EXT</span>
+                                LINK SECURED. <Link to="/privacy" className="text-cyan-500/50 hover:text-cyan-400 transition-colors">PRIVACY POLICY</Link>
                             </p>
                             <Link to="/" className="mt-8 inline-block opacity-20 hover:opacity-100 transition-opacity">
                                 <img src="/favicon.svg" alt="Zenith" className="w-6 h-6 grayscale brightness-200" />

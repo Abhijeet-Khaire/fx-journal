@@ -27,21 +27,21 @@ export default function AddTrade() {
 
   const [uploading, setUploading] = useState(false);
   const [challenges, setChallenges] = useState<any[]>([]);
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<Partial<TradeValue>>({
     pair: PAIRS[0],
-    direction: "BUY" as "BUY" | "SELL",
-    entryPrice: "",
-    exitPrice: "",
-    stopLoss: "",
-    takeProfit: "",
-    lotSize: "0.1",
+    direction: "BUY",
+    entryPrice: "" as any,
+    exitPrice: "" as any,
+    stopLoss: "" as any,
+    takeProfit: "" as any,
+    lotSize: 0.1 as any,
     date: new Date().toISOString().split("T")[0],
     time: new Date().toTimeString().slice(0, 5),
     strategy: STRATEGIES[0],
     rulesFollowed: true,
-    confidence: "3",
+    confidence: 3,
     emotionBefore: "Neutral",
-    mistakes: [] as string[],
+    mistakes: [],
     notes: "",
     challengeId: "",
   });
@@ -73,22 +73,12 @@ export default function AddTrade() {
           const trade = challengeTrades.find((t: any) => t.id === id);
           if (trade) {
             setForm({
-              pair: trade.pair as any,
-              direction: trade.direction,
-              entryPrice: trade.entryPrice.toString(),
-              exitPrice: trade.exitPrice.toString(),
-              stopLoss: trade.stopLoss.toString(),
-              takeProfit: trade.takeProfit.toString(),
-              lotSize: trade.lotSize.toString(),
+              ...trade,
               date: typeof trade.date === 'string' ? trade.date : new Date(trade.date?.seconds * 1000 || Date.now()).toISOString().split('T')[0],
-              time: trade.time,
-              strategy: trade.strategy as any,
-              rulesFollowed: trade.rulesFollowed,
-              confidence: (trade.confidence || 3).toString(),
-              emotionBefore: trade.emotionBefore || "Neutral",
-              mistakes: trade.mistakes || [],
-              notes: trade.notes,
+              confidence: trade.confidence || 3,
               challengeId: trade.challengeId || "",
+              mistakes: trade.mistakes || [],
+              emotionBefore: trade.emotionBefore || "Neutral",
             });
           }
         }
@@ -104,22 +94,11 @@ export default function AddTrade() {
         const trade = trades.find((t) => t.id === id);
         if (trade) {
           setForm({
-            pair: trade.pair as any,
-            direction: trade.direction,
-            entryPrice: trade.entryPrice.toString(),
-            exitPrice: trade.exitPrice.toString(),
-            stopLoss: trade.stopLoss.toString(),
-            takeProfit: trade.takeProfit.toString(),
-            lotSize: trade.lotSize.toString(),
-            date: trade.date,
-            time: trade.time,
-            strategy: trade.strategy as any,
-            rulesFollowed: trade.rulesFollowed,
-            confidence: (trade.confidence || 3).toString(),
-            emotionBefore: trade.emotionBefore || "Neutral",
-            mistakes: trade.mistakes || [],
-            notes: trade.notes,
+            ...trade,
+            confidence: trade.confidence || 3,
             challengeId: trade.challengeId || "",
+            mistakes: trade.mistakes || [],
+            emotionBefore: trade.emotionBefore || "Neutral",
           });
         }
       }

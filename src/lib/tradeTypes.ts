@@ -24,6 +24,37 @@ export const TradeSchema = z.object({
   confidence: z.number().min(1).max(5).optional(),
   mistakes: z.array(z.string()).optional(),
   challengeId: z.string().optional(),
+  
+  // NEW Trade Data Fields
+  marketStructure: z.enum(["Trending", "Ranging", "Choppy", "Breakout", "Reversal"]).optional(),
+  biasBeforeTrade: z.enum(["Bullish", "Bearish", "Neutral"]).optional(),
+  biasReason: z.string().optional(),
+  closeTime: z.string().optional(),
+  targetPips: z.number().nonnegative().optional(),
+  slPips: z.number().nonnegative().optional(),
+  rrRatio: z.string().optional(),
+  
+  // NEW Mistakes & Lessons Fields
+  biggestMistake: z.string().optional(),
+  lessonsLearned: z.string().optional(),
+  whatWorkedWell: z.string().optional(),
+  whatDidntWork: z.string().optional(),
+  
+  // NEW Psychology & Thinking Fields
+  moodBefore: z.enum(["Calm", "Confident", "Stressed", "FOMO", "Overexcited"]).optional(),
+  thinkingBefore: z.string().optional(),
+  thinkingDuring: z.string().optional(),
+  thinkingAfter: z.string().optional(),
+  planExplanation: z.string().optional(),
+  
+  // NEW Improvement Plan Fields
+  improveTomorrow: z.string().optional(),
+  rulesNextSession: z.string().optional(),
+  focusArea: z.enum(["Discipline", "Psychology", "Strategy", "Risk Management"]).optional(),
+  
+  // NEW Performance Metric Fields (per-trade subjective)
+  disciplineRating: z.number().min(1).max(10).optional(),
+  emotionalControlRating: z.number().min(1).max(10).optional(),
 });
 
 export type TradeValue = z.infer<typeof TradeSchema>;
@@ -53,8 +84,38 @@ export interface Trade {
   mistakes?: string[];
   challengeId?: string;
   sourceDoc?: string;
+  
+  // NEW Trade Data Fields
+  marketStructure?: "Trending" | "Ranging" | "Choppy" | "Breakout" | "Reversal";
+  biasBeforeTrade?: "Bullish" | "Bearish" | "Neutral";
+  biasReason?: string;
+  closeTime?: string;
+  targetPips?: number;
+  slPips?: number;
+  rrRatio?: string;
+  
+  // NEW Mistakes & Lessons Fields
+  biggestMistake?: string;
+  lessonsLearned?: string;
+  whatWorkedWell?: string;
+  whatDidntWork?: string;
+  
+  // NEW Psychology & Thinking Fields
+  moodBefore?: "Calm" | "Confident" | "Stressed" | "FOMO" | "Overexcited";
+  thinkingBefore?: string;
+  thinkingDuring?: string;
+  thinkingAfter?: string;
+  planExplanation?: string;
+  
+  // NEW Improvement Plan Fields
+  improveTomorrow?: string;
+  rulesNextSession?: string;
+  focusArea?: "Discipline" | "Psychology" | "Strategy" | "Risk Management";
+  
+  // NEW Performance Metric Fields (per-trade subjective)
+  disciplineRating?: number;
+  emotionalControlRating?: number;
 }
-
 
 // Plan type defined below
 
