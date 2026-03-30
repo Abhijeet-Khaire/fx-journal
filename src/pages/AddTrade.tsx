@@ -7,12 +7,14 @@ import { TradeValue } from "@/lib/tradeTypes";
 import { calculatePips, calculatePL, detectSession } from "@/lib/tradeStore";
 import { useTrades } from "@/hooks/useTrades";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
-import { ArrowUpRight, ArrowDownRight, Save, AlertTriangle, X, Loader2, Sparkles } from "lucide-react";
+import { ArrowUpRight, ArrowDownRight, Save, AlertTriangle, X, Loader2, Sparkles, Shield } from "lucide-react";
 import { toast } from "sonner";
 import { usePlan } from "@/hooks/usePlan";
 import { useAuth } from "@/contexts/AuthContext";
 import { db } from "@/lib/firebase";
 import { doc, getDoc } from "firebase/firestore";
+import { calculatePerTradeRiskPercent, calculatePerTradeRiskDollars, ChallengeConfig } from "@/lib/challengeEngine";
+import { Trade } from "@/lib/tradeTypes";
 
 export default function AddTrade() {
   const navigate = useNavigate();
@@ -26,7 +28,8 @@ export default function AddTrade() {
   const atLimit = !id && plan === "free" && trades.length >= FREE_TRADE_LIMIT;
 
   const [uploading, setUploading] = useState(false);
-  const [challenges, setChallenges] = useState<any[]>([]);
+  const [challenges, setChallenges] = useState<ChallengeConfig[]>([]);
+  const [riskWarning, setRiskWarning] = useState<{ percent: number; dollars: number; max: number } | null>(null);
   const [form, setForm] = useState<Partial<TradeValue>>({
     pair: PAIRS[0],
     direction: "BUY",
@@ -129,6 +132,21 @@ export default function AddTrade() {
       pips,
       session,
     };
+
+    // Per-trade risk validation for challenges
+    if (data.challengeId && data.stopLoss && data.stopLoss > 0) {
+      const activeChallenge = challenges.find(c => c.id === data.challengeId);
+      if (activeChallenge) {
+        const mockTrade = { ...tradeData, id: 'preview', userId: '' } as Trade;
+        const riskPct = calculatePerTradeRiskPercent(mockTrade, activeChallenge.accountSize);
+        const riskDollars = calculatePerTradeRiskDollars(mockTrade);
+        const maxRisk = activeChallenge.maxRiskPerTrade || 3;
+        if (riskPct > maxRisk) {
+          setRiskWarning({ percent: riskPct, dollars: riskDollars, max: maxRisk });
+          toast.warning(`⚠️ Risk ${riskPct}% exceeds ${maxRisk}% limit ($${riskDollars.toFixed(0)} at risk)`);
+        }
+      }
+    }
 
     try {
       setUploading(true);
@@ -236,6 +254,25 @@ export default function AddTrade() {
             <p className="text-sm">
               Free plan limit reached ({FREE_TRADE_LIMIT} trades). Upgrade to Pro for Unlimited Trades.
             </p>
+          </div>
+        </GlassCard>
+      )}
+
+      {riskWarning && (
+        <GlassCard className="mb-6 border-loss/30 bg-loss/5">
+          <div className="flex items-center gap-3 text-loss">
+            <Shield className="w-5 h-5 flex-shrink-0" />
+            <div>
+              <p className="text-sm font-bold">
+                ⚠️ Per-Trade Risk Warning: {riskWarning.percent}% (${riskWarning.dollars.toFixed(0)})
+              </p>
+              <p className="text-xs text-loss/80 mt-0.5">
+                This exceeds the challenge max of {riskWarning.max}%. Trade was saved but flagged.
+              </p>
+            </div>
+            <button onClick={() => setRiskWarning(null)} className="ml-auto">
+              <X className="w-4 h-4" />
+            </button>
           </div>
         </GlassCard>
       )}
