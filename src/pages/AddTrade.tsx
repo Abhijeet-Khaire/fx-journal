@@ -277,10 +277,10 @@ export default function AddTrade() {
         </GlassCard>
       )}
 
-      <AddTradeForm 
-        onSubmit={onAddTradeSubmit} 
-        loading={uploading} 
-        atLimit={atLimit} 
+      <AddTradeForm
+        onSubmit={onAddTradeSubmit}
+        loading={uploading}
+        atLimit={atLimit}
         initialData={form as any}
         challenges={challenges}
       />

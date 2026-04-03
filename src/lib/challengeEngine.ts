@@ -408,7 +408,7 @@ export function evaluateChallenge(config: ChallengeConfig, trades: Trade[]): Cha
   // 4. Max Drawdown
   const maxDDBreached = config.trailingDrawdownType !== "none"
     ? currentEquity <= trailingDDLevel
-    : maxDD >= config.maxDrawdownLimit;
+    : maxDD > config.maxDrawdownLimit;
   ruleChecks.push({
     rule: `Max Drawdown${config.trailingDrawdownType !== "none" ? " (Trailing)" : ""}`,
     passed: !maxDDBreached,

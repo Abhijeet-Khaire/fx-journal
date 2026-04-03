@@ -228,6 +228,18 @@
     background-image: radial-gradient(hsl(var(--primary) / 0.1) 1px, transparent 1px);
     background-size: 20px 20px;
   }
+
+  .hex-grid {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='49' viewBox='0 0 28 49'%3E%3Cpath fill='%2322d3ee' fill-opacity='0.05' d='M13.99 9.25l13 7.5v15l-13 7.5L1 31.75v-15l12.99-7.5zM3 17.91v12.43l10.99 6.34 11-6.34V17.91L14 11.57 3 17.91z'/%3E%3C/svg%3E");
+  }
+
+  .mesh-gradient {
+    background: 
+      radial-gradient(at 0% 0%, hsla(187, 85%, 53%, 0.15) 0px, transparent 50%),
+      radial-gradient(at 100% 0%, hsla(187, 85%, 53%, 0.1) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, hsla(187, 85%, 53%, 0.15) 0px, transparent 50%),
+      radial-gradient(at 0% 100%, hsla(187, 85%, 53%, 0.1) 0px, transparent 50%);
+  }
 }
 
 /* Custom Glassmorphism for Sonner Toasts */
@@ -281,5 +293,24 @@
   .num-impact {
     @apply font-black tracking-tighter;
     font-variant-numeric: tabular-nums !important;
+  }
+
+  @keyframes drift {
+    0% { transform: translate(0, 0) rotate(0deg); }
+    50% { transform: translate(10px, -10px) rotate(2deg); }
+    100% { transform: translate(0, 0) rotate(0deg); }
+  }
+
+  .animate-drift {
+    animation: drift 10s ease-in-out infinite;
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% { opacity: 0.3; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(1.1); }
+  }
+
+  .animate-pulse-glow {
+    animation: pulse-glow 4s ease-in-out infinite;
   }
 }

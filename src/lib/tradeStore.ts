@@ -15,13 +15,13 @@ export function getSymbolProperties(pair: string) {
   const usdQuotePairs = ["EUR/USD", "GBP/USD", "AUD/USD", "NZD/USD", "XAU/USD", "XAG/USD"];
   // Common Forex pairs (Base is USD)
   const usdBasePairs = ["USD/JPY", "USD/CHF", "USD/CAD"];
-  
+
   if (pair.includes("JPY")) return { pipMultiplier: 100, contractSize: 100000, type: "forex" };
   if (pair === "XAU/USD") return { pipMultiplier: 100, contractSize: 100, type: "metal" };
   if (pair === "XAG/USD") return { pipMultiplier: 100, contractSize: 5000, type: "metal" };
   if (["US30", "NAS100", "SPX500"].includes(pair)) return { pipMultiplier: 1, contractSize: 1, type: "index" };
   if (pair.includes("BTC") || pair.includes("ETH")) return { pipMultiplier: 1, contractSize: 1, type: "crypto" };
-  
+
   return { pipMultiplier: 10000, contractSize: 100000, type: "forex" };
 }
 
@@ -71,7 +71,7 @@ export function calculatePL(pips: number, lotSize: number, pair: string, entryPr
   // or the exitPrice if it's the relevant rate (it usually isn't for cross pairs directly to USD).
   if (quote === "JPY") {
     // Fallback rate for JPY cross pairs if we don't have the specific USD/JPY rate
-    const usdJpyRate = 150; 
+    const usdJpyRate = 150;
     return Math.round((rawProfit / usdJpyRate) * 100) / 100;
   }
 

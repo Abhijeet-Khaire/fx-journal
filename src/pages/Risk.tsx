@@ -38,22 +38,22 @@ export default function Risk() {
 
     const stats = useMemo(() => {
         if (!trades.length) return null;
-        
+
         const totalTrades = trades.length;
         const wins = trades.filter(t => t.profitLoss > 0).length;
         const winRate = (wins / totalTrades) * 100;
-        
+
         const winners = trades.filter(t => t.profitLoss > 0);
         const losers = trades.filter(t => t.profitLoss < 0);
-        
+
         const avgWin = winners.reduce((s, t) => s + t.profitLoss, 0) / (winners.length || 1);
         const avgLoss = Math.abs(losers.reduce((s, t) => s + t.profitLoss, 0) / (losers.length || 1));
         const avgRR = avgWin / (avgLoss || 1);
 
         // Calculate avg risk per trade (conceptual for now, or based on pips/value)
         // Let's assume average risk is the average loss if not explicitly tracked
-        const avgRisk = avgLoss; 
-        
+        const avgRisk = avgLoss;
+
         return { winRate, avgRR, avgRisk };
     }, [trades]);
 
@@ -78,7 +78,7 @@ export default function Risk() {
     return (
         <div className="space-y-10 pb-20 relative">
             {/* Page Header */}
-            <motion.div 
+            <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="relative overflow-hidden rounded-[2.5rem] p-10 border border-white/10 bg-black/40 backdrop-blur-3xl group shadow-2xl"
@@ -176,11 +176,11 @@ export default function Risk() {
                     </h3>
                     <span className="h-px flex-1 bg-gradient-to-r from-primary/30 to-transparent ml-6" />
                 </div>
-                
+
                 {stats && (
-                    <RiskMetrics 
-                        winRate={stats.winRate} 
-                        avgRR={stats.avgRR} 
+                    <RiskMetrics
+                        winRate={stats.winRate}
+                        avgRR={stats.avgRR}
                         avgRiskPerTrade={1.5} // Defaulting to 1.5% as placeholder
                     />
                 )}
@@ -202,7 +202,7 @@ export default function Risk() {
                             <span className="text-[10px] font-black uppercase tracking-widest">Live Analysis</span>
                         </div>
                     </div>
-                    
+
                     <div className="h-[350px] w-full">
                         <ResponsiveContainer width="100%" height="100%">
                             <AreaChart data={drawdownStats.equityCurve}>
@@ -224,13 +224,13 @@ export default function Risk() {
                                     }}
                                     itemStyle={{ color: "#ef4444", fontWeight: "bold", fontSize: "12px" }}
                                 />
-                                <Area 
-                                    type="monotone" 
-                                    dataKey="drawdown" 
-                                    stroke="#ef4444" 
+                                <Area
+                                    type="monotone"
+                                    dataKey="drawdown"
+                                    stroke="#ef4444"
                                     strokeWidth={3}
-                                    fillOpacity={1} 
-                                    fill="url(#colorDd)" 
+                                    fillOpacity={1}
+                                    fill="url(#colorDd)"
                                 />
                             </AreaChart>
                         </ResponsiveContainer>
@@ -242,7 +242,7 @@ export default function Risk() {
                             <Lock className="w-12 h-12 text-primary mx-auto mb-4" />
                             <h3 className="text-2xl font-black uppercase tracking-tighter ">Institutional Access Required</h3>
                             <p className="text-sm text-muted-foreground mb-8 leading-relaxed font-medium">Drawdown statistics and performance history analysis are exclusive to Institutional traders.</p>
-                            <Button 
+                            <Button
                                 onClick={() => navigate("/plans")}
                                 className="w-full bg-primary hover:scale-105 transition-transform py-6 rounded-2xl font-black uppercase text-xs tracking-widest"
                             >
@@ -303,13 +303,13 @@ export default function Risk() {
                         </motion.div>
                     )}
                 </GlassCard>
-                
+
                 {!isUltimate && (
                     <div className="absolute inset-0 flex flex-col items-center justify-center z-10">
-                         <div className="px-4 py-2 bg-primary/20 backdrop-blur-md rounded-full border border-primary/30 flex items-center gap-2">
+                        <div className="px-4 py-2 bg-primary/20 backdrop-blur-md rounded-full border border-primary/30 flex items-center gap-2">
                             <Lock className="w-4 h-4 text-primary" />
                             <span className="text-[10px] font-black uppercase tracking-widest">Institutional Feature</span>
-                         </div>
+                        </div>
                     </div>
                 )}
             </div>

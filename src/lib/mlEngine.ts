@@ -29,7 +29,7 @@ export function calculateConsistencyScore(trades: Trade[]): number {
  */
 export function detectRevengeRisk(trades: Trade[]): { frequency: number; locations: string[] } {
   const sorted = [...trades].sort((a, b) => new Date(a.date + "T" + a.time).getTime() - new Date(b.date + "T" + b.time).getTime());
-  
+
   if (sorted.length < 2) return { frequency: 0, locations: [] };
 
   const averageLotSize = sorted.reduce((sum, t) => sum + t.lotSize, 0) / sorted.length;
@@ -100,12 +100,12 @@ export function clusterTrades(trades: Trade[]): TradeCluster[] {
 
   for (const v of vectors) {
     for (let i = 0; i < numFeatures; i++) {
-        if (v[i] < mins[i]) mins[i] = v[i];
-        if (v[i] > maxs[i]) maxs[i] = v[i];
+      if (v[i] < mins[i]) mins[i] = v[i];
+      if (v[i] > maxs[i]) maxs[i] = v[i];
     }
   }
 
-  const normalizedVectors = vectors.map(v => 
+  const normalizedVectors = vectors.map(v =>
     v.map((val, i) => maxs[i] === mins[i] ? 0 : (val - mins[i]) / (maxs[i] - mins[i]))
   );
 
@@ -115,7 +115,7 @@ export function clusterTrades(trades: Trade[]): TradeCluster[] {
   // K-Means algorithm (Optimized)
   let k = Math.min(3, trades.length);
   let centroids: number[][] = [];
-  
+
   // K-Means++ style initialization for better stability
   if (normalizedVectors.length > 0) {
     centroids.push([...normalizedVectors[Math.floor(Math.random() * normalizedVectors.length)]]);
@@ -140,49 +140,49 @@ export function clusterTrades(trades: Trade[]): TradeCluster[] {
   let clustersIndices: number[][] = Array(k).fill(null).map(() => []);
 
   for (let iter = 0; iter < 50; iter++) {
-      let newClustersIndices: number[][] = Array(k).fill(null).map(() => []);
-      let changedCount = 0;
-      
-      for (let i = 0; i < normalizedVectors.length; i++) {
-          let minDist = Infinity;
-          let clusterIdx = 0;
-          for (let j = 0; j < k; j++) {
-              const dist = distance(normalizedVectors[i], centroids[j]);
-              if (dist < minDist) {
-                  minDist = dist;
-                  clusterIdx = j;
-              }
-          }
-          newClustersIndices[clusterIdx].push(i);
+    let newClustersIndices: number[][] = Array(k).fill(null).map(() => []);
+    let changedCount = 0;
+
+    for (let i = 0; i < normalizedVectors.length; i++) {
+      let minDist = Infinity;
+      let clusterIdx = 0;
+      for (let j = 0; j < k; j++) {
+        const dist = distance(normalizedVectors[i], centroids[j]);
+        if (dist < minDist) {
+          minDist = dist;
+          clusterIdx = j;
+        }
+      }
+      newClustersIndices[clusterIdx].push(i);
+    }
+
+    let centroidShift = 0;
+    for (let i = 0; i < k; i++) {
+      if (newClustersIndices[i].length === 0) continue;
+
+      const newCentroid = Array(numFeatures).fill(0);
+      for (const pointIdx of newClustersIndices[i]) {
+        for (let d = 0; d < numFeatures; d++) {
+          newCentroid[d] += normalizedVectors[pointIdx][d];
+        }
       }
 
-      let centroidShift = 0;
-      for (let i = 0; i < k; i++) {
-          if (newClustersIndices[i].length === 0) continue;
-          
-          const newCentroid = Array(numFeatures).fill(0);
-          for (const pointIdx of newClustersIndices[i]) {
-              for (let d = 0; d < numFeatures; d++) {
-                  newCentroid[d] += normalizedVectors[pointIdx][d];
-              }
-          }
-          
-          for (let d = 0; d < numFeatures; d++) {
-              newCentroid[d] /= newClustersIndices[i].length;
-              centroidShift += Math.abs(newCentroid[d] - centroids[i][d]);
-          }
-          centroids[i] = newCentroid;
+      for (let d = 0; d < numFeatures; d++) {
+        newCentroid[d] /= newClustersIndices[i].length;
+        centroidShift += Math.abs(newCentroid[d] - centroids[i][d]);
       }
-      
-      clustersIndices = newClustersIndices;
-      if (centroidShift < 0.001) break;
+      centroids[i] = newCentroid;
+    }
+
+    clustersIndices = newClustersIndices;
+    if (centroidShift < 0.001) break;
   }
 
   const getDominantTrait = (traits: string[]) => {
     if (!traits.length) return "Mixed";
     const counts = traits.reduce((acc, val) => {
-        acc[val] = (acc[val] || 0) + 1;
-        return acc;
+      acc[val] = (acc[val] || 0) + 1;
+      return acc;
     }, {} as Record<string, number>);
     return Object.entries(counts).sort((a, b) => b[1] - a[1])[0][0];
   };
@@ -190,11 +190,11 @@ export function clusterTrades(trades: Trade[]): TradeCluster[] {
   return clustersIndices.map((indices, i) => {
     const clusterTrades = indices.map(idx => trades[idx]);
     const wins = clusterTrades.filter(t => t.profitLoss > 0).length;
-    
+
     // Determine the dominant pattern name for the UI
     const dominantStrategy = getDominantTrait(clusterTrades.map(t => t.strategy));
     const dominantSession = getDominantTrait(clusterTrades.map(t => t.session));
-    
+
     return {
       id: `cluster-${i}`,
       name: `${dominantStrategy} - ${dominantSession}`,
@@ -313,9 +313,9 @@ export function predictTradeSuccessProbability(
  * Checks if the user should enter "Drawdown Recovery Protocol" (DRP)
  * Triggers on significant losing streak or large drawdown.
  */
-export function checkDrawdownRecoveryProtocol(trades: Trade[]): { 
-  isActive: boolean; 
-  reason?: string; 
+export function checkDrawdownRecoveryProtocol(trades: Trade[]): {
+  isActive: boolean;
+  reason?: string;
   recommendedRiskLimit?: number;
   goldenSetup?: { pair: string; session: string; strategy: string };
 } {
@@ -334,7 +334,7 @@ export function checkDrawdownRecoveryProtocol(trades: Trade[]): {
 
   // 2. Check current Drawdown
   const { currentDrawdown, maxDrawdown } = getDrawdownStats(trades);
-  
+
   // Custom thresholds: 3 consecutive losses OR current DD is > 50% of their max historic DD (assuming max DD is significant)
   // Since we don't have account balance, we use a heuristic.
   const isHighDrawdown = currentDrawdown > 0 && maxDrawdown > 0 && (currentDrawdown >= maxDrawdown * 0.8) && currentDrawdown > 100;
@@ -343,11 +343,11 @@ export function checkDrawdownRecoveryProtocol(trades: Trade[]): {
     // Find Golden Setup via clustering
     const clusters = clusterTrades(trades);
     const bestCluster = clusters.length > 0 ? clusters[0] : null; // Already sorted by avgProfit desc
-    
+
     let goldenSetup;
     if (bestCluster && bestCluster.trades.length > 0) {
       // Find mode of pair, session, strategy in the best cluster
-      const getMode = (arr: any[]) => arr.sort((a,b) => arr.filter(v => v===a).length - arr.filter(v => v===b).length).pop();
+      const getMode = (arr: any[]) => arr.sort((a, b) => arr.filter(v => v === a).length - arr.filter(v => v === b).length).pop();
       goldenSetup = {
         pair: getMode(bestCluster.trades.map(t => t.pair)),
         session: getMode(bestCluster.trades.map(t => t.session)),
@@ -357,8 +357,8 @@ export function checkDrawdownRecoveryProtocol(trades: Trade[]): {
 
     return {
       isActive: true,
-      reason: consecutiveLosses >= 3 
-        ? `You are on a ${consecutiveLosses}-trade losing streak.` 
+      reason: consecutiveLosses >= 3
+        ? `You are on a ${consecutiveLosses}-trade losing streak.`
         : `You are nearing your maximum historical drawdown ($${currentDrawdown.toFixed(2)}).`,
       recommendedRiskLimit: 0.25, // Recommend dropping risk to 0.25%
       goldenSetup
@@ -388,21 +388,21 @@ export function generateGoldenPlaybook(trades: Trade[]): GoldenPlaybook | null {
 
   // The best cluster is the first one (sorted by avgProfit)
   const best = clusters[0];
-  
+
   const getMode = (arr: any[]) => {
     if (arr.length === 0) return "N/A";
-    return arr.sort((a,b) => arr.filter(v => v===a).length - arr.filter(v => v===b).length).pop();
+    return arr.sort((a, b) => arr.filter(v => v === a).length - arr.filter(v => v === b).length).pop();
   };
 
   const strategyName = getMode(best.trades.map(t => t.strategy));
   const bestPair = getMode(best.trades.map(t => t.pair));
   const bestSession = getMode(best.trades.map(t => t.session));
-  
+
   const wins = best.trades.filter(t => t.profitLoss > 0);
   const avgWin = wins.length ? wins.reduce((s, t) => s + t.profitLoss, 0) / wins.length : 0;
   const losses = best.trades.filter(t => t.profitLoss < 0);
   const avgLoss = losses.length ? Math.abs(losses.reduce((s, t) => s + t.profitLoss, 0) / losses.length) : 1;
-  
+
   const recommendedRR = Math.round((avgWin / avgLoss) * 10) / 10;
 
   const rules = [
@@ -414,7 +414,7 @@ export function generateGoldenPlaybook(trades: Trade[]): GoldenPlaybook | null {
 
   // Ad-hoc psychology note based on dominant emotion in best trades
   const dominantEmotion = getMode(best.trades.filter(t => t.profitLoss > 0).map(t => t.emotionBefore || "Neutral"));
-  
+
   let psychologyNote = `You perform best when you are feeling ${dominantEmotion}. Maintain this mental state before every entry.`;
   if (dominantEmotion === "Neutral") psychologyNote = "Your best trades happen when you are emotionally detached. Keep your screen time low and execute mechanically.";
 

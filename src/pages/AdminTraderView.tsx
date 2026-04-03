@@ -6,9 +6,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Trade } from "@/lib/tradeTypes";
 import { getNetProfit, getWinRate, getProfitFactor, getDrawdownStats } from "@/lib/tradeStore";
 import { GlassCard } from "@/components/GlassCard";
-import { 
-    ArrowLeft, TrendingUp, TrendingDown, Trophy, Activity, 
-    ArrowUpRight, ArrowDownRight, Clock, Zap, Target, Shield, 
+import {
+    ArrowLeft, TrendingUp, TrendingDown, Trophy, Activity,
+    ArrowUpRight, ArrowDownRight, Clock, Zap, Target, Shield,
     BarChart3, Cpu, Fingerprint
 } from "lucide-react";
 import { motion } from "framer-motion";
@@ -294,9 +294,8 @@ export default function AdminTraderView() {
                                     </div>
                                     <div className="col-span-2 font-bold text-sm group-hover:text-primary transition-colors">{trade.pair}</div>
                                     <div className="col-span-1">
-                                        <span className={`inline-flex items-center gap-1 text-[9px] font-black px-2 py-1 rounded-lg border uppercase tracking-widest ${
-                                            trade.direction === "BUY" ? "bg-profit/10 text-profit border-profit/20" : "bg-loss/10 text-loss border-loss/20"
-                                        }`}>
+                                        <span className={`inline-flex items-center gap-1 text-[9px] font-black px-2 py-1 rounded-lg border uppercase tracking-widest ${trade.direction === "BUY" ? "bg-profit/10 text-profit border-profit/20" : "bg-loss/10 text-loss border-loss/20"
+                                            }`}>
                                             {trade.direction === "BUY" ? <ArrowUpRight className="w-2.5 h-2.5" /> : <ArrowDownRight className="w-2.5 h-2.5" />}
                                             {trade.direction}
                                         </span>

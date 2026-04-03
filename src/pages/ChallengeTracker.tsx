@@ -95,13 +95,13 @@ export default function ChallengeTracker() {
       setForm(DEFAULT_CHALLENGE);
       setShowForm(false);
       setEditingId(null);
-    } catch {}
+    } catch { }
   };
 
   const handleEdit = (c: ChallengeConfig) => { setForm({ ...c }); setEditingId(c.id); setShowForm(true); };
 
   const handleDelete = async (id: string) => {
-    try { await saveToStorage(challenges.filter(c => c.id !== id)); toast.success("Challenge deleted."); } catch {}
+    try { await saveToStorage(challenges.filter(c => c.id !== id)); toast.success("Challenge deleted."); } catch { }
   };
 
   const handleArchive = async (challenge: ChallengeConfig, status: string, reason?: string) => {
@@ -384,7 +384,6 @@ function ChallengeCard({ challenge, index, onEdit, onDelete, onArchive, isArchiv
   const [loadingTrades, setLoadingTrades] = useState(true);
   const [showTrades, setShowTrades] = useState(false);
   const [showStats, setShowStats] = useState(false);
-  const [showDailyPnL, setShowDailyPnL] = useState(false);
   const [showRules, setShowRules] = useState(true);
 
   useEffect(() => {
@@ -536,7 +535,7 @@ function ChallengeCard({ challenge, index, onEdit, onDelete, onArchive, isArchiv
             icon={<TrendingDown className={`w-4 h-4 ${(evaluation.maxDD / c.maxDrawdownLimit) * 100 >= 80 ? "text-loss" : "text-muted-foreground"}`} />}
             color={(evaluation.maxDD / c.maxDrawdownLimit) * 100 >= 80 ? "loss" : "primary"}
             percent={c.maxDrawdownLimit > 0 ? (evaluation.maxDD / c.maxDrawdownLimit) * 100 : 0}
-            warning={evaluation.maxDD >= c.maxDrawdownLimit} />
+            warning={evaluation.maxDD > c.maxDrawdownLimit} />
         </div>
 
         {/* Equity Curve */}
@@ -628,25 +627,24 @@ function ChallengeCard({ challenge, index, onEdit, onDelete, onArchive, isArchiv
                 <h4 className="text-sm font-black uppercase tracking-widest text-white mb-4 flex items-center gap-2"><BarChart3 className="w-4 h-4 text-primary" /> Advanced Statistics</h4>
                 <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
                   {[
-                    { label: "Profit Factor", value: stats.profitFactor.toFixed(2) },
-                    { label: "Sharpe Ratio", value: stats.sharpeRatio.toFixed(2) },
-                    { label: "Avg R-Multiple", value: `${stats.avgRMultiple.toFixed(2)}R` },
-                    { label: "Avg Daily P/L", value: `$${stats.avgDailyPnL.toFixed(0)}` },
-                    { label: "Avg Win", value: `$${stats.avgWin.toFixed(0)}` },
-                    { label: "Avg Loss", value: `$${stats.avgLoss.toFixed(0)}` },
-                    { label: "Largest Win", value: `$${stats.largestWin.toFixed(0)}` },
-                    { label: "Largest Loss", value: `$${stats.largestLoss.toFixed(0)}` },
-                    { label: "Max Win Streak", value: `${stats.maxConsecutiveWins}` },
-                    { label: "Max Loss Streak", value: `${stats.maxConsecutiveLosses}` },
-                    { label: "Best Day", value: `$${stats.bestDay.pnl.toFixed(0)}`, sub: stats.bestDay.date },
-                    { label: "Worst Day", value: `$${stats.worstDay.pnl.toFixed(0)}`, sub: stats.worstDay.date },
-                    { label: "Avg Trades/Day", value: stats.avgTradesPerDay.toFixed(1) },
-                    { label: "Avg Risk/Trade", value: `${stats.avgRiskPerTrade}%` },
-                    { label: "Win Rate", value: `${stats.winRate}%` },
+                    { label: "Profit Factor", value: stats.profitFactor.toFixed(2), color: stats.profitFactor >= 1.5 ? "text-profit" : stats.profitFactor >= 1 ? "text-amber-400" : "text-loss" },
+                    { label: "Sharpe Ratio", value: stats.sharpeRatio.toFixed(2), color: stats.sharpeRatio >= 1 ? "text-profit" : stats.sharpeRatio >= 0 ? "text-amber-400" : "text-loss" },
+                    { label: "Avg R-Multiple", value: `${stats.avgRMultiple.toFixed(2)}R`, color: stats.avgRMultiple >= 1 ? "text-profit" : stats.avgRMultiple >= 0 ? "text-amber-400" : "text-loss" },
+                    { label: "Avg Win", value: `$${stats.avgWin.toFixed(0)}`, color: "text-profit" },
+                    { label: "Avg Loss", value: `$${stats.avgLoss.toFixed(0)}`, color: "text-loss" },
+                    { label: "Largest Win", value: `$${stats.largestWin.toFixed(0)}`, color: "text-profit" },
+                    { label: "Largest Loss", value: `$${stats.largestLoss.toFixed(0)}`, color: "text-loss" },
+                    { label: "Max Win Streak", value: `${stats.maxConsecutiveWins}`, color: "text-profit" },
+                    { label: "Max Loss Streak", value: `${stats.maxConsecutiveLosses}`, color: "text-loss" },
+                    { label: "Best Day", value: `$${stats.bestDay.pnl.toFixed(0)}`, sub: stats.bestDay.date, color: "text-profit" },
+                    { label: "Worst Day", value: `$${stats.worstDay.pnl.toFixed(0)}`, sub: stats.worstDay.date, color: "text-loss" },
+                    { label: "Avg Trades/Day", value: stats.avgTradesPerDay.toFixed(1), color: "text-primary" },
+                    { label: "Avg Risk/Trade", value: `${stats.avgRiskPerTrade}%`, color: stats.avgRiskPerTrade <= c.maxRiskPerTrade ? "text-profit" : "text-loss" },
+                    { label: "Win Rate", value: `${stats.winRate}%`, color: stats.winRate >= 50 ? "text-profit" : "text-loss" },
                   ].map(s => (
                     <div key={s.label} className="p-3 rounded-xl bg-white/3 border border-white/5">
                       <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest mb-1">{s.label}</p>
-                      <p className="text-sm font-black tracking-tight">{s.value}</p>
+                      <p className={`text-sm font-black tracking-tight ${s.color}`}>{s.value}</p>
                       {"sub" in s && s.sub && <p className="text-[9px] text-muted-foreground/50 font-mono">{s.sub}</p>}
                     </div>
                   ))}
@@ -678,41 +676,7 @@ function ChallengeCard({ challenge, index, onEdit, onDelete, onArchive, isArchiv
           )}
         </AnimatePresence>
 
-        {/* Daily P/L Toggle */}
-        {evaluation.dailyPnL.length > 0 && (
-          <div className="px-8 pb-4">
-            <button onClick={() => setShowDailyPnL(!showDailyPnL)} className="flex items-center gap-2 text-[10px] font-black text-muted-foreground uppercase tracking-widest hover:text-white transition-colors">
-              <Calendar className="w-3.5 h-3.5" /> Daily P/L ({evaluation.dailyPnL.length} days)
-              {showDailyPnL ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-            </button>
-            <AnimatePresence>
-              {showDailyPnL && (
-                <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden mt-3">
-                  <div className="overflow-x-auto rounded-xl border border-white/5">
-                    <table className="w-full text-sm">
-                      <thead className="bg-white/5"><tr className="text-muted-foreground text-xs uppercase tracking-wider">
-                        <th className="px-4 py-2 text-left font-medium">Date</th>
-                        <th className="px-4 py-2 text-left font-medium">Trades</th>
-                        <th className="px-4 py-2 text-left font-medium">P/L</th>
-                        <th className="px-4 py-2 text-left font-medium">Status</th>
-                      </tr></thead>
-                      <tbody className="divide-y divide-white/5">
-                        {evaluation.dailyPnL.map(d => (
-                          <tr key={d.date} className={`${d.breachedDailyDD ? "bg-loss/5" : "hover:bg-white/5"} transition-colors`}>
-                            <td className="px-4 py-2 font-mono text-xs text-muted-foreground">{d.date}</td>
-                            <td className="px-4 py-2 text-xs">{d.tradeCount}</td>
-                            <td className={`px-4 py-2 font-mono font-bold text-xs ${d.pnl >= 0 ? "text-profit" : "text-loss"}`}>{d.pnl >= 0 ? "+" : ""}${d.pnl.toFixed(2)}</td>
-                            <td className="px-4 py-2">{d.breachedDailyDD ? <span className="text-[9px] font-bold text-loss uppercase animate-pulse">DD BREACHED</span> : <span className="text-[9px] font-bold text-profit/50 uppercase">Safe</span>}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        )}
+
 
         {/* Trade History */}
         <AnimatePresence>

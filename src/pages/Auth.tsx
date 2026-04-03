@@ -24,6 +24,7 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 import { AnimatedCounter } from "@/components/AnimatedCounter";
+import { LoadingScreen } from "@/components/LoadingScreen";
 
 export default function Auth() {
     const { user } = useAuth();
@@ -152,47 +153,9 @@ export default function Auth() {
                 <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(0,255,255,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(0,255,255,0.05)_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_80%_80%_at_50%_50%,#000_60%,transparent_100%)] opacity-30" />
             </div>
 
-            {/* Submission Animation Overlay (Global Center) */}
+            {/* Global Loading Overlay */}
             <AnimatePresence>
-                {loading && (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-black/60 backdrop-blur-xl"
-                    >
-                        <div className="absolute inset-0 bg-[linear-gradient(rgba(0,255,255,0.05)_1px,transparent_1px)] bg-[size:100%_4px] animate-scan" />
-                        <div className="relative space-y-6 text-center">
-                            <div className="relative">
-                                <motion.div
-                                    animate={{
-                                        rotate: 360,
-                                    }}
-                                    transition={{
-                                        duration: 2,
-                                        repeat: Infinity,
-                                        ease: "linear",
-                                    }}
-                                    className="w-24 h-24 rounded-full border-t-2 border-r-2 border-cyan-500 shadow-[0_0_30px_rgba(34,211,238,0.3)]"
-                                />
-                                <Terminal className="absolute inset-0 m-auto w-8 h-8 text-cyan-500 animate-pulse" />
-                            </div>
-                            <div className="space-y-1">
-                                <p className="text-[10px] font-black text-cyan-400 uppercase tracking-[0.4em] animate-pulse">Establishing Link</p>
-                                <div className="flex gap-1 justify-center">
-                                    {[...Array(3)].map((_, i) => (
-                                        <motion.div
-                                            key={i}
-                                            animate={{ opacity: [0.2, 1, 0.2] }}
-                                            transition={{ duration: 1, repeat: Infinity, delay: i * 0.2 }}
-                                            className="w-1 h-1 bg-cyan-400 rounded-full"
-                                        />
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-                    </motion.div>
-                )}
+                {loading && <LoadingScreen />}
             </AnimatePresence>
 
             {/* Main Content Layout */}
