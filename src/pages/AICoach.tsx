@@ -126,6 +126,31 @@ export default function AICoach() {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                 {/* Left Column: Profile Hub */}
                 <div className="lg:col-span-4 space-y-8">
+                    {/* Model Explainability & Sample Size Callout */}
+                    <GlassCard className="p-6 rounded-[2rem] border-white/10 bg-primary/5 space-y-4">
+                        <div className="flex items-center justify-between">
+                            <span className="text-[10px] font-black uppercase tracking-widest text-primary flex items-center gap-1.5">
+                                <Sparkles className="w-3.5 h-3.5 text-primary" />
+                                Model Transparency
+                            </span>
+                            <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider ${
+                                trades.length >= 30 
+                                    ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                                    : "bg-amber-500/20 text-amber-400 border border-amber-500/30"
+                            }`}>
+                                {trades.length >= 30 ? "Robust Sample" : "Preliminary (< 30 Trades)"}
+                            </span>
+                        </div>
+                        <p className="text-xs text-foreground/80 leading-relaxed font-medium">
+                            Behavioral insights are generated using deterministic heuristics and personal statistical baselines derived strictly from your <strong>{trades.length} logged trades</strong>.
+                        </p>
+                        {trades.length < 30 && (
+                            <p className="text-[11px] text-amber-400/90 leading-tight bg-amber-500/10 border border-amber-500/20 p-2.5 rounded-xl">
+                                ⚠️ <strong>Sample Size Note:</strong> Patterns are heuristic suggestions. Predictive confidence improves significantly after logging 30+ trades.
+                            </p>
+                        )}
+                    </GlassCard>
+
                     <GlassCard className="p-8 rounded-[2rem] border-white/10 shadow-2xl">
                         <div className="flex items-center justify-between mb-8">
                             <h3 className="text-sm font-black uppercase tracking-widest flex items-center gap-3">
@@ -197,25 +222,41 @@ export default function AICoach() {
                                     animate={{ opacity: 1, scale: 1 }}
                                     transition={{ delay: i * 0.1 }}
                                 >
-                                    <GlassCard className={`p-6 h-full rounded-3xl border-l-8 transition-all hover:scale-[1.02] ${insight.type === 'strength' ? 'border-l-profit bg-profit/5' :
+                                    <GlassCard className={`p-6 h-full rounded-3xl border-l-8 flex flex-col justify-between transition-all hover:scale-[1.02] ${insight.type === 'strength' ? 'border-l-profit bg-profit/5' :
                                         insight.type === 'weakness' ? 'border-l-loss bg-loss/5' :
                                             insight.type === 'recommendation' ? 'border-l-primary bg-primary/5' : 'border-l-indigo-500 bg-indigo-500/5'
                                         }`}>
-                                        <h4 className="text-md font-black  uppercase tracking-tight mb-2 flex items-center gap-2">
-                                            {insight.type === 'weakness' && <ShieldAlert className="w-4 h-4 text-loss" />}
-                                            {insight.type === 'strength' && <TrendingUp className="w-4 h-4 text-profit" />}
-                                            {insight.title}
-                                        </h4>
-                                        <p className="text-sm text-foreground/70 font-medium leading-relaxed">
-                                            {insight.description}
-                                        </p>
-                                        {insight.impact && (
-                                            <div className="mt-4 flex items-center gap-2">
-                                                <div className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-tighter ${insight.impact === 'Critical' ? 'bg-loss/20 text-loss' : 'bg-primary/20 text-primary'}`}>
-                                                    IMPACT: {insight.impact}
-                                                </div>
+                                        <div>
+                                            <div className="flex items-center justify-between gap-2 mb-2">
+                                                <span className="px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-white/5 border border-white/10 text-muted-foreground">
+                                                    {insight.engineType}
+                                                </span>
+                                                <span className="text-[9px] text-muted-foreground/80 font-mono">
+                                                    {insight.confidenceLevel}
+                                                </span>
                                             </div>
-                                        )}
+                                            <h4 className="text-md font-black uppercase tracking-tight mb-2 flex items-center gap-2">
+                                                {insight.type === 'weakness' && <ShieldAlert className="w-4 h-4 text-loss" />}
+                                                {insight.type === 'strength' && <TrendingUp className="w-4 h-4 text-profit" />}
+                                                {insight.title}
+                                            </h4>
+                                            <p className="text-sm text-foreground/80 font-medium leading-relaxed mb-3">
+                                                {insight.description}
+                                            </p>
+                                        </div>
+                                        
+                                        <div className="pt-3 border-t border-white/5 space-y-2">
+                                            <div className="text-[10px] text-muted-foreground/90 font-mono bg-black/30 p-2 rounded-lg border border-white/5">
+                                                <span className="text-primary font-bold">Trigger:</span> {insight.triggerReason}
+                                            </div>
+                                            {insight.impact && (
+                                                <div className="flex items-center gap-2">
+                                                    <div className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-tighter ${insight.impact === 'Critical' ? 'bg-loss/20 text-loss' : 'bg-primary/20 text-primary'}`}>
+                                                        IMPACT: {insight.impact}
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
                                     </GlassCard>
                                 </motion.div>
                             ))}

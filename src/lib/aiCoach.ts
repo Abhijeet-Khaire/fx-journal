@@ -7,57 +7,89 @@ export interface AIInsight {
   title: string;
   description: string;
   impact?: string;
+  engineType: "Heuristic Pattern" | "Statistical Baseline" | "Predictive Model";
+  triggerReason: string;
+  sampleSize: number;
+  confidenceLevel: "High" | "Moderate" | "Preliminary (Low Sample)";
 }
 
 export function generateCoachingInsights(trades: Trade[]): AIInsight[] {
-  if (trades.length < 5) {
-    return [{
-      type: "recommendation",
-      title: "Gather More Data",
-      description: "Continue journaling your trades. I need at least 10-15 trades to start generating deep ML insights."
-    }];
+  const sampleSize = trades.length;
+  const confidenceLevel: AIInsight["confidenceLevel"] =
+    sampleSize >= 50 ? "High" : sampleSize >= 20 ? "Moderate" : "Preliminary (Low Sample)";
+
+  if (sampleSize < 5) {
+    return [
+      {
+        type: "recommendation",
+        title: "Gather More Data",
+        description: "Continue journaling your trades. At least 10-15 trades are required to identify consistent behavioral patterns.",
+        engineType: "Statistical Baseline",
+        triggerReason: `Insufficient sample size (${sampleSize} < 5 trades logged)`,
+        sampleSize,
+        confidenceLevel: "Preliminary (Low Sample)",
+      },
+    ];
   }
 
   const insights: AIInsight[] = [];
 
   // 1. Best Performing Strategy (Profit Factor)
   const strategyStats = trades.reduce((acc, t) => {
-    if (!acc[t.strategy]) acc[t.strategy] = [];
-    acc[t.strategy].push(t);
+    const strat = t.strategy || "Standard";
+    if (!acc[strat]) acc[strat] = [];
+    acc[strat].push(t);
     return acc;
   }, {} as Record<string, Trade[]>);
 
   const bestStrat = Object.entries(strategyStats)
-    .map(([name, group]) => ({ name, pf: getProfitFactor(group), wr: getWinRate(group) }))
+    .map(([name, group]) => ({
+      name,
+      pf: getProfitFactor(group),
+      wr: getWinRate(group),
+      count: group.length,
+    }))
     .sort((a, b) => b.pf - a.pf)[0];
 
-  if (bestStrat && bestStrat.pf > 1.2) {
+  if (bestStrat && bestStrat.pf > 1.2 && bestStrat.count >= 2) {
     insights.push({
       type: "strength",
       title: "Top Performer",
-      description: `Your ${bestStrat.name} strategy has a profit factor of ${bestStrat.pf.toFixed(1)}.`,
-      impact: "High"
+      description: `Your ${bestStrat.name} strategy has a profit factor of ${bestStrat.pf.toFixed(1)} with a ${bestStrat.wr}% win rate.`,
+      impact: "High",
+      engineType: "Statistical Baseline",
+      triggerReason: `Profit factor ${bestStrat.pf.toFixed(1)} > 1.2 across ${bestStrat.count} trades`,
+      sampleSize: bestStrat.count,
+      confidenceLevel: bestStrat.count >= 15 ? "High" : "Moderate",
     });
   }
 
   // 2. Worst Performing Condition [min(avgProfit grouped by pair, session, strategy)]
-  const conditionStats: Record<string, { profits: number[], avgProfit: number }> = {};
-  trades.forEach(t => {
-    const key = `${t.pair}|${t.session}|${t.strategy}`;
-    if (!conditionStats[key]) conditionStats[key] = { profits: [], avgProfit: 0 };
+  const conditionStats: Record<string, { profits: number[]; avgProfit: number; count: number }> = {};
+  trades.forEach((t) => {
+    const key = `${t.pair}|${t.session}|${t.strategy || "Standard"}`;
+    if (!conditionStats[key]) conditionStats[key] = { profits: [], avgProfit: 0, count: 0 };
     conditionStats[key].profits.push(t.profitLoss);
+    conditionStats[key].count++;
   });
-  Object.values(conditionStats).forEach(c => c.avgProfit = c.profits.reduce((a, b) => a + b, 0) / c.profits.length);
+  Object.values(conditionStats).forEach(
+    (c) => (c.avgProfit = c.profits.reduce((a, b) => a + b, 0) / c.profits.length)
+  );
   const worstCondition = Object.entries(conditionStats)
-    .filter(([_, c]) => c.profits.length >= 2)
+    .filter(([_, c]) => c.count >= 2)
     .sort((a, b) => a[1].avgProfit - b[1].avgProfit)[0];
 
   if (worstCondition && worstCondition[1].avgProfit < 0) {
-    const [pair, session, strategy] = worstCondition[0].split('|');
+    const [pair, session, strategy] = worstCondition[0].split("|");
     insights.push({
-      type: "weakness", title: "Worst Condition Detected",
+      type: "weakness",
+      title: "Worst Condition Detected",
       description: `${pair} ${strategy} during ${session} session shows negative expectancy (Avg: $${worstCondition[1].avgProfit.toFixed(2)}).`,
-      impact: "Critical"
+      impact: "Critical",
+      engineType: "Heuristic Pattern",
+      triggerReason: `Negative average return ($${worstCondition[1].avgProfit.toFixed(2)}) across ${worstCondition[1].count} trades`,
+      sampleSize: worstCondition[1].count,
+      confidenceLevel: worstCondition[1].count >= 10 ? "Moderate" : "Preliminary (Low Sample)",
     });
   }
 
@@ -71,70 +103,97 @@ export function generateCoachingInsights(trades: Trade[]): AIInsight[] {
   }, {} as Record<string, { wins: number; total: number }>);
 
   const worstEmotion = Object.entries(emotionStats)
-    .map(([name, stats]) => ({ name, wr: (stats.wins / stats.total) * 100 }))
+    .filter(([_, s]) => s.total >= 2)
+    .map(([name, stats]) => ({ name, wr: (stats.wins / stats.total) * 100, count: stats.total }))
     .sort((a, b) => a.wr - b.wr)[0];
 
   if (worstEmotion && worstEmotion.wr < 40) {
     insights.push({
-      type: "weakness", title: "Emotional Trigger",
-      description: `Trades entered with ${worstEmotion.name.toLowerCase()} have significantly lower win rates (${Math.round(worstEmotion.wr)}%).`,
-      impact: "High"
+      type: "weakness",
+      title: "Emotional Trigger",
+      description: `Trades entered with emotion '${worstEmotion.name}' have significantly lower win rates (${Math.round(worstEmotion.wr)}%).`,
+      impact: "High",
+      engineType: "Heuristic Pattern",
+      triggerReason: `Win rate ${Math.round(worstEmotion.wr)}% < 40% when emotion is '${worstEmotion.name}' (${worstEmotion.count} occurrences)`,
+      sampleSize: worstEmotion.count,
+      confidenceLevel: worstEmotion.count >= 10 ? "High" : "Moderate",
     });
   }
 
-  // 4. Confidence Level Impact [winRate(level) = wins/trades]
-  const confidenceStats: Record<number, { wins: number, total: number }> = {};
-  trades.forEach(t => {
+  // 4. Confidence Level Impact
+  const confidenceStats: Record<number, { wins: number; total: number }> = {};
+  trades.forEach((t) => {
     const lvl = t.confidence || 3;
     if (!confidenceStats[lvl]) confidenceStats[lvl] = { wins: 0, total: 0 };
     confidenceStats[lvl].total++;
     if (t.profitLoss > 0) confidenceStats[lvl].wins++;
   });
-  const confLevels = Object.entries(confidenceStats).map(([lvl, s]) => ({ lvl: Number(lvl), wr: (s.wins/s.total)*100, t: s.total }));
-  const worstConf = confLevels.filter(c => c.t >= 2).sort((a, b) => a.wr - b.wr)[0];
+  const confLevels = Object.entries(confidenceStats).map(([lvl, s]) => ({
+    lvl: Number(lvl),
+    wr: (s.wins / s.total) * 100,
+    t: s.total,
+  }));
+  const worstConf = confLevels.filter((c) => c.t >= 2).sort((a, b) => a.wr - b.wr)[0];
   if (worstConf && worstConf.wr < 40) {
     insights.push({
-      type: "recommendation", title: "Confidence Threshold",
-      description: `Confidence level ${worstConf.lvl} yields a ${Math.round(worstConf.wr)}% win rate. Only take trades with confidence > ${worstConf.lvl}.`
+      type: "recommendation",
+      title: "Confidence Threshold",
+      description: `Confidence level ${worstConf.lvl} yields a ${Math.round(worstConf.wr)}% win rate. Avoid entering trades below confidence 3.`,
+      engineType: "Heuristic Pattern",
+      triggerReason: `Confidence score ${worstConf.lvl} resulted in win rate of ${Math.round(worstConf.wr)}% (${worstConf.t} trades)`,
+      sampleSize: worstConf.t,
+      confidenceLevel: worstConf.t >= 10 ? "Moderate" : "Preliminary (Low Sample)",
     });
   }
 
-  // 5. Losing Pattern Detection [lossRate = losses / trades]
-  const lossStats: Record<string, { losses: number, total: number }> = {};
-  trades.forEach(t => {
+  // 5. Losing Pattern Detection
+  const lossStats: Record<string, { losses: number; total: number }> = {};
+  trades.forEach((t) => {
     const key = `${t.pair} during ${t.session} session`;
     if (!lossStats[key]) lossStats[key] = { losses: 0, total: 0 };
     lossStats[key].total++;
     if (t.profitLoss < 0) lossStats[key].losses++;
   });
   const worstLossPattern = Object.entries(lossStats)
-    .map(([k, v]) => ({ name: k, lossRate: (v.losses/v.total)*100, total: v.total }))
-    .filter(p => p.total >= 2)
-    .sort((a,b) => b.lossRate - a.lossRate)[0];
+    .map(([k, v]) => ({ name: k, lossRate: (v.losses / v.total) * 100, total: v.total }))
+    .filter((p) => p.total >= 2)
+    .sort((a, b) => b.lossRate - a.lossRate)[0];
 
   if (worstLossPattern && worstLossPattern.lossRate > 50) {
     insights.push({
-      type: "weakness", title: "Frequent Losing Pattern",
-      description: `${worstLossPattern.name} has a ${Math.round(worstLossPattern.lossRate)}% loss rate. Avoid this setup.`
+      type: "weakness",
+      title: "Frequent Losing Pattern",
+      description: `${worstLossPattern.name} has a ${Math.round(worstLossPattern.lossRate)}% loss rate. Review execution on this combination.`,
+      engineType: "Heuristic Pattern",
+      triggerReason: `Loss rate ${Math.round(worstLossPattern.lossRate)}% > 50% across ${worstLossPattern.total} instances`,
+      sampleSize: worstLossPattern.total,
+      confidenceLevel: worstLossPattern.total >= 10 ? "Moderate" : "Preliminary (Low Sample)",
     });
   }
 
-  // 6. Time-Based Pattern [profitByHour]
-  const profitByHour: Record<number, number> = {};
-  trades.forEach(t => {
-    const hour = parseInt(t.time.split(':')[0]);
+  // 6. Time-Based Pattern
+  const profitByHour: Record<number, { pnl: number; count: number }> = {};
+  trades.forEach((t) => {
+    const hour = parseInt((t.time || "00:00").split(":")[0]);
     if (!isNaN(hour)) {
-      profitByHour[hour] = (profitByHour[hour] || 0) + t.profitLoss;
+      if (!profitByHour[hour]) profitByHour[hour] = { pnl: 0, count: 0 };
+      profitByHour[hour].pnl += t.profitLoss;
+      profitByHour[hour].count++;
     }
   });
-  const bestHour = Object.entries(profitByHour).sort((a,b) => b[1] - a[1])[0];
-  if (bestHour && bestHour[1] > 0) {
+  const bestHour = Object.entries(profitByHour).sort((a, b) => b[1].pnl - a[1].pnl)[0];
+  if (bestHour && bestHour[1].pnl > 0 && bestHour[1].count >= 2) {
     const h = parseInt(bestHour[0]);
-    const curH = h.toString().padStart(2, '0') + ':00';
-    const nextH = (h + 1).toString().padStart(2, '0') + ':00';
+    const curH = h.toString().padStart(2, "0") + ":00";
+    const nextH = (h + 1).toString().padStart(2, "0") + ":00";
     insights.push({
-      type: "strength", title: "Optimal Trading Window",
-      description: `Your best performance occurs between ${curH} - ${nextH} UTC ($${bestHour[1].toFixed(2)} total profit).`
+      type: "strength",
+      title: "Optimal Trading Window",
+      description: `Your strongest performance occurs between ${curH} - ${nextH} UTC ($${bestHour[1].pnl.toFixed(2)} total profit).`,
+      engineType: "Statistical Baseline",
+      triggerReason: `Highest positive P&L ($${bestHour[1].pnl.toFixed(2)}) across ${bestHour[1].count} trades in ${curH}-${nextH} window`,
+      sampleSize: bestHour[1].count,
+      confidenceLevel: bestHour[1].count >= 10 ? "High" : "Moderate",
     });
   }
 
@@ -142,13 +201,18 @@ export function generateCoachingInsights(trades: Trade[]): AIInsight[] {
   const revenge = detectRevengeRisk(trades);
   if (revenge.frequency > 15) {
     insights.push({
-      type: "weakness", title: "Revenge Trading",
-      description: `Risk per trade increases after losses in ${revenge.frequency}% of cases.`,
-      impact: "High"
+      type: "weakness",
+      title: "Revenge Trading",
+      description: `Position size increases by >20% immediately following a loss in ${revenge.frequency}% of cases.`,
+      impact: "High",
+      engineType: "Heuristic Pattern",
+      triggerReason: `Lot size escalation detected on ${revenge.locations.length} trades directly following losing trades`,
+      sampleSize: trades.length,
+      confidenceLevel: trades.length >= 20 ? "High" : "Moderate",
     });
   }
 
-  return insights.slice(0, 6); // Max 6 insights for UI
+  return insights.slice(0, 6);
 }
 
 export function getWeeklyPerformanceSummary(trades: Trade[]) {

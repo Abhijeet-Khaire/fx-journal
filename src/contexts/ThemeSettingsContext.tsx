@@ -18,8 +18,10 @@ export const AVAILABLE_FONTS = [
 interface ThemeSettingsContextType {
   theme: Theme;
   fontFamily: string;
+  customCursor: boolean;
   setTheme: (theme: Theme) => void;
   setFontFamily: (font: string) => void;
+  setCustomCursor: (enabled: boolean) => void;
 }
 
 const ThemeSettingsContext = createContext<ThemeSettingsContextType | undefined>(undefined);
@@ -34,6 +36,11 @@ export const ThemeSettingsProvider: React.FC<{ children: React.ReactNode }> = ({
     return localStorage.getItem("fontFamily") || AVAILABLE_FONTS[0].family;
   });
 
+  const [customCursor, setCustomCursorState] = useState<boolean>(() => {
+    const saved = localStorage.getItem("customCursor");
+    return saved !== null ? saved === "true" : true;
+  });
+
   useEffect(() => {
     const root = window.document.documentElement;
     root.classList.remove("light", "dark", "yellow", "purple", "red", "green", "cyan");
@@ -46,11 +53,18 @@ export const ThemeSettingsProvider: React.FC<{ children: React.ReactNode }> = ({
     localStorage.setItem("fontFamily", fontFamily);
   }, [fontFamily]);
 
+  useEffect(() => {
+    localStorage.setItem("customCursor", String(customCursor));
+  }, [customCursor]);
+
   const setTheme = (newTheme: Theme) => setThemeState(newTheme);
   const setFontFamily = (newFont: string) => setFontFamilyState(newFont);
+  const setCustomCursor = (enabled: boolean) => setCustomCursorState(enabled);
 
   return (
-    <ThemeSettingsContext.Provider value={{ theme, fontFamily, setTheme, setFontFamily }}>
+    <ThemeSettingsContext.Provider
+      value={{ theme, fontFamily, customCursor, setTheme, setFontFamily, setCustomCursor }}
+    >
       {children}
     </ThemeSettingsContext.Provider>
   );

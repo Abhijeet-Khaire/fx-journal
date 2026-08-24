@@ -8,7 +8,7 @@ export default defineConfig(({ mode }) => ({
     host: "::",
     port: 8080,
     headers: {
-      "Cross-Origin-Opener-Policy": "same-origin-allow-popups"
+      "Cross-Origin-Opener-Policy": "same-origin-allow-popups",
     },
     hmr: {
       overlay: false,
@@ -18,6 +18,19 @@ export default defineConfig(({ mode }) => ({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+    },
+  },
+  build: {
+    chunkSizeWarningLimit: 1200,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          "vendor-firebase": ["firebase/app", "firebase/auth", "firebase/firestore", "firebase/storage"],
+          "vendor-recharts": ["recharts"],
+          "vendor-framer": ["framer-motion"],
+          "vendor-tanstack": ["@tanstack/react-query"],
+        },
+      },
     },
   },
 }));

@@ -7,6 +7,7 @@
 
 import { Trade } from "./tradeTypes";
 import { getSymbolProperties } from "./tradeStore";
+import { roundCurrency, roundPercent, addCurrency, subtractCurrency } from "./precision";
 
 // ─── Types ──────────────────────────────────────────────────────────
 
@@ -198,13 +199,13 @@ export function calculateEquityCurve(
   let peak = 0;
 
   return sorted.map(t => {
-    cumPnL += t.profitLoss;
+    cumPnL = addCurrency(cumPnL, t.profitLoss);
     if (cumPnL > peak) peak = cumPnL;
-    const dd = peak - cumPnL;
+    const dd = subtractCurrency(peak, cumPnL);
     return {
       date: t.date,
-      equity: Math.round((accountSize + cumPnL) * 100) / 100,
-      drawdown: Math.round(dd * 100) / 100,
+      equity: roundCurrency(accountSize + cumPnL),
+      drawdown: roundCurrency(dd),
     };
   });
 }
@@ -220,7 +221,7 @@ export function calculateTrailingDrawdown(
   maxDDLimit: number,
   type: ChallengeConfig["trailingDrawdownType"]
 ): number {
-  if (type === "none") return accountSize - maxDDLimit;
+  if (type === "none") return roundCurrency(accountSize - maxDDLimit);
 
   const sorted = [...trades].sort(
     (a, b) => new Date(`${a.date}T${a.time || "00:00"}`).getTime() - new Date(`${b.date}T${b.time || "00:00"}`).getTime()
@@ -230,35 +231,26 @@ export function calculateTrailingDrawdown(
   let highestEquity = accountSize;
 
   for (const t of sorted) {
-    cumPnL += t.profitLoss;
-    const equity = accountSize + cumPnL;
+    cumPnL = addCurrency(cumPnL, t.profitLoss);
+    const equity = addCurrency(accountSize, cumPnL);
     if (equity > highestEquity) highestEquity = equity;
   }
 
   if (type === "trailing-to-breakeven") {
-    // Trail up but lock at accountSize (initial balance)
-    const trailedPeak = Math.min(highestEquity, accountSize);
-    // Actually: trail from initial. If equity goes up, the DD floor rises.
-    // Once equity reaches accountSize, floor = accountSize - maxDDLimit stays.
-    // Formula: floor = min(highestEquity, accountSize) - maxDDLimit
-    // But that's not quite right either. Let me implement the FTMO-style:
-    // The max DD floor starts at (accountSize - maxDDLimit).
-    // As equity grows, the floor trails up: floor = highestEquity - maxDDLimit
-    // But it caps at: accountSize (i.e., floor caps at accountSize - 0 = accountSize... no)
-    // FTMO trailing: starts at accountSize - maxDD.
-    // Trails up with highest equity. 
-    // Locks once highest equity reaches accountSize + maxDD (floor = accountSize).
-    const maxFloor = accountSize; // floor can never exceed initial balance
-    const trailingFloor = highestEquity - maxDDLimit;
-    return Math.min(trailingFloor, maxFloor);
+    // Trailing to breakeven: DD floor starts at accountSize - maxDDLimit.
+    // Trails up with highest equity: highestEquity - maxDDLimit.
+    // Locks at accountSize (initial balance) once highest equity reaches accountSize + maxDDLimit.
+    const maxFloor = accountSize;
+    const trailingFloor = subtractCurrency(highestEquity, maxDDLimit);
+    return roundCurrency(Math.min(trailingFloor, maxFloor));
   }
 
   if (type === "full-trailing") {
     // Floor always trails highest equity
-    return highestEquity - maxDDLimit;
+    return roundCurrency(subtractCurrency(highestEquity, maxDDLimit));
   }
 
-  return accountSize - maxDDLimit;
+  return roundCurrency(accountSize - maxDDLimit);
 }
 
 // ─── Consistency Rule ───────────────────────────────────────────────
@@ -337,18 +329,18 @@ export function checkMaxLotSize(trades: Trade[], maxLotSize: number): string[] {
 // ─── Master Evaluation ─────────────────────────────────────────────
 
 export function evaluateChallenge(config: ChallengeConfig, trades: Trade[]): ChallengeEvaluation {
-  const totalPnL = trades.reduce((sum, t) => sum + t.profitLoss, 0);
-  const currentEquity = config.accountSize + totalPnL;
+  const totalPnL = addCurrency(...trades.map(t => t.profitLoss));
+  const currentEquity = roundCurrency(addCurrency(config.accountSize, totalPnL));
   const daysTraded = getDaysTradedCount(trades);
   const calendarDays = getCalendarDaysElapsed(config.startDate);
   const wins = trades.filter(t => t.profitLoss > 0).length;
   const losses = trades.filter(t => t.profitLoss < 0).length;
-  const winRate = trades.length > 0 ? Math.round((wins / trades.length) * 100) : 0;
+  const winRate = trades.length > 0 ? roundPercent((wins / trades.length) * 100) : 0;
 
   // Equity curve & drawdown
   const equityCurve = calculateEquityCurve(trades, config.accountSize);
-  const maxDD = equityCurve.length > 0 ? Math.max(...equityCurve.map(e => e.drawdown)) : 0;
-  const currentDD = equityCurve.length > 0 ? equityCurve[equityCurve.length - 1].drawdown : 0;
+  const maxDD = equityCurve.length > 0 ? roundCurrency(Math.max(...equityCurve.map(e => e.drawdown))) : 0;
+  const currentDD = equityCurve.length > 0 ? roundCurrency(equityCurve[equityCurve.length - 1].drawdown) : 0;
 
   // Trailing drawdown
   const trailingDDLevel = calculateTrailingDrawdown(

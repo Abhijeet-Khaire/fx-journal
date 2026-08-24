@@ -1,11 +1,18 @@
 import React, { useEffect, useState, useRef } from "react";
 import { createPortal } from "react-dom";
 import { motion, useSpring, useMotionValue, AnimatePresence, useVelocity, useTransform } from "framer-motion";
+import { useThemeSettings } from "@/contexts/ThemeSettingsContext";
 
 export function CustomCursor() {
+    const { customCursor } = useThemeSettings();
     const [isHovered, setIsHovered] = useState(false);
     const [isVisible, setIsVisible] = useState(true);
     const [isClicked, setIsClicked] = useState(false);
+    const [isTouchDevice, setIsTouchDevice] = useState(false);
+
+    useEffect(() => {
+        setIsTouchDevice('ontouchstart' in window || navigator.maxTouchPoints > 0);
+    }, []);
 
     // Core position
     const cursorX = useMotionValue(-100);
@@ -32,6 +39,8 @@ export function CustomCursor() {
     const auraY = useSpring(cursorY, springConfig);
 
     useEffect(() => {
+        if (!customCursor || isTouchDevice) return;
+
         const moveCursor = (e: MouseEvent) => {
             cursorX.set(e.clientX);
             cursorY.set(e.clientY);
@@ -63,13 +72,11 @@ export function CustomCursor() {
             window.removeEventListener("mousedown", mouseDown);
             window.removeEventListener("mouseup", mouseUp);
         };
-    }, [cursorX, cursorY, isVisible]);
+    }, [cursorX, cursorY, isVisible, customCursor, isTouchDevice]);
 
-    const [isTouchDevice, setIsTouchDevice] = useState(false);
-
-    useEffect(() => {
-        setIsTouchDevice('ontouchstart' in window || navigator.maxTouchPoints > 0);
-    }, []);
+    if (!customCursor || isTouchDevice) {
+        return null;
+    }
 
     const cursorContent = (
         <div 

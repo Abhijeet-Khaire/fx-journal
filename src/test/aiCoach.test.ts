@@ -26,8 +26,25 @@ describe("ML Engine", () => {
 });
 
 describe("AI Coach", () => {
-  it("generates insights", () => {
+  it("generates explainable insights with explicit trigger reasons", () => {
     const insights = generateCoachingInsights(mockTrades);
     expect(insights.length).toBeGreaterThan(0);
+    
+    insights.forEach((insight) => {
+      expect(insight.engineType).toBeDefined();
+      expect(["Heuristic Pattern", "Statistical Baseline", "Predictive Model"]).toContain(insight.engineType);
+      expect(insight.triggerReason).toBeDefined();
+      expect(insight.triggerReason.length).toBeGreaterThan(5);
+      expect(insight.confidenceLevel).toBeDefined();
+      expect(insight.sampleSize).toBeGreaterThanOrEqual(1);
+    });
+  });
+
+  it("provides sample size caveat for small datasets (< 5 trades)", () => {
+    const smallTrades = mockTrades.slice(0, 3);
+    const insights = generateCoachingInsights(smallTrades);
+    expect(insights).toHaveLength(1);
+    expect(insights[0].type).toBe("recommendation");
+    expect(insights[0].triggerReason).toContain("sample size");
   });
 });
