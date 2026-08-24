@@ -29,6 +29,7 @@ import AICoach from "./pages/AICoach";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminTraderView from "./pages/AdminTraderView";
 import { AdminRoute } from "@/components/AdminRoute";
+import { FuturisticBackground } from "@/components/FuturisticBackground";
 
 
 import { ThemeSettingsProvider, useThemeSettings } from "@/contexts/ThemeSettingsContext";
@@ -109,6 +110,7 @@ const AppContent = () => {
         <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-primary/10 blur-[120px]" />
         <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-primary/5 blur-[120px]" />
         <div className="absolute top-[20%] right-[10%] w-[20%] h-[20%] rounded-full bg-indigo-500/5 blur-[100px]" />
+        <FuturisticBackground />
       </div>
 
       {!isPublicPage && (

@@ -87,7 +87,7 @@ export function CustomCursor() {
                     translateX: "-50%",
                     translateY: "-50%",
                 }}
-                className="absolute w-40 h-40 bg-cyan-500/10 rounded-full blur-[40px]"
+                className="absolute w-40 h-40 bg-primary/10 rounded-full blur-[40px]"
                 animate={{
                     scale: isHovered ? 1.5 : 1,
                     opacity: isHovered ? 0.6 : 0.3,
@@ -109,16 +109,16 @@ export function CustomCursor() {
                         }}
                         className="absolute w-12 h-12"
                     >
-                        <div className="absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-cyan-400/80" />
-                        <div className="absolute top-0 right-0 w-2 h-2 border-t-2 border-r-2 border-cyan-400/80" />
-                        <div className="absolute bottom-0 left-0 w-2 h-2 border-b-2 border-l-2 border-cyan-400/80" />
-                        <div className="absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-cyan-400/80" />
+                        <div className="absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-primary/80" />
+                        <div className="absolute top-0 right-0 w-2 h-2 border-t-2 border-r-2 border-primary/80" />
+                        <div className="absolute bottom-0 left-0 w-2 h-2 border-b-2 border-l-2 border-primary/80" />
+                        <div className="absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-primary/80" />
                         
                         {/* HUD Scanning Line */}
                         <motion.div 
                             animate={{ top: ["10%", "90%"] }}
                             transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
-                            className="absolute left-0 right-0 h-[1px] bg-cyan-400/20"
+                            className="absolute left-0 right-0 h-[1px] bg-primary/20"
                         />
                     </motion.div>
                 )}
@@ -139,10 +139,10 @@ export function CustomCursor() {
             >
                 {/* Core Point */}
                 <motion.div 
-                    className="w-2 h-2 bg-white rounded-full shadow-[0_0_15px_#fff,0_0_30px_rgba(0,255,255,0.8)] cursor-core"
+                    className="w-2 h-2 bg-white rounded-full shadow-[0_0_15px_#fff,0_0_25px_hsl(var(--primary)/0.8)] cursor-core"
                     animate={{
                         scale: isClicked ? 0.5 : (isHovered ? 0.8 : 1),
-                        background: isHovered ? "#22d3ee" : undefined,
+                        background: isHovered ? "hsl(var(--primary))" : undefined,
                     }}
                 />
                 
@@ -150,7 +150,7 @@ export function CustomCursor() {
                 <motion.div 
                     animate={{ rotate: 360 }}
                     transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
-                    className="absolute inset-[-4px] border border-cyan-400/20 rounded-full"
+                    className="absolute inset-[-4px] border border-primary/20 rounded-full"
                 />
             </motion.div>
 

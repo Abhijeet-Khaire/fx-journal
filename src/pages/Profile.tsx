@@ -297,29 +297,95 @@ export default function Profile() {
                             <p className="text-[10px] text-muted-foreground uppercase tracking-widest">Interface Appearance</p>
                         </div>
                     </div>
-                    <div className="flex gap-4">
+                    <div className="grid grid-cols-2 gap-3 mb-6">
                         <button
                             onClick={() => setTheme("light")}
                             className={cn(
-                                "flex-1 px-6 py-4 rounded-2xl border transition-all font-black uppercase text-[10px] tracking-widest",
+                                "px-4 py-3 rounded-xl border transition-all font-black uppercase text-[9px] tracking-widest",
                                 theme === "light" 
-                                    ? "bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20" 
+                                    ? "bg-white text-black border-white shadow-lg" 
                                     : "bg-white/5 border-white/10 text-white/40 hover:bg-white/10"
                             )}
                         >
-                            Light Mode
+                            Standard Light
                         </button>
                         <button
                             onClick={() => setTheme("dark")}
                             className={cn(
-                                "flex-1 px-6 py-4 rounded-2xl border transition-all font-black uppercase text-[10px] tracking-widest",
+                                "px-4 py-3 rounded-xl border transition-all font-black uppercase text-[9px] tracking-widest",
                                 theme === "dark" 
-                                    ? "bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20" 
+                                    ? "bg-slate-900 text-white border-slate-800 shadow-lg" 
                                     : "bg-white/5 border-white/10 text-white/40 hover:bg-white/10"
                             )}
                         >
-                            Dark Mode
+                            Standard Dark
                         </button>
+                    </div>
+
+                    <div className="border-t border-white/5 pt-4">
+                        <p className="text-[9px] text-muted-foreground uppercase tracking-widest font-black mb-3">Jarvis Cyber Colorways</p>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                            <button
+                                onClick={() => setTheme("cyan")}
+                                className={cn(
+                                    "px-3 py-3.5 rounded-xl border transition-all font-black uppercase text-[8px] tracking-widest flex items-center justify-center gap-2",
+                                    theme === "cyan" 
+                                        ? "bg-cyan-500/20 text-cyan-400 border-cyan-500 shadow-md shadow-cyan-500/10 animate-pulse-glow" 
+                                        : "bg-white/5 border-white/10 text-cyan-400 hover:bg-white/10"
+                                )}
+                            >
+                                <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping" />
+                                Cyan HUD
+                            </button>
+                            <button
+                                onClick={() => setTheme("yellow")}
+                                className={cn(
+                                    "px-3 py-3.5 rounded-xl border transition-all font-black uppercase text-[8px] tracking-widest flex items-center justify-center gap-2",
+                                    theme === "yellow" 
+                                        ? "bg-yellow-500/20 text-yellow-400 border-yellow-500 shadow-md shadow-yellow-500/10 animate-pulse-glow" 
+                                        : "bg-white/5 border-white/10 text-yellow-400 hover:bg-white/10"
+                                )}
+                            >
+                                <span className="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-ping" />
+                                Amber Jarvis
+                            </button>
+                            <button
+                                onClick={() => setTheme("purple")}
+                                className={cn(
+                                    "px-3 py-3.5 rounded-xl border transition-all font-black uppercase text-[8px] tracking-widest flex items-center justify-center gap-2",
+                                    theme === "purple" 
+                                        ? "bg-purple-500/20 text-purple-400 border-purple-500 shadow-md shadow-purple-500/10 animate-pulse-glow" 
+                                        : "bg-white/5 border-white/10 text-purple-400 hover:bg-white/10"
+                                )}
+                            >
+                                <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-ping" />
+                                Amethyst
+                            </button>
+                            <button
+                                onClick={() => setTheme("red")}
+                                className={cn(
+                                    "px-3 py-3.5 rounded-xl border transition-all font-black uppercase text-[8px] tracking-widest flex items-center justify-center gap-2",
+                                    theme === "red" 
+                                        ? "bg-red-500/20 text-red-400 border-red-500 shadow-md shadow-red-500/10 animate-pulse-glow" 
+                                        : "bg-white/5 border-white/10 text-red-400 hover:bg-white/10"
+                                )}
+                            >
+                                <span className="w-1.5 h-1.5 rounded-full bg-red-400 animate-ping" />
+                                Crimson Alert
+                            </button>
+                            <button
+                                onClick={() => setTheme("green")}
+                                className={cn(
+                                    "px-3 py-3.5 rounded-xl border transition-all font-black uppercase text-[8px] tracking-widest flex items-center justify-center gap-2",
+                                    theme === "green" 
+                                        ? "bg-green-500/20 text-green-400 border-green-500 shadow-md shadow-green-500/10 animate-pulse-glow" 
+                                        : "bg-white/5 border-white/10 text-green-400 hover:bg-white/10"
+                                )}
+                            >
+                                <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-ping" />
+                                Matrix
+                            </button>
+                        </div>
                     </div>
                 </GlassCard>
 

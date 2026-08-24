@@ -37,6 +37,7 @@ import { DateRange } from "react-day-picker";
 import { usePlan } from "@/hooks/usePlan";
 import { DRPAlert } from "@/components/DRPAlert";
 import { BrokerSync } from "@/components/BrokerSync";
+import { JarvisHUD } from "@/components/JarvisHUD";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -400,10 +401,10 @@ export default function Dashboard() {
             <div className="flex items-center justify-between">
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
-                  <div className="p-3 rounded-2xl bg-cyan-400/10">
-                    <Shield className="w-6 h-6 text-cyan-400" />
+                  <div className="p-3 rounded-2xl bg-primary/10">
+                    <Shield className="w-6 h-6 text-primary" />
                   </div>
-                  <h3 className="text-xl font-black uppercase tracking-widest ">Rule <span className="text-cyan-400 not-">Adherence</span></h3>
+                  <h3 className="text-xl font-black uppercase tracking-widest ">Rule <span className="text-primary not-">Adherence</span></h3>
                 </div>
                 <p className="text-sm text-muted-foreground font-medium max-w-[240px]">Behavioral discipline and rule adherence index.</p>
               </div>
@@ -411,9 +412,9 @@ export default function Dashboard() {
             </div>
           </GlassCard>
           {!isPro && (
-            <div className="absolute top-4 right-4 px-3 py-1 bg-cyan-400/20 backdrop-blur-md rounded-full border border-cyan-400/30 flex items-center gap-2">
-              <Lock className="w-3 h-3 text-cyan-400" />
-              <span className="text-[8px] font-black uppercase tracking-widest text-cyan-400">Professional Feature</span>
+            <div className="absolute top-4 right-4 px-3 py-1 bg-primary/20 backdrop-blur-md rounded-full border border-primary/30 flex items-center gap-2">
+              <Lock className="w-3 h-3 text-primary" />
+              <span className="text-[8px] font-black uppercase tracking-widest text-primary">Professional Feature</span>
             </div>
           )}
         </div>

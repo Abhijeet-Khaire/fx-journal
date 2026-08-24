@@ -96,6 +96,51 @@
   .light .text-muted-foreground {
     @apply text-gray-500;
   }
+
+  .yellow {
+    --primary: 48 96% 53%;
+    --ring: 48 96% 53%;
+    --sidebar-primary: 48 96% 53%;
+    --sidebar-ring: 48 96% 53%;
+    --cyan-glow: 48 96% 53%;
+    --accent: 48 96% 53%;
+  }
+
+  .purple {
+    --primary: 271 91% 65%;
+    --ring: 271 91% 65%;
+    --sidebar-primary: 271 91% 65%;
+    --sidebar-ring: 271 91% 65%;
+    --cyan-glow: 271 91% 65%;
+    --accent: 271 91% 65%;
+  }
+
+  .red {
+    --primary: 0 84% 60%;
+    --ring: 0 84% 60%;
+    --sidebar-primary: 0 84% 60%;
+    --sidebar-ring: 0 84% 60%;
+    --cyan-glow: 0 84% 60%;
+    --accent: 0 84% 60%;
+  }
+
+  .green {
+    --primary: 142 76% 45%;
+    --ring: 142 76% 45%;
+    --sidebar-primary: 142 76% 45%;
+    --sidebar-ring: 142 76% 45%;
+    --cyan-glow: 142 76% 45%;
+    --accent: 142 76% 45%;
+  }
+
+  .cyan {
+    --primary: 187 85% 53%;
+    --ring: 187 85% 53%;
+    --sidebar-primary: 187 85% 53%;
+    --sidebar-ring: 187 85% 53%;
+    --cyan-glow: 187 85% 53%;
+    --accent: 187 85% 53%;
+  }
 }
 
 @layer base {
@@ -312,5 +357,23 @@
 
   .animate-pulse-glow {
     animation: pulse-glow 4s ease-in-out infinite;
+  }
+
+  @keyframes radar-sweep {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  .animate-radar-sweep {
+    animation: radar-sweep 6s linear infinite;
+  }
+
+  @keyframes sound-bar {
+    0%, 100% { height: 4px; }
+    50% { height: 28px; }
+  }
+
+  .animate-sound-bar {
+    animation: sound-bar 1.2s ease-in-out infinite;
   }
 }

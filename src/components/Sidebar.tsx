@@ -169,7 +169,7 @@ export function Sidebar({ isOpen, onClose, isCollapsed, onToggleCollapse }: Side
             }}
             aria-label="Upgrade your plan"
             className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-bold
-              bg-gradient-to-r from-primary to-cyan-400 text-primary-foreground
+              bg-gradient-to-r from-primary to-primary/80 text-primary-foreground
               hover:shadow-lg hover:shadow-primary/20 hover:scale-[1.02] transition-all duration-300"
           >
             <Sparkles className="w-4 h-4 shrink-0" />

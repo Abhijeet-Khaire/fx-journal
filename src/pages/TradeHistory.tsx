@@ -1,10 +1,10 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, Fragment } from "react";
 import { useTrades } from "@/hooks/useTrades";
 import { motion, AnimatePresence } from "framer-motion";
 import { GlassCard } from "@/components/GlassCard";
 import { Link } from "react-router-dom";
 import { Trade, PAIRS, STRATEGIES } from "@/lib/tradeTypes";
-import { Trash2, ArrowUpRight, ArrowDownRight, Clock, Pencil, Trophy, TrendingDown, TrendingUp, Activity, Filter, Download, ListFilter, Hash, DollarSign, Target, Database, UserCheck, Zap } from "lucide-react";
+import { Trash2, ArrowUpRight, ArrowDownRight, Clock, Pencil, Trophy, TrendingDown, TrendingUp, Activity, Filter, Download, ListFilter, Hash, DollarSign, Target, Database, UserCheck, Zap, Brain, Sparkles, Smile, MessageSquare, AlertCircle } from "lucide-react";
 import { SkeletonCard } from "@/components/SkeletonLoader";
 import { TradeFilters, FilterState } from "@/components/TradeFilters";
 import { format, isWithinInterval, parseISO } from "date-fns";
@@ -41,6 +41,7 @@ export default function TradeHistory() {
   const isProPlus = plan === "pro" || plan === "ultimate";
 
   const [tradeToDelete, setTradeToDelete] = useState<string | null>(null);
+  const [expandedTradeId, setExpandedTradeId] = useState<string | null>(null);
 
   // State for filters
   const [filters, setFilters] = useState<FilterState>({
@@ -200,6 +201,195 @@ export default function TradeHistory() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  };
+
+  const renderPsychologyHUD = (trade: Trade) => {
+    const hasData = 
+      trade.moodBefore || trade.thinkingBefore || trade.thinkingDuring || trade.thinkingAfter ||
+      trade.biggestMistake || trade.lessonsLearned || trade.whatWorkedWell || trade.whatDidntWork ||
+      trade.improveTomorrow || trade.rulesNextSession || trade.focusArea ||
+      trade.disciplineRating || trade.emotionalControlRating || (trade.mistakes && trade.mistakes.length > 0);
+
+    if (!hasData) {
+      return (
+        <div className="p-6 text-center text-muted-foreground text-xs font-mono uppercase tracking-widest">
+          No detailed psychology or subjective performance review logs recorded for this trade.
+        </div>
+      );
+    }
+
+    return (
+      <div className="p-8 bg-black/60 rounded-3xl border border-primary/20 space-y-6 text-left relative overflow-hidden">
+        {/* Holographic watermark background */}
+        <div className="absolute top-0 right-0 p-8 opacity-5 text-primary pointer-events-none">
+          <Brain className="w-48 h-48 animate-pulse" />
+        </div>
+
+        <div className="flex items-center justify-between border-b border-white/5 pb-4 mb-4">
+          <div className="flex items-center gap-2">
+            <Brain className="w-5 h-5 text-primary" />
+            <span className="text-xs font-black uppercase tracking-[0.25em] text-white">SUBJECTIVE ANALYSIS LEAD LEDGER // PROTOCOL 7.42</span>
+          </div>
+          {trade.focusArea && (
+            <span className="px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-[8px] font-black uppercase tracking-widest">
+              FOCUS: {trade.focusArea}
+            </span>
+          )}
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 relative z-10">
+          {/* Col 1: Psychology & Mental Flow */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-primary border-b border-primary/10 pb-2">
+              <Smile className="w-4 h-4" />
+              <span>Psychology & Mental Flow</span>
+            </div>
+            
+            {trade.moodBefore && (
+              <div>
+                <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest block mb-1">Pre-trade Mood</span>
+                <span className={cn(
+                  "px-2.5 py-1 rounded-md text-[9px] font-black uppercase tracking-widest",
+                  trade.moodBefore === "Calm" || trade.moodBefore === "Confident"
+                    ? "bg-profit/15 text-profit border border-profit/20"
+                    : "bg-loss/15 text-loss border border-loss/20"
+                )}>
+                  {trade.moodBefore}
+                </span>
+              </div>
+            )}
+
+            {trade.thinkingBefore && (
+              <div>
+                <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest block mb-0.5">Thoughts Before Entry</span>
+                <p className="text-xs text-white/70 italic leading-relaxed">"{trade.thinkingBefore}"</p>
+              </div>
+            )}
+
+            {trade.thinkingDuring && (
+              <div>
+                <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest block mb-0.5">Cognition During Management</span>
+                <p className="text-xs text-white/70 leading-relaxed">"{trade.thinkingDuring}"</p>
+              </div>
+            )}
+
+            {trade.thinkingAfter && (
+              <div>
+                <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest block mb-0.5">Post-Exit Reflection</span>
+                <p className="text-xs text-white/70 leading-relaxed">"{trade.thinkingAfter}"</p>
+              </div>
+            )}
+
+            {trade.planExplanation && (
+              <div>
+                <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest block mb-0.5">Plan Adherence Reason</span>
+                <p className="text-xs text-white/60 leading-relaxed">{trade.planExplanation}</p>
+              </div>
+            )}
+          </div>
+
+          {/* Col 2: Mistakes, Lessons & Review */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-loss border-b border-loss/10 pb-2">
+              <AlertCircle className="w-4 h-4" />
+              <span>Mistakes & Lessons</span>
+            </div>
+
+            {trade.mistakes && trade.mistakes.length > 0 && (
+              <div>
+                <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest block mb-1">Identified Inefficiencies</span>
+                <div className="flex flex-wrap gap-1.5 font-sans">
+                  {trade.mistakes.map((mistake, idx) => (
+                    <span key={idx} className="px-2 py-0.5 rounded bg-loss/10 border border-loss/20 text-loss text-[8px] font-black uppercase tracking-widest">
+                      {mistake}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {trade.biggestMistake && (
+              <div>
+                <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest block mb-0.5">Critical System Mistake</span>
+                <p className="text-xs text-loss leading-relaxed font-bold">"{trade.biggestMistake}"</p>
+              </div>
+            )}
+
+            {trade.lessonsLearned && (
+              <div>
+                <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest block mb-0.5">Key Lesson Learned</span>
+                <p className="text-xs text-white/80 leading-relaxed bg-white/5 p-3 rounded-xl border border-white/10 italic">
+                  "{trade.lessonsLearned}"
+                </p>
+              </div>
+            )}
+
+            {trade.whatWorkedWell && (
+              <div>
+                <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest block mb-0.5">Positive System Operations</span>
+                <p className="text-xs text-profit leading-relaxed">{trade.whatWorkedWell}</p>
+              </div>
+            )}
+
+            {trade.whatDidntWork && (
+              <div>
+                <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest block mb-0.5">Negative System Operations</span>
+                <p className="text-xs text-white/75 leading-relaxed">{trade.whatDidntWork}</p>
+              </div>
+            )}
+          </div>
+
+          {/* Col 3: Improvement & Calibration */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-yellow-500 border-b border-yellow-500/10 pb-2">
+              <Sparkles className="w-4 h-4" />
+              <span>Improvement & Calibration</span>
+            </div>
+
+            {/* Glowing ratings progress bars */}
+            {trade.disciplineRating !== undefined && (
+              <div className="space-y-2">
+                <div className="flex justify-between items-center text-[9px] font-black uppercase tracking-widest">
+                  <span className="text-muted-foreground">Discipline Rating</span>
+                  <span className="text-white">{trade.disciplineRating}/10</span>
+                </div>
+                <div className="h-1.5 w-full bg-white/5 border border-white/10 rounded-full overflow-hidden">
+                  <div className="h-full bg-primary shadow-[0_0_8px_hsl(var(--primary))]" style={{ width: `${trade.disciplineRating * 10}%` }} />
+                </div>
+              </div>
+            )}
+
+            {trade.emotionalControlRating !== undefined && (
+              <div className="space-y-2">
+                <div className="flex justify-between items-center text-[9px] font-black uppercase tracking-widest">
+                  <span className="text-muted-foreground">Emotional Control</span>
+                  <span className="text-white">{trade.emotionalControlRating}/10</span>
+                </div>
+                <div className="h-1.5 w-full bg-white/5 border border-white/10 rounded-full overflow-hidden">
+                  <div className="h-full bg-yellow-500 shadow-[0_0_8px_#eab308]" style={{ width: `${trade.emotionalControlRating * 10}%` }} />
+                </div>
+              </div>
+            )}
+
+            {trade.improveTomorrow && (
+              <div>
+                <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest block mb-0.5">Tactical Advisory (Tomorrow)</span>
+                <p className="text-xs text-white/80 leading-relaxed font-mono uppercase bg-yellow-500/5 p-3 border border-yellow-500/20 rounded-xl">
+                  {trade.improveTomorrow}
+                </p>
+              </div>
+            )}
+
+            {trade.rulesNextSession && (
+              <div>
+                <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest block mb-0.5">Calibrations For Next Session</span>
+                <p className="text-xs text-white/70 leading-relaxed">{trade.rulesNextSession}</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
   };
 
   if (loading) {
@@ -403,6 +593,16 @@ export default function TradeHistory() {
                     <div className="flex items-center justify-between pt-6 border-t border-white/10">
                       <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">{trade.strategy}</span>
                       <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => setExpandedTradeId(expandedTradeId === trade.id ? null : trade.id)}
+                          className={cn(
+                            "p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-all text-muted-foreground hover:text-primary",
+                            expandedTradeId === trade.id ? "text-primary bg-primary/10 border border-primary/20 animate-pulse-glow" : ""
+                          )}
+                          title="View Psychology & Lessons HUD"
+                        >
+                          <Brain className="w-4 h-4" />
+                        </button>
                         <Link
                           to={`/edit-trade/${trade.id}`}
                           className="p-3 rounded-xl bg-white/5 hover:bg-white/10 text-muted-foreground hover:text-primary transition-all"
@@ -419,6 +619,19 @@ export default function TradeHistory() {
                         </button>
                       </div>
                     </div>
+
+                    <AnimatePresence>
+                      {expandedTradeId === trade.id && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: "auto" }}
+                          exit={{ opacity: 0, height: 0 }}
+                          className="mt-6 pt-6 border-t border-white/10 overflow-hidden"
+                        >
+                          {renderPsychologyHUD(trade)}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </GlassCard>
                 </motion.div>
               ))}
@@ -439,7 +652,8 @@ export default function TradeHistory() {
                 <tbody className="divide-y divide-white/5">
                   <AnimatePresence mode="popLayout">
                     {paginatedTrades.map((trade, i) => (
-                      <motion.tr
+                      <Fragment key={trade.id}>
+                        <motion.tr
                         key={trade.id}
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -486,6 +700,16 @@ export default function TradeHistory() {
                         </td>
                         <td className="px-8 py-6">
                           <div className="flex items-center gap-3 transition-opacity">
+                            <button
+                              onClick={() => setExpandedTradeId(expandedTradeId === trade.id ? null : trade.id)}
+                              className={cn(
+                                "p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-all text-muted-foreground hover:text-primary",
+                                expandedTradeId === trade.id ? "text-primary bg-primary/10 border border-primary/20 animate-pulse-glow" : ""
+                              )}
+                              title="View Psychology & Lessons HUD"
+                            >
+                              <Brain className="w-4 h-4" />
+                            </button>
                             <Link
                               to={`/edit-trade/${trade.id}`}
                               className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-muted-foreground hover:text-primary transition-all"
@@ -505,7 +729,21 @@ export default function TradeHistory() {
                           </div>
                         </td>
                       </motion.tr>
-                    ))}
+                      {expandedTradeId === trade.id && (
+                        <motion.tr
+                          key={`expanded-${trade.id}`}
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: "auto" }}
+                          exit={{ opacity: 0, height: 0 }}
+                          className="bg-black/20 hover:bg-black/20"
+                        >
+                          <td colSpan={8} className="px-8 py-6">
+                            {renderPsychologyHUD(trade)}
+                          </td>
+                        </motion.tr>
+                      )}
+                    </Fragment>
+                  ))}
                   </AnimatePresence>
                 </tbody>
               </table>

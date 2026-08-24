@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 
-type Theme = "light" | "dark";
+type Theme = "light" | "dark" | "yellow" | "purple" | "red" | "green" | "cyan";
 
 export const AVAILABLE_FONTS = [
   { name: "Roboto", family: "'Roboto', sans-serif" },
@@ -36,7 +36,7 @@ export const ThemeSettingsProvider: React.FC<{ children: React.ReactNode }> = ({
 
   useEffect(() => {
     const root = window.document.documentElement;
-    root.classList.remove("light", "dark");
+    root.classList.remove("light", "dark", "yellow", "purple", "red", "green", "cyan");
     root.classList.add(theme);
     localStorage.setItem("theme", theme);
   }, [theme]);
